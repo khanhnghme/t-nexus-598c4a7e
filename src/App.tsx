@@ -10,6 +10,7 @@ import { FilePreviewProvider } from "@/contexts/FilePreviewContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AnimationProvider } from "@/contexts/AnimationContext";
 import { MusicProvider } from "@/contexts/MusicContext";
+import { ForceLightMode } from "@/components/ForceLightMode";
 
 import { supabase } from "@/integrations/supabase/client";
 import PageTransition from "@/components/PageTransition";
@@ -105,22 +106,22 @@ function AppRoutes() {
   return (
     <PageTransition>
       <Routes>
-        <Route path="/" element={<Landing />} />
-        {/* Public routes */}
-        <Route path="/project/:projectSlug/task/:taskSlug" element={<PublicTaskPreview />} />
-        <Route path="/project/:projectSlug" element={<PublicProjectView />} />
-        <Route path="/s/:shareToken" element={<PublicProjectView />} />
-        <Route path="/s/:shareToken/t/:taskSlug/f/:fileIndex" element={<FilePreview />} />
-        <Route path="/public/project/:shareToken" element={<PublicProjectView />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/download" element={<DownloadPage />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/" element={<ForceLightMode><Landing /></ForceLightMode>} />
+        {/* Public routes — always light mode */}
+        <Route path="/project/:projectSlug/task/:taskSlug" element={<ForceLightMode><PublicTaskPreview /></ForceLightMode>} />
+        <Route path="/project/:projectSlug" element={<ForceLightMode><PublicProjectView /></ForceLightMode>} />
+        <Route path="/s/:shareToken" element={<ForceLightMode><PublicProjectView /></ForceLightMode>} />
+        <Route path="/s/:shareToken/t/:taskSlug/f/:fileIndex" element={<ForceLightMode><FilePreview /></ForceLightMode>} />
+        <Route path="/public/project/:shareToken" element={<ForceLightMode><PublicProjectView /></ForceLightMode>} />
+        <Route path="/auth" element={<ForceLightMode><Auth /></ForceLightMode>} />
+        <Route path="/download" element={<ForceLightMode><DownloadPage /></ForceLightMode>} />
+        <Route path="/pricing" element={<ForceLightMode><Pricing /></ForceLightMode>} />
+        <Route path="/reset-password" element={<ForceLightMode><ResetPassword /></ForceLightMode>} />
         <Route path="/auth/member" element={<Navigate to="/auth" replace />} />
         <Route path="/auth/admin" element={<Navigate to="/auth" replace />} />
-        <Route path="/u/:username" element={<PublicProfile />} />
+        <Route path="/u/:username" element={<ForceLightMode><PublicProfile /></ForceLightMode>} />
         {/* Legacy file preview */}
-        <Route path="/file-preview" element={<FilePreview />} />
+        <Route path="/file-preview" element={<ForceLightMode><FilePreview /></ForceLightMode>} />
 
         {/* Protected routes with persistent DashboardLayout */}
         <Route element={<ProtectedLayout />}>
