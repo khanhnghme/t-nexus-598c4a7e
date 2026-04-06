@@ -1476,7 +1476,7 @@ html.no-animations [data-state="active"][role="tabpanel"] {
   font-size: 13.5px;
   font-weight: 500;
   line-height: 20px;
-  color: var(--_sb-muted);
+  color: var(--_sb-fg);
   text-decoration: none;
   white-space: nowrap;
   position: relative;
@@ -1527,7 +1527,7 @@ html.no-animations [data-state="active"][role="tabpanel"] {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  color: var(--_sb-icon-sec);
+  color: var(--_sb-fg);
   transition: all 200ms ease-in-out;
 }
 

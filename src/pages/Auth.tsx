@@ -1,21 +1,15 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { AuthForm } from '@/components/AuthForm';
-import MaintenanceScreen from '@/components/MaintenanceScreen';
 import RememberLoginScreen from '@/components/RememberLoginScreen';
-import { useFullLockdown } from '@/hooks/useFullLockdown';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Auth() {
-  const { isLocked, isChecking, message: lockdownMessage, endAt: lockdownEndAt } = useFullLockdown();
   const { user, profile, roles, isLoading: authLoading, signOut } = useAuth();
-  const [adminBypass, setAdminBypass] = useState(false);
 
-  if (isChecking || authLoading) return <LoadingScreen message="Đang kiểm tra hệ thống..." />;
-  if (isLocked && !adminBypass) return <MaintenanceScreen message={lockdownMessage} endAt={lockdownEndAt} onAdminLogin={() => setAdminBypass(true)} />;
+  if (authLoading) return <LoadingScreen message="Đang kiểm tra hệ thống..." />;
 
   // If user has active session + remember flag → show session confirmation screen
   const hasRememberFlag = localStorage.getItem('t-nexus_remember_login') === 'true';

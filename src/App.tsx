@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AnimationProvider } from "@/contexts/AnimationContext";
 import { MusicProvider } from "@/contexts/MusicContext";
 import { ForceLightMode } from "@/components/ForceLightMode";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import { supabase } from "@/integrations/supabase/client";
 import PageTransition from "@/components/PageTransition";
@@ -152,6 +153,7 @@ function AppRoutes() {
 
 const App = () => {
   return (
+    <ErrorBoundary>
     <ThemeProvider>
       
         <QueryClientProvider client={queryClient}>
@@ -175,6 +177,7 @@ const App = () => {
         </QueryClientProvider>
       
     </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

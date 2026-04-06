@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import SplashScreen from '@/components/SplashScreen';
 import MandatoryNotification from '@/components/MandatoryNotification';
-import MaintenanceScreen from '@/components/MaintenanceScreen';
 import { useFullLockdown } from '@/hooks/useFullLockdown';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Construction,
   Download,
   FolderOpen,
   Globe,
@@ -531,7 +531,19 @@ export default function Landing() {
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(() => {
+          setScrolled((prev) => {
+            const next = window.scrollY > 16;
+            return prev === next ? prev : next;
+          });
+          ticking = false;
+        });
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -584,23 +596,40 @@ export default function Landing() {
     }
   };
 
+  // Maintenance countdown hook (must be before any early returns — Rules of Hooks)
+  const [maintenanceTimeLeft, setMaintenanceTimeLeft] = useState('');
+  useEffect(() => {
+    if (!isLocked || !lockdownEndAt) return;
+    const tick = () => {
+      const diff = new Date(lockdownEndAt).getTime() - Date.now();
+      if (diff <= 0) { setMaintenanceTimeLeft('Reopening soon...'); return; }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setMaintenanceTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [isLocked, lockdownEndAt]);
+
   const PageComponent = introPageComponents[currentPage];
   const pageTitles = ['Overview', 'Tasks', 'Scoring', 'Projects', 'Advanced'];
 
+  // Maintenance hero content
+  const MAINTENANCE_HERO_WORDS = [
+    { word: 'The', color: '#A8D8EA' },
+    { word: 'system', color: '#B8A9E8' },
+    { word: 'is', color: '#FFB7C5' },
+    { word: 'currently', color: '#BFEAA8' },
+  ];
+  const MAINTENANCE_HERO_WORDS_LINE2 = [
+    { word: 'under', color: '#FFD6A5' },
+    { word: 'maintenance.', color: '#A0E7E5' },
+  ];
+
   if (isChecking && !showSplash) {
     return <LoadingScreen message="Loading homepage..." />;
-  }
-
-  if (isLocked) {
-    return (
-      <MaintenanceScreen
-        message={lockdownMessage}
-        endAt={lockdownEndAt}
-        onAdminLogin={() => {
-          window.location.href = '/auth';
-        }}
-      />
-    );
   }
 
   return (
@@ -623,14 +652,16 @@ export default function Landing() {
             muted
             playsInline
             preload="auto"
-            className="pointer-events-none fixed inset-0 h-full w-full object-cover transition-opacity duration-1000"
-            style={{ opacity: showSplash ? 0 : videoOpacity, zIndex: 0 }}
+            className="pointer-events-none fixed inset-0 h-full w-full object-cover"
+            style={{ opacity: showSplash ? 0 : videoOpacity, zIndex: 0, willChange: 'transform', transform: 'translateZ(0)', transition: 'opacity 1s' }}
             src={videoUrl}
           />
           <div
             className="pointer-events-none fixed inset-0"
             style={{
               zIndex: 1,
+              willChange: 'transform',
+              transform: 'translateZ(0)',
               background:
                 `linear-gradient(180deg, ${colorVar('--landing-night', 0.68)} 0%, ${colorVar('--landing-night', 0.84)} 48%, ${colorVar('--landing-night', 0.96)} 100%)`,
             }}
@@ -640,11 +671,14 @@ export default function Landing() {
 
       <div className="relative z-[2]">
         <header
-          className="fixed inset-x-0 top-0 z-50 transition-all duration-300"
+          className="fixed inset-x-0 top-0 z-50"
           style={{
             backgroundColor: scrolled ? colorVar('--landing-night', 0.78) : 'transparent',
             borderBottom: scrolled ? `1px solid ${colorVar('--landing-hero-foreground', 0.08)}` : '1px solid transparent',
             backdropFilter: scrolled ? 'blur(24px)' : 'none',
+            willChange: 'backdrop-filter, background-color',
+            transform: 'translateZ(0)',
+            transition: 'background-color 0.3s, border-bottom 0.3s',
           }}
         >
           <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between px-6">
@@ -813,19 +847,28 @@ export default function Landing() {
                   animation: 'landing-fade-up 700ms ease-out both',
                 }}
               >
-                <Sparkles className="h-4 w-4" style={{ color: colorVar('--landing-blue') }} />
-                The teamwork orchestration platform for students
+                {isLocked ? (
+                  <>
+                    <Construction className="h-4 w-4" style={{ color: 'hsl(45 93% 55%)' }} />
+                    Scheduled maintenance in progress
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" style={{ color: colorVar('--landing-blue') }} />
+                    The teamwork orchestration platform for students
+                  </>
+                )}
               </div>
               <h1
                 className="mt-8 text-[42px] font-semibold leading-[0.91] tracking-[-0.04em] sm:text-[56px] lg:text-[64px] xl:text-[72px] landing-hero-title"
                 style={{ color: colorVar('--landing-hero-foreground'), animation: 'landing-fade-up 700ms ease-out 120ms both' }}
               >
-                {[
+                {(isLocked ? MAINTENANCE_HERO_WORDS : [
                   { word: 'The', color: '#A8D8EA' },
                   { word: 'night', color: '#B8A9E8' },
                   { word: 'shift', color: '#FFB7C5' },
                   { word: 'for', color: '#BFEAA8' },
-                ].map((item, i) => {
+                ]).map((item, i) => {
                   const globalIndex = i;
                   const isLightUp = hoveredWordIndex !== null ? hoveredWordIndex === globalIndex : activeWordIndex === globalIndex;
                   return (
@@ -843,10 +886,10 @@ export default function Landing() {
                   );
                 })}
                 <br />
-                {[
+                {(isLocked ? MAINTENANCE_HERO_WORDS_LINE2 : [
                   { word: 'your', color: '#FFD6A5' },
                   { word: 'teamwork.', color: '#A0E7E5' },
-                ].map((item, i) => {
+                ]).map((item, i) => {
                   const globalIndex = i + 4;
                   const isLightUp = hoveredWordIndex !== null ? hoveredWordIndex === globalIndex : activeWordIndex === globalIndex;
                   return (
@@ -868,32 +911,100 @@ export default function Landing() {
                 className="mx-auto mt-6 max-w-[720px] text-[15px] leading-[1.6] md:text-[16px]"
                 style={{ color: colorVar('--landing-hero-muted'), animation: 'landing-fade-up 700ms ease-out 220ms both' }}
               >
-                T-Nexus keeps your work on track 24/7. It remembers context, answers questions, reminds deadlines and pushes your project forward — even when the whole team is&nbsp;offline.
+                {isLocked
+                  ? 'We are performing scheduled maintenance to improve your experience. All services will be fully restored shortly. Thank you for your patience.'
+                  : <>T-Nexus keeps your work on track 24/7. It remembers context, answers questions, reminds deadlines and pushes your project forward — even when the whole team is&nbsp;offline.</>}
               </p>
-              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ animation: 'landing-fade-up 700ms ease-out 320ms both' }}>
-                <Button
-                  asChild
-                  size="lg"
-                  className="h-12 rounded-full px-6 text-sm font-medium shadow-none"
-                  style={{ backgroundColor: colorVar('--landing-blue'), color: '#fff' }}
-                >
-                  <Link to="/auth" className="flex items-center gap-2">
-                    Get T-Nexus free <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={openIntro}
-                  className="h-12 rounded-full px-6 text-sm font-medium shadow-none"
+
+              {/* Maintenance countdown — inline on hero */}
+              {isLocked && (
+                <div
+                  className="mx-auto mt-8 max-w-[480px] rounded-2xl border p-6"
                   style={{
-                    borderColor: colorVar('--landing-hero-foreground', 0.14),
+                    borderColor: colorVar('--landing-hero-foreground', 0.1),
                     backgroundColor: colorVar('--landing-hero-foreground', 0.04),
-                    color: colorVar('--landing-hero-foreground'),
+                    backdropFilter: 'blur(12px)',
+                    animation: 'landing-fade-up 700ms ease-out 280ms both',
                   }}
                 >
-                  Watch demo <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: 'hsl(45 93% 55%)' }} />
+                      <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: 'hsl(45 93% 55%)' }} />
+                    </span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: colorVar('--landing-hero-muted') }}>Maintenance in progress</span>
+                  </div>
+                  {lockdownEndAt && maintenanceTimeLeft && (
+                    maintenanceTimeLeft.includes(':') ? (
+                      <div className="flex items-center justify-center gap-2">
+                        {maintenanceTimeLeft.split(':').map((unit, i) => (
+                          <React.Fragment key={i}>
+                            {i > 0 && <span className="text-lg font-bold" style={{ color: colorVar('--landing-hero-foreground', 0.2) }}>:</span>}
+                            <div className="flex flex-col items-center">
+                              <div
+                                className="w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden"
+                                style={{
+                                  background: colorVar('--landing-hero-foreground', 0.06),
+                                  border: `1px solid ${colorVar('--landing-hero-foreground', 0.1)}`,
+                                }}
+                              >
+                                <div className="absolute inset-0 opacity-10" style={{ background: `linear-gradient(135deg, hsl(45 93% 55%), transparent 60%)` }} />
+                                <span className="text-2xl font-bold font-mono tabular-nums relative" style={{ color: colorVar('--landing-hero-foreground') }}>{unit}</span>
+                              </div>
+                              <span className="text-[9px] uppercase tracking-wider font-semibold mt-1.5" style={{ color: colorVar('--landing-hero-muted', 0.6) }}>
+                                {['Hours', 'Minutes', 'Seconds'][i]}
+                              </span>
+                            </div>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm font-semibold text-center animate-pulse" style={{ color: 'hsl(45 93% 55%)' }}>{maintenanceTimeLeft}</p>
+                    )
+                  )}
+                  {!lockdownEndAt && (
+                    <p className="text-xs text-center" style={{ color: colorVar('--landing-hero-muted', 0.5) }}>The system will be back online once the update is complete.</p>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ animation: 'landing-fade-up 700ms ease-out 320ms both' }}>
+                {isLocked ? (
+                  <Button
+                    size="lg"
+                    disabled
+                    className="h-12 rounded-full px-6 text-sm font-medium shadow-none cursor-not-allowed opacity-60"
+                    style={{ backgroundColor: colorVar('--landing-hero-foreground', 0.15), color: colorVar('--landing-hero-muted') }}
+                  >
+                    Please come back later
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      asChild
+                      size="lg"
+                      className="h-12 rounded-full px-6 text-sm font-medium shadow-none"
+                      style={{ backgroundColor: colorVar('--landing-blue'), color: '#fff' }}
+                    >
+                      <Link to="/auth" className="flex items-center gap-2">
+                        Get T-Nexus free <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={openIntro}
+                      className="h-12 rounded-full px-6 text-sm font-medium shadow-none"
+                      style={{
+                        borderColor: colorVar('--landing-hero-foreground', 0.14),
+                        backgroundColor: colorVar('--landing-hero-foreground', 0.04),
+                        color: colorVar('--landing-hero-foreground'),
+                      }}
+                    >
+                      Watch demo <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -1558,58 +1669,62 @@ export default function Landing() {
         @keyframes landing-fade-up {
           from {
             opacity: 0;
-            transform: translateY(24px);
+            transform: translate3d(0, 24px, 0);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translate3d(0, 0, 0);
           }
         }
 
         @keyframes landing-float-motion {
           0%, 100% {
-            transform: translateY(0px);
+            transform: translate3d(0, 0px, 0);
           }
           50% {
-            transform: translateY(-10px);
+            transform: translate3d(0, -10px, 0);
           }
         }
 
         @keyframes landing-marquee-left {
           0% {
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
           }
           100% {
-            transform: translateX(-33.333%);
+            transform: translate3d(-33.333%, 0, 0);
           }
         }
 
         @keyframes landing-marquee-right {
           0% {
-            transform: translateX(-33.333%);
+            transform: translate3d(-33.333%, 0, 0);
           }
           100% {
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
           }
         }
 
         .landing-float {
           animation: landing-float-motion 6s ease-in-out infinite;
+          will-change: transform;
+          contain: layout style;
         }
 
         @keyframes landing-orbit-pulse {
-          0%, 100% { opacity: 0.7; box-shadow: 0 0 40px 4px hsl(var(--landing-blue) / 0.08), inset 0 0 40px 4px hsl(var(--landing-blue) / 0.04); }
-          50% { opacity: 1; box-shadow: 0 0 60px 8px hsl(var(--landing-blue) / 0.14), inset 0 0 60px 8px hsl(var(--landing-blue) / 0.07); }
+          0%, 100% { opacity: 0.7; }
+          50% { opacity: 1; }
         }
         @keyframes landing-orbit-pulse-inner {
-          0%, 100% { opacity: 0.6; box-shadow: 0 0 60px 6px hsl(var(--landing-purple) / 0.06), inset 0 0 60px 6px hsl(var(--landing-purple) / 0.03); }
-          50% { opacity: 1; box-shadow: 0 0 80px 10px hsl(var(--landing-purple) / 0.12), inset 0 0 80px 10px hsl(var(--landing-purple) / 0.06); }
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
         }
         .landing-orbit-outer {
           animation: landing-orbit-pulse 5s ease-in-out infinite;
+          will-change: opacity;
         }
         .landing-orbit-inner {
           animation: landing-orbit-pulse-inner 7s ease-in-out infinite;
+          will-change: opacity;
         }
 
         @keyframes landing-orbit-dot-travel-outer {
@@ -1622,45 +1737,53 @@ export default function Landing() {
         }
         .landing-orbit-dot-outer {
           animation: landing-orbit-dot-travel-outer 18s linear infinite;
+          will-change: transform;
         }
         .landing-orbit-dot-inner {
           animation: landing-orbit-dot-travel-inner 24s linear infinite;
+          will-change: transform;
         }
 
         .landing-marquee {
           animation: landing-marquee-left 24s linear infinite;
+          will-change: transform;
         }
 
         .landing-marquee-reverse {
           animation: landing-marquee-right 24s linear infinite;
+          will-change: transform;
         }
 
         @keyframes slide-in-from-right {
           from {
             opacity: 0;
-            transform: translateX(24px);
+            transform: translate3d(24px, 0, 0);
           }
           to {
             opacity: 1;
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
           }
         }
 
         @keyframes slide-in-from-left {
           from {
             opacity: 0;
-            transform: translateX(-24px);
+            transform: translate3d(-24px, 0, 0);
           }
           to {
             opacity: 1;
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
           }
         }
 
         @media (prefers-reduced-motion: reduce) {
           .landing-float,
           .landing-marquee,
-          .landing-marquee-reverse {
+          .landing-marquee-reverse,
+          .landing-orbit-outer,
+          .landing-orbit-inner,
+          .landing-orbit-dot-outer,
+          .landing-orbit-dot-inner {
             animation: none !important;
           }
         }
