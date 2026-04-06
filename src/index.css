@@ -568,77 +568,8 @@ html.google-mode ::-webkit-scrollbar-thumb:hover {
   animation: page-enter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Loading dots animation */
-@keyframes loading-bounce {
 
-  0%,
-  80%,
-  100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
 
-  40% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-.loading-dot {
-  animation: loading-bounce 1.2s ease-in-out infinite;
-}
-
-.loading-text {
-  animation: page-enter 0.4s ease-out 0.15s both;
-}
-
-/* Loading tip fade in */
-.loading-tip {
-  animation: page-enter 0.5s ease-out;
-}
-
-/* Logo pulse */
-@keyframes logo-pulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-
-  50% {
-    transform: scale(1.06);
-    opacity: 1;
-  }
-}
-
-.loading-logo-pulse {
-  animation: logo-pulse 2s ease-in-out infinite;
-}
-
-/* Orbit ring spin */
-@keyframes orbit-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.loading-orbit {
-  animation: orbit-spin 2.5s linear infinite;
-}
-
-.loading-orbit-reverse {
-  animation: orbit-spin 3.5s linear infinite reverse;
-}
-
-/* Loading spinner (legacy) */
-.loading-spinner {
-  animation: spin 0.8s linear infinite;
-}
 
 /* No-animations mode — disable all transitions & animations */
 html.no-animations *,
