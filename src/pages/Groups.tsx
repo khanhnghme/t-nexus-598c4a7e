@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import type { Group, GroupMember } from '@/types/database';
 import UserAvatar from '@/components/UserAvatar';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 
 interface MemberAvatar {
   avatar_url: string | null;
@@ -69,6 +70,7 @@ interface MemberToAdd {
 
 export default function Groups() {
   const { user, isLeader, isAdmin, profile } = useAuth();
+  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
   const { toast } = useToast();
   const [groups, setGroups] = useState<GroupWithMembers[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +94,7 @@ export default function Groups() {
 
   useEffect(() => {
     fetchGroups();
-  }, [user]);
+  }, [user, activeWorkspace]);
 
   const fetchGroups = async () => {
     if (!user) return;
@@ -114,11 +116,18 @@ export default function Groups() {
       const roleMap = new Map(memberData.map((m) => [m.group_id, m.role]));
 
       // Get group details
-      const { data: groupsData } = await supabase
+      let groupsQuery = supabase
         .from('groups')
         .select('*')
         .in('id', groupIds)
         .order('created_at', { ascending: false });
+
+      // Filter by active workspace if available
+      if (wsAvailable && activeWorkspace) {
+        groupsQuery = groupsQuery.eq('workspace_id', activeWorkspace.id);
+      }
+
+      const { data: groupsData } = await groupsQuery;
 
       if (groupsData) {
         // Get member counts + avatars
