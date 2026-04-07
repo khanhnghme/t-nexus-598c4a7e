@@ -10,6 +10,8 @@ interface AuthContextType {
   profile: Profile | null;
   roles: AppRole[];
   isLoading: boolean;
+  isOwnerSystem: boolean;
+  /** @deprecated Use isOwnerSystem */
   isAdmin: boolean;
   isLeader: boolean;
   isApproved: boolean;
@@ -220,14 +222,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isAdmin = roles.includes('admin');
-  const isLeader = roles.includes('leader') || isAdmin;
+  const isOwnerSystem = roles.includes('owner_system');
+  const isAdmin = isOwnerSystem; // backward compat alias
+  const isLeader = roles.includes('leader') || isOwnerSystem;
   const isApproved = profile?.is_approved ?? false;
   const mustChangePassword = profile?.must_change_password ?? false;
 
   const contextValue = {
     user, session, profile, roles, isLoading,
-    isAdmin, isLeader, isApproved, mustChangePassword,
+    isOwnerSystem, isAdmin, isLeader, isApproved, mustChangePassword,
     maintenanceMode,
     signIn, signUp, signOut, refreshProfile,
   };

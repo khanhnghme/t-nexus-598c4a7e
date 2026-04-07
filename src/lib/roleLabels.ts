@@ -12,8 +12,8 @@
 /** Get display label for a system-level role (from user_roles table) */
 export function getSystemRoleLabel(role: string): string {
   switch (role) {
-    case 'admin': return 'Admin';
-    case 'leader': return 'Thành viên Nâng cao';
+    case 'owner_system': return 'OwnerSystem';
+    case 'leader': return 'Leader';
     case 'member': return 'Thành viên';
     default: return role;
   }
@@ -27,7 +27,7 @@ export function getSystemRoleLabel(role: string): string {
 export function getProjectRoleLabel(role: string, isCreator: boolean = false): string {
   if (isCreator) return 'Trưởng nhóm';
   switch (role) {
-    case 'admin': return 'Admin';
+    case 'owner_system': return 'OwnerSystem';
     case 'leader': return 'Phó nhóm';
     case 'member': return 'Thành viên';
     default: return role;
