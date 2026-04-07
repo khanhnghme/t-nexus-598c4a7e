@@ -205,6 +205,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       {isAvailable && activeWorkspace && (
         <>
           <div className="sidebar-nav-separator" />
+          <div className="sidebar-section-label">WORKSPACE</div>
 
           {/* Workspace header (collapsible) */}
           <button
