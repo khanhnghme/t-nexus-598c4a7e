@@ -22,7 +22,7 @@ import {
   Shield,
   Wrench,
   Plus,
-  Eye,
+  LayoutGrid,
   ChevronsUpDown,
   Check,
   FolderOpen,
@@ -180,7 +180,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
         {/* Workspace pages */}
         {isAvailable && activeWorkspace && !isGuest && (
           <>
-            <TreeItemCollapsed icon={Eye} label="Tổng quan WS" href="/workspace/settings" active={isPathActive('/workspace/settings')} />
+            <TreeItemCollapsed icon={LayoutGrid} label="Tổng quan WS" href="/workspace/settings" active={isPathActive('/workspace/settings')} />
             <TreeItemCollapsed icon={Users} label="Thành viên WS" href="/workspace/members" active={isPathActive('/workspace/members')} />
           </>
         )}
