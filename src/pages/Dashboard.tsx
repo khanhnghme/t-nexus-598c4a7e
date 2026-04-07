@@ -643,9 +643,9 @@ export default function Dashboard() {
                       <p className="text-sm font-semibold leading-tight">Lời mời</p>
                       <p className="text-[10px] text-muted-foreground leading-tight">invites</p>
                     </div>
-                    {pendingInvitations.length > 0 && (
-                      <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#e56458] text-white rounded-full text-[10px] flex items-center justify-center font-bold animate-pulse shadow-sm">
-                        {pendingInvitations.length}
+                    {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
+                      <span className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full text-[10px] flex items-center justify-center font-bold animate-pulse shadow-sm">
+                        {pendingInvitations.length + pendingWsInvites.length}
                       </span>
                     )}
                   </span>
