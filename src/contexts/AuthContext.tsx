@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { Profile, UserRole, AppRole } from '@/types/database';
-import PostLoginBlockScreen from '@/components/PostLoginBlockScreen';
 import { initR2Storage } from '@/lib/r2Storage';
 
 interface AuthContextType {
@@ -234,55 +233,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshProfile();
   }, [user]);
 
+  // Auto sign-out suspended/maintenance users and store reason in sessionStorage
+  useEffect(() => {
+    if (!user || !profile || isAdmin) return;
+    const pathname = window.location.pathname;
+    const isPublicAuthRoute = pathname === '/auth' || pathname.startsWith('/auth/') || pathname === '/reset-password';
+    if (isPublicAuthRoute) return;
+
+    if (maintenanceMode) {
+      sessionStorage.setItem('t-nexus_auth_block', JSON.stringify({
+        type: 'maintenance',
+        message: maintenanceMessage,
+        endAt: maintenanceEndAt,
+      }));
+      signOut().then(() => { window.location.href = '/auth'; });
+    } else if (isSuspended) {
+      sessionStorage.setItem('t-nexus_auth_block', JSON.stringify({
+        type: 'suspended',
+        until: profile.suspended_until,
+        reason: profile.suspension_reason,
+      }));
+      signOut().then(() => { window.location.href = '/auth'; });
+    }
+  }, [user, profile, isAdmin, maintenanceMode, isSuspended]);
+
   const contextValue = {
     user, session, profile, roles, isLoading,
     isAdmin, isLeader, isApproved, mustChangePassword,
     signIn, signUp, signOut, refreshProfile,
   };
-
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  const isPublicAuthRoute =
-    pathname === '/auth' ||
-    pathname.startsWith('/auth/') ||
-    pathname === '/reset-password';
-
-  // Keep public auth flows mounted so signup/OTP state is not lost mid-flow
-  if (user && profile && maintenanceMode && !isAdmin && !isPublicAuthRoute) {
-    return (
-      <AuthContext.Provider value={contextValue}>
-        <PostLoginBlockScreen
-          mode="maintenance"
-          userName={profile.full_name}
-          userAvatarUrl={profile.avatar_url}
-          userEmail={profile.email}
-          userInstitution={profile.institution}
-          userStudentId={profile.student_id}
-          maintenanceMessage={maintenanceMessage}
-          maintenanceEndAt={maintenanceEndAt}
-          onSignOut={signOut}
-        />
-      </AuthContext.Provider>
-    );
-  }
-
-  if (user && profile && isSuspended && !isAdmin && !isPublicAuthRoute) {
-    return (
-      <AuthContext.Provider value={contextValue}>
-        <PostLoginBlockScreen
-          mode="suspended"
-          userName={profile.full_name}
-          userAvatarUrl={profile.avatar_url}
-          userEmail={profile.email}
-          userInstitution={profile.institution}
-          userStudentId={profile.student_id}
-          suspendedUntil={profile.suspended_until!}
-          suspensionReason={profile.suspension_reason}
-          onSignOut={signOut}
-          onUnlocked={handleUnlocked}
-        />
-      </AuthContext.Provider>
-    );
-  }
 
   return (
     <AuthContext.Provider value={contextValue}>
