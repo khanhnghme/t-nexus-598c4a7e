@@ -56,7 +56,7 @@ export default function GroupDashboard({ tasks, members, stages, groupId, create
   const { getPresenceStatus, isConnected } = useUserPresence('system-global');
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const [profileRole, setProfileRole] = useState<ProjectRole>('project_member';
+  const [profileRole, setProfileRole] = useState<ProjectRole>('project_member');
 
   const stats = useMemo(() => {
     const total = tasks.length;

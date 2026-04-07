@@ -124,7 +124,7 @@ export default function MemberManagementCard({
 
   // Profile view dialog
   const [profileToView, setProfileToView] = useState<Profile | null>(null);
-  const [profileViewRole, setProfileViewRole] = useState<ProjectRole>('project_member';
+  const [profileViewRole, setProfileViewRole] = useState<ProjectRole>('project_member');
   const [profileViewIsCreator, setProfileViewIsCreator] = useState(false);
 
   // Unified multi-select state (works across all tabs)
@@ -866,8 +866,8 @@ export default function MemberManagementCard({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="bg-popover">
-                              <SelectItem value="member">Thành viên</SelectItem>
-                              <SelectItem value="leader">Phó nhóm</SelectItem>
+                              <SelectItem value="project_member">Thành viên</SelectItem>
+                              <SelectItem value="project_admin">Phó nhóm</SelectItem>
                             </SelectContent>
                           </Select>
                           <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setBulkMemberAction('role')} disabled={isBulkProcessing}>
@@ -1513,7 +1513,7 @@ export default function MemberManagementCard({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="member">
+                        <SelectItem value="project_member">
                           <div className="flex items-center gap-2">
                             <UserCheck className="w-4 h-4" />
                             Thành viên
@@ -1600,13 +1600,13 @@ export default function MemberManagementCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">
+                  <SelectItem value="project_member">
                     <div className="flex items-center gap-2">
                       <UserCheck className="w-4 h-4" />
                       Thành viên
                     </div>
                   </SelectItem>
-                  <SelectItem value="leader">
+                  <SelectItem value="project_admin">
                     <div className="flex items-center gap-2">
                       <Crown className="w-4 h-4 text-warning" />
                       Phó nhóm
@@ -1777,7 +1777,7 @@ export default function MemberManagementCard({
 
                 // Create invitation instead of direct add
                 const { error: addErr } = await supabase.from('project_invitations').insert({
-                  group_id: groupId, invited_user_id: userId, invited_by: user!.id, role: 'project_member', status: 'pending',
+                  group_id: groupId, invited_user_id: userId, invited_by: user!.id, role: 'member' as any, status: 'pending',
                 });
                 if (addErr) {
                   if (addErr.code === '23505') throw new Error('Đã có lời mời đang chờ');

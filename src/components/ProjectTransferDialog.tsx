@@ -56,7 +56,7 @@ export default function ProjectTransferDialog({
         const { data: adminRoles } = await supabase
           .from('user_roles')
           .select('user_id')
-          .eq('role', 'project_owner');
+          .eq('role', 'system_owner');
         const adminIds = (adminRoles || []).map(r => r.user_id);
         let adminProfiles: Record<string, { full_name: string; avatar_url: string | null }> = {};
         if (adminIds.length > 0) {

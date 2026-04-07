@@ -6,20 +6,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { LogOut, ArrowRight } from 'lucide-react';
 import bgImg from '@/assets/remember-login-bg.jpg';
-import type { Profile, AppRole } from '@/types/database';
+import type { Profile, SystemRole } from '@/types/database';
 import { getSystemRoleLabel } from '@/lib/roleLabels';
 
 interface RememberLoginScreenProps {
   profile: Profile;
-  roles: AppRole[];
+  roles: SystemRole[];
   onLogout: () => void;
 }
 
-function getRoleBadgeStyle(role: AppRole) {
+function getRoleBadgeStyle(role: SystemRole) {
   switch (role) {
-    case 'owner_system':
+    case 'system_owner':
       return 'bg-red-600 text-white shadow-sm shadow-red-600/30';
-    case 'project_admin':
+    case 'system_admin':
       return 'bg-primary text-primary-foreground shadow-sm shadow-primary/30';
     default:
       return 'bg-muted text-muted-foreground';

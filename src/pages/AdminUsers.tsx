@@ -173,7 +173,7 @@ export default function AdminUsers() {
 
     const groupsMap = new Map((groupData || []).map((g) => [g.id, g.name as string]));
 
-    const mapped: MemberRow[] = gmData.map((m) => {
+    const mapped: MemberRow[] = gmData.map((m: any) => {
       const p = profilesMap.get(m.user_id);
       return {
         id: m.id,
@@ -285,7 +285,7 @@ export default function AdminUsers() {
   };
 
   const handleGrantLeader = async (userId: string) => {
-    const { error } = await supabase.from('user_roles').upsert({ user_id: userId, role: 'project_admin' });
+    const { error } = await supabase.from('user_roles').upsert({ user_id: userId, role: 'system_admin' } as any);
     if (error) {
       toast({ title: 'Lỗi', description: error.message, variant: 'destructive' });
       return;

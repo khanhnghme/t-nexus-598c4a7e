@@ -289,7 +289,7 @@ export default function MemberManagement() {
   const handleApprovePending = async (member: Profile) => {
     const { error } = await supabase.from('profiles').update({ is_approved: true }).eq('id', member.id);
     if (error) { toast({ title: 'Lỗi', description: error.message, variant: 'destructive' }); return; }
-    await supabase.from('user_roles').upsert({ user_id: member.id, role: 'project_member' }, { onConflict: 'user_id,role' } as any);
+    await supabase.from('user_roles').upsert({ user_id: member.id, role: 'system_admin' } as any, { onConflict: 'user_id,role' } as any);
     await logActivity({
       userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
       action: 'APPROVE_MEMBER_REGISTRATION', actionType: 'project_member',
@@ -536,7 +536,7 @@ export default function MemberManagement() {
       if (!member) continue;
       const roles = memberRoles[id] || [];
       if (roles.includes('system_admin') || roles.includes('admin')) continue;
-      const { error } = await supabase.from('user_roles').insert({ user_id: id, role: 'project_admin' });
+      const { error } = await supabase.from('user_roles').insert({ user_id: id, role: 'system_admin' } as any);
       if (!error) { promoted.push(member.full_name); promotedIds.push(id); }
     }
     if (promoted.length > 0) {
@@ -564,7 +564,7 @@ export default function MemberManagement() {
       const roles = memberRoles[id] || [];
       if (!roles.includes('system_admin')) continue;
       if (roles.includes('admin')) continue;
-      const { error } = await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'project_admin');
+      const { error } = await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'system_admin');
       if (!error) { demoted.push(member.full_name); demotedIds.push(id); }
     }
     if (demoted.length > 0) {
