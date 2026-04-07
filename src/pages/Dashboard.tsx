@@ -307,7 +307,64 @@ export default function Dashboard() {
     }
   };
 
-  const fetchProjectStats = async () => {
+  const fetchPendingWsInvites = async () => {
+    if (!user || !profile?.email) return;
+    try {
+      const { data } = await supabase
+        .from('workspace_invites')
+        .select('id, workspace_id, scope, invitee_email, role_granted, invited_by, status, created_at, expires_at, group_id')
+        .eq('invitee_email', profile.email)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (data && data.length > 0) {
+        const wsIds = [...new Set(data.map(d => d.workspace_id))];
+        const inviterIds = [...new Set(data.map(d => d.invited_by))];
+
+        const [wsRes, profilesRes] = await Promise.all([
+          supabase.from('workspaces').select('id, name').in('id', wsIds),
+          supabase.from('profiles').select('id, full_name').in('id', inviterIds),
+        ]);
+
+        const wsMap = new Map((wsRes.data || []).map(w => [w.id, w.name]));
+        const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p.full_name]));
+
+        setPendingWsInvites(data.map(d => ({
+          ...d,
+          workspace_name: wsMap.get(d.workspace_id) || 'Workspace',
+          inviter_name: profileMap.get(d.invited_by) || 'Người mời',
+        })));
+      } else {
+        setPendingWsInvites([]);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const handleWsInviteResponse = async (invite: PendingWorkspaceInvite, accept: boolean) => {
+    setProcessingInvitation(invite.id);
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke('workspace-management', {
+        body: {
+          action: accept ? 'accept_invite' : 'decline_invite',
+          invite_id: invite.id,
+        },
+      });
+
+      if (fnErr) throw fnErr;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success(accept ? 'Đã chấp nhận lời mời workspace' : 'Đã từ chối lời mời workspace');
+      setPendingWsInvites(prev => prev.filter(p => p.id !== invite.id));
+      if (accept) {
+        fetchDashboardData();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Có lỗi xảy ra');
+    } finally {
+      setProcessingInvitation(null);
+    }
+  };
+
     if (!user) return;
     const { data: owned } = await supabase.from('groups').select('id').eq('created_by', user.id);
     const { data: joined } = await supabase.from('group_members').select('id').eq('user_id', user.id);
