@@ -240,8 +240,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn, signUp, signOut, refreshProfile,
   };
 
-  // Show maintenance screen for non-admin logged-in users
-  if (user && profile && maintenanceMode && !isAdmin) {
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const isPublicAuthRoute =
+    pathname === '/auth' ||
+    pathname.startsWith('/auth/') ||
+    pathname === '/reset-password';
+
+  // Keep public auth flows mounted so signup/OTP state is not lost mid-flow
+  if (user && profile && maintenanceMode && !isAdmin && !isPublicAuthRoute) {
     return (
       <AuthContext.Provider value={contextValue}>
         <PostLoginBlockScreen
@@ -259,8 +265,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Show suspended screen if user is logged in but suspended (and not admin)
-  if (user && profile && isSuspended && !isAdmin) {
+  if (user && profile && isSuspended && !isAdmin && !isPublicAuthRoute) {
     return (
       <AuthContext.Provider value={contextValue}>
         <PostLoginBlockScreen
