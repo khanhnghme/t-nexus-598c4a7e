@@ -851,7 +851,7 @@ export default function MemberManagement() {
                     fullName: m.full_name,
                     studentId: m.student_id,
                     email: m.email,
-                    role: isMemberAdmin(m.id) ? 'OwnerSystem' : (memberRoles[m.id]?.includes('project_admin') ? 'Leader' : 'Thành viên')
+                    role: (memberRoles[m.id] || []).includes('system_owner') ? 'Owner' : (memberRoles[m.id] || []).includes('system_admin') ? 'Admin' : 'Thành viên'
                   }));
                   exportMembersToExcel(exportData, 'danh-sach-thanh-vien-he-thong');
                 }}
