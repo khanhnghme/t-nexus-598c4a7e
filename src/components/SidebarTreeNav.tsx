@@ -56,7 +56,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     : [];
 
   // Expanded state
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(['projects']));
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const toggle = useCallback((key: string) => {
     setExpanded(prev => {
