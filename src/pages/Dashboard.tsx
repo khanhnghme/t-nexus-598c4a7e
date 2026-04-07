@@ -3,6 +3,7 @@ import MandatoryNotification from '@/components/MandatoryNotification';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import StreakBadge from '@/components/StreakBadge';
 import StreakFullScreenCelebration from '@/components/StreakFullScreenCelebration';
 import { useLoginStreak } from '@/hooks/useLoginStreak';
@@ -110,6 +111,8 @@ interface PendingWorkspaceInvite {
 export default function Dashboard() {
   const { user, profile, mustChangePassword, refreshProfile, isLeader, isAdmin } = useAuth();
   const { activeWorkspace, isAvailable: wsAvailable, refreshWorkspaces } = useWorkspace();
+  const { translations, locale } = useLanguage();
+  const t = translations.app?.dashboard;
   const streak = useLoginStreak(user?.id);
 
   const [groups, setGroups] = useState<Group[]>([]);
