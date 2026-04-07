@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { buildBrandedOtpEmail } from "../_shared/email-html-builder.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +15,18 @@ function jsonResponse(data: Record<string, unknown>, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function buildSignupOtpHtml(otpCode: string): string {
+  return buildBrandedOtpEmail({
+    title: "Xác minh tài khoản",
+    subtitle: "Hệ thống quản lý dự án nhóm",
+    otpCode,
+    expiryText: 'Sử dụng mã bên dưới để xác minh email của bạn. Mã có hiệu lực trong <strong>5 phút</strong>.',
+    warningText: '<strong>Không chia sẻ mã này cho bất kỳ ai.</strong> T-Nexus sẽ không bao giờ yêu cầu bạn cung cấp mã OTP qua tin nhắn hay điện thoại.',
+    ignoreText: 'Nếu bạn không yêu cầu tạo tài khoản, vui lòng bỏ qua email này.',
+  });
+}
 }
 
 function buildOtpEmailHtml(otpCode: string): string {

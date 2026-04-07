@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { buildBrandedOtpEmail } from "../_shared/email-html-builder.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,79 +18,15 @@ function jsonResponse(data: Record<string, unknown>, status = 200) {
 }
 
 function buildResetOtpEmailHtml(otpCode: string): string {
-  return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;padding:40px 20px;">
-    <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <tr><td style="background-color:hsl(183,100%,21%);padding:24px 32px;text-align:center;">
-          <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">T-Nexus</h1>
-        </td></tr>
-        <tr><td style="padding:32px;">
-          <h2 style="margin:0 0 8px;color:#1a1a2e;font-size:18px;font-weight:600;">Đặt lại mật khẩu</h2>
-          <p style="margin:0 0 24px;color:#71717a;font-size:14px;line-height:1.6;">
-            Mã xác minh có hiệu lực trong <strong>10 phút</strong>.
-          </p>
-          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:16px 0;">
-            <div style="display:inline-block;background-color:#f4f4f5;border:2px dashed #d4d4d8;border-radius:12px;padding:20px 40px;">
-              <span style="font-size:36px;font-weight:800;letter-spacing:8px;color:#1a1a2e;font-family:'Courier New',monospace;">${otpCode}</span>
-            </div>
-          </td></tr></table>
-          <div style="margin:24px 0 0;background-color:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;">
-            <p style="margin:0;color:#92400e;font-size:12px;line-height:1.5;">
-              ⚠️ <strong>Không chia sẻ mã này cho bất kỳ ai.</strong> T-Nexus sẽ không bao giờ yêu cầu bạn cung cấp mã OTP qua tin nhắn hay điện thoại.
-            </p>
-          </div>
-          <p style="margin:16px 0 0;color:#a1a1aa;font-size:12px;text-align:center;">
-            Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
-          </p>
-        </td></tr>
-        <tr><td style="padding:16px 32px;background-color:#fafafa;border-top:1px solid #f4f4f5;text-align:center;">
-          <p style="margin:0;color:#a1a1aa;font-size:11px;">&copy; ${new Date().getFullYear()} T-Nexus</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body></html>`;
+  return buildBrandedOtpEmail({
+    title: "Đặt lại mật khẩu",
+    subtitle: "Yêu cầu khôi phục tài khoản",
+    otpCode,
+    expiryText: 'Mã xác minh bên dưới có hiệu lực trong <strong>10 phút</strong>.',
+    warningText: '<strong>Không chia sẻ mã này cho bất kỳ ai.</strong> T-Nexus sẽ không bao giờ yêu cầu bạn cung cấp mã OTP qua tin nhắn hay điện thoại.',
+    ignoreText: 'Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.',
+  });
 }
-
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-    const body = await req.json();
-    const { action, email, code, new_password } = body;
-
-    // ===== SEND OTP CODE =====
-    if (action === "send_code") {
-      if (!email) {
-        return jsonResponse({ error: "Email is required" }, 400);
-      }
-
-      const otpCode = String(Math.floor(100000 + Math.random() * 900000));
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
-      // Invalidate old codes
-      await supabase
-        .from("password_reset_codes")
-        .update({ used: true })
-        .eq("email", email.toLowerCase())
-        .eq("used", false);
-
-      // Store new code
-      await supabase.from("password_reset_codes").insert({
-        email: email.toLowerCase(),
-        code: otpCode,
-        expires_at: expiresAt,
-      });
 
       // Send email via Resend gateway
       const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
