@@ -55,7 +55,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Try to fetch workspaces — if table doesn't exist, gracefully fail
-      const { data: ownedWs, error: ownedErr } = await supabase
+      const { data: ownedWs, error: ownedErr } = await (supabase as any)
         .from('workspaces')
         .select('*')
         .eq('owner_id', user.id);
@@ -71,7 +71,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       setIsAvailable(true);
 
       // Get workspaces where user is a member (not owner)
-      const { data: memberWs } = await supabase
+      const { data: memberWs } = await (supabase as any)
         .from('workspace_members')
         .select('role, workspaces(*)')
         .eq('user_id', user.id);

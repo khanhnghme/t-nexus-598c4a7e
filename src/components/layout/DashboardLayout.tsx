@@ -68,6 +68,7 @@ import NetworkDiagnostic from '@/components/NetworkDiagnostic';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useLoginStreak } from '@/hooks/useLoginStreak';
 import WorkspaceSwitcher from '@/components/WorkspaceSwitcher';
+import SidebarProjects from '@/components/SidebarProjects';
 
 /* ------------------------------------------------------------------ */
 /*  Theme toggle (sidebar-friendly)                                    */
@@ -374,6 +375,9 @@ export default function DashboardLayout({
           <div className="sidebar-nav-scroll">
             {/* Workspace Switcher */}
             <WorkspaceSwitcher collapsed={sidebarCollapsed} />
+
+            {/* Workspace Projects */}
+            <SidebarProjects collapsed={sidebarCollapsed} />
 
             <div className="sidebar-section-label">MAIN</div>
             {visibleMain.map(renderNavItem)}

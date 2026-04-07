@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import type { Group, GroupMember } from '@/types/database';
 import UserAvatar from '@/components/UserAvatar';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 
 interface MemberAvatar {
   avatar_url: string | null;
@@ -69,6 +70,7 @@ interface MemberToAdd {
 
 export default function Groups() {
   const { user, isLeader, isAdmin, profile } = useAuth();
+  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
   const { toast } = useToast();
   const [groups, setGroups] = useState<GroupWithMembers[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +94,7 @@ export default function Groups() {
 
   useEffect(() => {
     fetchGroups();
-  }, [user]);
+  }, [user, activeWorkspace]);
 
   const fetchGroups = async () => {
     if (!user) return;
@@ -114,11 +116,18 @@ export default function Groups() {
       const roleMap = new Map(memberData.map((m) => [m.group_id, m.role]));
 
       // Get group details
-      const { data: groupsData } = await supabase
+      let groupsQuery = supabase
         .from('groups')
         .select('*')
         .in('id', groupIds)
         .order('created_at', { ascending: false });
+
+      // Filter by active workspace if available
+      if (wsAvailable && activeWorkspace) {
+        groupsQuery = groupsQuery.eq('workspace_id', activeWorkspace.id);
+      }
+
+      const { data: groupsData } = await groupsQuery;
 
       if (groupsData) {
         // Get member counts + avatars
@@ -263,9 +272,7 @@ export default function Groups() {
     setIsCreating(true);
 
     try {
-      const { data: newGroup, error: groupError } = await supabase
-        .from('groups')
-        .insert({
+      const insertData: any = {
           name: newGroupName.trim(),
           description: newGroupDescription.trim() || null,
           class_code: newGroupClassCode.trim() || null,
@@ -275,7 +282,16 @@ export default function Groups() {
           additional_info: newGroupAdditionalInfo.trim() || null,
           created_by: user!.id,
           slug: '',
-        })
+        };
+
+      // Auto-assign workspace_id if workspace is active
+      if (wsAvailable && activeWorkspace) {
+        insertData.workspace_id = activeWorkspace.id;
+      }
+
+      const { data: newGroup, error: groupError } = await supabase
+        .from('groups')
+        .insert(insertData)
         .select()
         .single();
 
@@ -754,6 +770,17 @@ export default function Groups() {
                       )}
                       {/* Strong gradient overlay for text readability */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+                      {/* Visibility badge */}
+                      <div className="absolute top-3 left-3 drop-shadow-md">
+                        {group.visibility === 'workspace_public' ? (
+                          <Badge className="bg-blue-500/90 text-white shadow-lg text-[10px] px-1.5 py-0.5">🌐 WS Public</Badge>
+                        ) : group.visibility === 'public_link' ? (
+                          <Badge className="bg-green-500/90 text-white shadow-lg text-[10px] px-1.5 py-0.5">🌍 Public</Badge>
+                        ) : (
+                          <Badge className="bg-black/60 text-white shadow-lg text-[10px] px-1.5 py-0.5">🔒 Private</Badge>
+                        )}
+                      </div>
 
                       {/* Role badge - solid opaque bg, never blends with image */}
                       <div className="absolute top-3 right-3 drop-shadow-md">
