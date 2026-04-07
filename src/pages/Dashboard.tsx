@@ -685,9 +685,9 @@ export default function Dashboard() {
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => setShowInvitationDialog(true)} className="relative border-border">
                   <MailOpen className="w-4 h-4" />
-                  {pendingInvitations.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#e56458] text-white rounded-full text-[10px] flex items-center justify-center">
-                      {pendingInvitations.length}
+                  {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full text-[10px] flex items-center justify-center">
+                      {pendingInvitations.length + pendingWsInvites.length}
                     </span>
                   )}
                 </Button>
