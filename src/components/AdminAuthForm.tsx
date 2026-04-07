@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Lock, Shield, Mail } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
-import LoginTransitionScreen from '@/components/LoginTransitionScreen';
+
 
 const loginSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -25,17 +25,11 @@ export function AdminAuthForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showLoginTransition, setShowLoginTransition] = useState(false);
-  const loginAnimEnabled = true;
   const isAdminOrLeader = roles.includes('admin') || roles.includes('leader');
 
-  const handleLoginTransitionComplete = useCallback(() => {
-    setShowLoginTransition(false);
-    navigate('/dashboard');
-  }, [navigate]);
 
   useEffect(() => {
-    if (user && isAdminOrLeader && !showLoginTransition) {
+    if (user && isAdminOrLeader) {
       navigate('/dashboard');
     }
   }, [user, isAdminOrLeader, navigate, showLoginTransition]);
@@ -71,16 +65,9 @@ export function AdminAuthForm() {
       title: 'Đăng nhập thành công',
       description: 'Chào mừng bạn quay lại!',
     });
-    if (loginAnimEnabled) {
-      setShowLoginTransition(true);
-    } else {
-      navigate('/dashboard');
-    }
+    navigate('/dashboard');
   };
 
-  if (showLoginTransition) {
-    return <LoginTransitionScreen onComplete={handleLoginTransitionComplete} />;
-  }
 
   return (
     <div className="w-full max-w-md">
