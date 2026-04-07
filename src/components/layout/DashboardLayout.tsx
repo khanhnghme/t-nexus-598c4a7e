@@ -96,36 +96,8 @@ function SidebarThemeToggle() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Navigation data                                                    */
+/*  Keyboard shortcut map                                              */
 /* ------------------------------------------------------------------ */
-interface NavItem {
-  name: string;
-  href: string;
-  icon: any;
-  requiresAdmin?: boolean;
-  description: string;
-  shortcut?: string;
-}
-
-const mainNav: NavItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, description: 'Tổng quan các dự án', shortcut: '⌘D' },
-  { name: 'Dự án', href: '/groups', icon: FolderKanban, description: 'Quản lý dự án nhóm', shortcut: '⌘P' },
-  { name: 'Lịch', href: '/calendar', icon: CalendarDays, description: 'Lịch tổng hợp công việc', shortcut: '⌘L' },
-  { name: 'Trao đổi', href: '/communication', icon: MessageSquare, description: 'Tin nhắn & thảo luận', shortcut: '⌘M' },
-];
-
-const personalNav: NavItem[] = [
-  { name: 'Tài khoản', href: '/personal-info', icon: UserCircle, description: 'Thông tin tài khoản' },
-  { name: 'Mẹo', href: '/tips', icon: BookOpen, description: 'Hướng dẫn sử dụng hệ thống' },
-  { name: 'Góp ý', href: '/feedback', icon: Lightbulb, description: 'Gửi ý kiến phản hồi' },
-];
-
-const adminNav: NavItem[] = [
-  { name: 'Thành viên', href: '/members', icon: Users, requiresAdmin: true, description: 'Quản lý người dùng' },
-  { name: 'Sao lưu', href: '/admin/backup', icon: FolderArchive, requiresAdmin: true, description: 'Backup dữ liệu' },
-  { name: 'Quản trị', href: '/admin/system', icon: Shield, requiresAdmin: true, description: 'Quản trị hệ thống' },
-  { name: 'Tiện ích', href: '/utilities', icon: Wrench, requiresAdmin: true, description: 'Công cụ & tiện ích' },
-];
 
 /* ------------------------------------------------------------------ */
 /*  Keyboard shortcut map                                              */
@@ -211,62 +183,28 @@ export default function DashboardLayout({
     navigate('/');
   };
 
-  /* helpers */
-  const isActive = (item: NavItem) => {
-    if (item.href === '/groups') {
-      return (
-        location.pathname === '/groups' ||
-        location.pathname.startsWith('/groups/') ||
-        location.pathname.startsWith('/p/')
-      );
-    }
-    return location.pathname === item.href;
-  };
-
-  const filterVisible = (items: NavItem[]) =>
-    items.filter(
-      (item) =>
-        (!item.requiresAdmin || isAdmin) && !hiddenNav.includes(item.href),
-    );
-
   const getRoleText = () => {
     if (isAdmin) return 'Quản trị viên';
     if (isLeader) return 'Thành viên NC';
     return 'Thành viên';
   };
 
-  const visibleMain = filterVisible(mainNav);
-  const visiblePersonal = filterVisible(personalNav);
-  const visibleAdmin = filterVisible(adminNav);
-
-  /* render a single nav item */
-  const renderNavItem = (item: NavItem) => {
-    const active = isActive(item);
-    return (
-      <Tooltip key={item.name}>
-        <TooltipTrigger asChild>
-          <Link
-            to={item.href}
-            className={`sidebar-nav-item ${active ? 'active' : ''}`}
-            onClick={() => setIsMobileOpen(false)}
-          >
-            <item.icon className="nav-icon" strokeWidth={1.8} />
-            <span className="nav-label">{item.name}</span>
-            {item.shortcut && (
-              <span className="nav-kbd">{item.shortcut}</span>
-            )}
-          </Link>
-        </TooltipTrigger>
-        {sidebarCollapsed && (
-          <TooltipContent side="right" sideOffset={12}>
-            <p className="font-medium">{item.name}</p>
-            <p className="text-xs opacity-70">{item.description}</p>
-          </TooltipContent>
-        )}
-      </Tooltip>
-    );
-  };
-
+  // Keep nav items for search dialog
+  const allSearchItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, shortcut: '⌘D' },
+    { name: 'Dự án', href: '/groups', icon: FolderKanban, shortcut: '⌘P' },
+    { name: 'Lịch', href: '/calendar', icon: CalendarDays, shortcut: '⌘L' },
+    { name: 'Trao đổi', href: '/communication', icon: MessageSquare, shortcut: '⌘M' },
+    { name: 'Tài khoản', href: '/personal-info', icon: UserCircle },
+    { name: 'Mẹo', href: '/tips', icon: BookOpen },
+    { name: 'Góp ý', href: '/feedback', icon: Lightbulb },
+    ...(isAdmin ? [
+      { name: 'Thành viên', href: '/members', icon: Users },
+      { name: 'Sao lưu', href: '/admin/backup', icon: FolderArchive },
+      { name: 'Quản trị', href: '/admin/system', icon: Shield },
+      { name: 'Tiện ích', href: '/utilities', icon: Wrench },
+    ] : []),
+  ].filter(i => !hiddenNav.includes(i.href));
   /* ---------------------------------------------------------------- */
   return (
     <>
