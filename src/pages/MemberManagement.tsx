@@ -567,11 +567,11 @@ export default function MemberManagement() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="font-semibold truncate">{member.full_name}</p>
-            {isAdminMember && (
-              <Badge className="bg-destructive/10 text-destructive text-xs gap-1"><Shield className="w-3 h-3" />Admin</Badge>
+            {roles.includes('system_owner') && (
+              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-xs gap-1"><Crown className="w-3 h-3" />Owner</Badge>
             )}
-            {!isAdminMember && roles.includes('system_admin') && (
-              <Badge className="bg-warning/20 text-warning border-warning/30 text-xs gap-1"><Star className="w-3 h-3" />Leader</Badge>
+            {!roles.includes('system_owner') && roles.includes('system_admin') && (
+              <Badge className="bg-destructive/10 text-destructive text-xs gap-1"><Shield className="w-3 h-3" />Admin</Badge>
             )}
             {member.id === user?.id && <Badge variant="outline" className="text-xs">Bạn</Badge>}
             {suspended && <Badge variant="destructive" className="text-xs gap-1"><Lock className="w-3 h-3" />Đã khóa</Badge>}

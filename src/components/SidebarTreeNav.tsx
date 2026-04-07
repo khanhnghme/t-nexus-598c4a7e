@@ -5,7 +5,7 @@ import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useWorkspaceProjects } from '@/hooks/useWorkspaceProjects';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard,
+  Home,
   Building2,
   Users,
   FolderKanban,
