@@ -90,6 +90,21 @@ interface PendingInvitation {
   memberCount?: number;
 }
 
+interface PendingWorkspaceInvite {
+  id: string;
+  workspace_id: string;
+  scope: string;
+  invitee_email: string;
+  role_granted: string;
+  invited_by: string;
+  status: string;
+  created_at: string;
+  expires_at: string;
+  group_id: string | null;
+  workspace_name?: string;
+  inviter_name?: string;
+}
+
 export default function Dashboard() {
   const { user, profile, mustChangePassword, refreshProfile, isLeader, isAdmin } = useAuth();
   const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
