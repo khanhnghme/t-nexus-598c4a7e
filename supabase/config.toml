@@ -9,3 +9,7 @@ project_id = "xrlczmzgxlmdavhbwsah"
     verify_jwt = true
   [functions.email-digest]
     verify_jwt = false
+  [functions.signup-email-otp]
+    verify_jwt = false
+  [functions.password-reset-otp]
+    verify_jwt = false

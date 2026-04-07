@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { TNexusLogo } from '@/components/TNexusLogo';
-import { EmailVerifyScreen } from '@/components/EmailVerifyScreen';
+import { OtpVerifyScreen } from '@/components/OtpVerifyScreen';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
