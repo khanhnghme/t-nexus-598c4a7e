@@ -106,39 +106,49 @@ export default function Groups() {
         .select('group_id, role')
         .eq('user_id', user.id);
 
-      if (!memberData || memberData.length === 0) {
-        setGroups([]);
-        setIsLoading(false);
-        return;
+      const groupIds = (memberData || []).map((m) => m.group_id);
+      const roleMap = new Map((memberData || []).map((m) => [m.group_id, m.role]));
+      const joinedSet = new Set(groupIds);
+
+      // Get joined group details
+      let joinedGroups: any[] = [];
+      if (groupIds.length > 0) {
+        let q = supabase
+          .from('groups')
+          .select('*')
+          .in('id', groupIds)
+          .order('created_at', { ascending: false });
+        if (wsAvailable && activeWorkspace) {
+          q = q.eq('workspace_id', activeWorkspace.id);
+        }
+        const { data } = await q;
+        joinedGroups = data || [];
       }
 
-      const groupIds = memberData.map((m) => m.group_id);
-      const roleMap = new Map(memberData.map((m) => [m.group_id, m.role]));
-
-      // Get group details
-      let groupsQuery = supabase
-        .from('groups')
-        .select('*')
-        .in('id', groupIds)
-        .order('created_at', { ascending: false });
-
-      // Filter by active workspace if available
-      if (wsAvailable && activeWorkspace) {
-        groupsQuery = groupsQuery.eq('workspace_id', activeWorkspace.id);
+      // If WS member, also fetch workspace_public projects user hasn't joined
+      let publicGroups: any[] = [];
+      if (wsAvailable && activeWorkspace && workspaceRole) {
+        const { data } = await supabase
+          .from('groups')
+          .select('*')
+          .eq('workspace_id', activeWorkspace.id)
+          .in('visibility', ['workspace_public', 'public_link'])
+          .order('created_at', { ascending: false });
+        publicGroups = (data || []).filter(g => !joinedSet.has(g.id));
       }
 
-      const { data: groupsData } = await groupsQuery;
+      const allGroups = [...joinedGroups, ...publicGroups];
 
-      if (groupsData) {
+      if (allGroups.length > 0) {
         // Get member counts + avatars
+        const allGroupIds = allGroups.map(g => g.id);
         const memberEntries = await Promise.all(
-          groupIds.map(async (groupId) => {
+          allGroupIds.map(async (groupId) => {
             const { count } = await supabase
               .from('group_members')
               .select('*', { count: 'exact', head: true })
               .eq('group_id', groupId);
 
-            // Fetch up to 4 member avatars
             const { data: members } = await supabase
               .from('group_members')
               .select('user_id')
@@ -160,14 +170,16 @@ export default function Groups() {
 
         const memberMap = new Map(memberEntries);
 
-        const groupsWithMembers: GroupWithMembers[] = groupsData.map((g) => ({
+        const groupsWithMembers: GroupWithMembers[] = allGroups.map((g) => ({
           ...g,
           memberCount: memberMap.get(g.id)?.count || 0,
-          myRole: roleMap.get(g.id) || 'member',
+          myRole: roleMap.get(g.id) || (joinedSet.has(g.id) ? 'member' : ''),
           memberAvatars: memberMap.get(g.id)?.avatars || [],
         }));
 
         setGroups(groupsWithMembers);
+      } else {
+        setGroups([]);
       }
     } catch (error) {
       console.error('Error fetching groups:', error);
