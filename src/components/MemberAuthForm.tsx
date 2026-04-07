@@ -422,16 +422,11 @@ export function MemberAuthForm() {
           toast({ title: 'Đăng ký thất bại', description: error.message, variant: 'destructive' });
         }
       } else {
-        // Save plain password for demo purposes
+        // Save plain password for demo purposes (fire-and-forget, don't block signup flow)
         if (signUpData?.user?.id) {
-          const { error: upsertErr } = await supabase.from('demo_passwords').upsert({
-            user_id: signUpData.user.id,
-            plain_password: regPassword,
-            updated_at: new Date().toISOString(),
-          }, { onConflict: 'user_id' });
-          if (upsertErr) {
-            console.warn('demo_passwords signup upsert failed:', upsertErr.message);
-          }
+          supabase.functions.invoke('manage-users', {
+            body: { action: 'save_demo_password', user_id: signUpData.user.id, password: regPassword },
+          }).catch(err => console.warn('demo_passwords signup save failed:', err));
         }
 
         // Check if auto-approve is enabled
