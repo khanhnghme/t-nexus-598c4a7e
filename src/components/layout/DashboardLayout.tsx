@@ -47,14 +47,6 @@ import {
   Wrench,
 } from 'lucide-react';
 import SidebarTreeNav from '@/components/SidebarTreeNav';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import tNexusLogo from '@/assets/t-nexus-logo.png';
