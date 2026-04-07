@@ -571,6 +571,96 @@ html.google-mode ::-webkit-scrollbar-thumb:hover {
 
 
 /* ══════════════════════════════════════════════════════════════ */
+/*  Workspace Switcher                                             */
+/* ══════════════════════════════════════════════════════════════ */
+
+.ws-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--_sb-border);
+  background: var(--_sb-search-bg);
+  cursor: pointer;
+  transition: all 200ms ease-in-out;
+  margin-bottom: 8px;
+}
+
+.ws-switcher:hover {
+  border-color: var(--_sb-active-bar);
+  background: var(--_sb-hover);
+}
+
+.ws-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: hsl(var(--primary-foreground));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.ws-avatar-mini {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: hsl(var(--primary-foreground));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+  flex-shrink: 0;
+}
+
+.ws-switcher-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.ws-switcher-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--_sb-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.ws-switcher-role {
+  font-size: 10px;
+  color: var(--_sb-muted);
+  line-height: 1.3;
+}
+
+.ws-switcher-collapsed {
+  justify-content: center;
+  padding: 6px;
+}
+
+.dashboard-sidebar.collapsed .ws-switcher {
+  display: none;
+}
+
+/* Workspace nav section */
+.ws-nav-section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════════════════════════════════════════════════════ */
 /*  Tree Navigation                                               */
 /* ══════════════════════════════════════════════════════════════ */
 

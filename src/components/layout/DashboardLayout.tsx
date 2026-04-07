@@ -45,17 +45,8 @@ import {
   Moon,
   Sun,
   Wrench,
-  Search,
 } from 'lucide-react';
 import SidebarTreeNav from '@/components/SidebarTreeNav';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import tNexusLogo from '@/assets/t-nexus-logo.png';
@@ -135,7 +126,7 @@ export default function DashboardLayout({
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  
 
   const hiddenNav = Array.isArray(profile?.nav_hidden_pages)
     ? (profile.nav_hidden_pages as string[])
@@ -168,11 +159,6 @@ export default function DashboardLayout({
         e.preventDefault();
         navigate(dest);
       }
-      // ⌘K → focus search (global)
-      if (key === 'k') {
-        e.preventDefault();
-        setIsSearchOpen((open) => !open);
-      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -189,22 +175,6 @@ export default function DashboardLayout({
     return 'Thành viên';
   };
 
-  // Keep nav items for search dialog
-  const allSearchItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, shortcut: '⌘D' },
-    { name: 'Dự án', href: '/groups', icon: FolderKanban, shortcut: '⌘P' },
-    { name: 'Lịch', href: '/calendar', icon: CalendarDays, shortcut: '⌘L' },
-    { name: 'Trao đổi', href: '/communication', icon: MessageSquare, shortcut: '⌘M' },
-    { name: 'Tài khoản', href: '/personal-info', icon: UserCircle },
-    { name: 'Mẹo', href: '/tips', icon: BookOpen },
-    { name: 'Góp ý', href: '/feedback', icon: Lightbulb },
-    ...(isAdmin ? [
-      { name: 'Thành viên', href: '/members', icon: Users },
-      { name: 'Sao lưu', href: '/admin/backup', icon: FolderArchive },
-      { name: 'Quản trị', href: '/admin/system', icon: Shield },
-      { name: 'Tiện ích', href: '/utilities', icon: Wrench },
-    ] : []),
-  ].filter(i => !hiddenNav.includes(i.href));
   /* ---------------------------------------------------------------- */
   return (
     <>
@@ -290,24 +260,7 @@ export default function DashboardLayout({
             </button>
           </div>
 
-          {/* Search bar */}
-          <div className="sidebar-search">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="sidebar-search-btn" onClick={() => setIsSearchOpen(true)}>
-                  <Search className="search-icon" strokeWidth={2} />
-                  <span className="search-text">Tìm kiếm...</span>
-                  <span className="search-kbd">⌘K</span>
-                </button>
-              </TooltipTrigger>
-              {sidebarCollapsed && (
-                <TooltipContent side="right" sideOffset={12}>
-                  <p className="font-medium">Tìm kiếm</p>
-                  <p className="text-xs opacity-70">⌘K</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </div>
+          {/* Navigation — Tree Nav (workspace switcher is inside) */}
 
           {/* Scrollable navigation — Tree Nav */}
           <div className="sidebar-nav-scroll">
@@ -412,28 +365,6 @@ export default function DashboardLayout({
         </DialogContent>
       </Dialog>
 
-      {/* Global Search Dialog */}
-      <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <CommandInput placeholder="Tìm kiếm trang & tính năng..." />
-        <CommandList>
-          <CommandEmpty>Không tìm thấy kết quả.</CommandEmpty>
-          <CommandGroup heading="Tính năng">
-            {allSearchItems.map((item) => (
-              <CommandItem
-                key={item.href}
-                onSelect={() => {
-                  navigate(item.href);
-                  setIsSearchOpen(false);
-                }}
-              >
-                <item.icon className="mr-2 h-4 w-4" />
-                <span>{item.name}</span>
-                {'shortcut' in item && item.shortcut && <span className="ml-auto text-xs text-muted-foreground">{item.shortcut}</span>}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
 
       {/* AI Assistant */}
       <AIAssistantButton

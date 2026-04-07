@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Building2,
   Users,
-  Settings,
   FolderKanban,
   ChevronRight,
   Lock,
@@ -22,9 +21,11 @@ import {
   FolderArchive,
   Shield,
   Wrench,
-  Ghost,
   Plus,
   Eye,
+  ChevronsUpDown,
+  Check,
+  FolderOpen,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -35,6 +36,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -54,7 +56,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     : [];
 
   // Expanded state
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(['projects']));
 
   const toggle = useCallback((key: string) => {
     setExpanded(prev => {
@@ -65,15 +67,12 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     });
   }, []);
 
-  // Auto-expand based on current route (only for workspace/project pages, not create)
+  // Auto-expand projects when on project page
   useEffect(() => {
     const path = location.pathname;
-    if (path === '/workspace/new') return; // Don't auto-expand when creating
+    if (path === '/workspace/new') return;
     setExpanded(prev => {
       const next = new Set(prev);
-      if (path.startsWith('/workspace/') || path.startsWith('/p/')) {
-        next.add('workspace');
-      }
       if (path.startsWith('/p/')) {
         next.add('projects');
       }
@@ -81,7 +80,6 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     });
   }, [location.pathname]);
 
-  const isWsExpanded = expanded.has('workspace');
   const isProjectsExpanded = expanded.has('projects');
 
   const getRoleBadge = (role?: string | null) => {
@@ -94,11 +92,13 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     }
   };
 
-  const getVisibilityIcon = (v: string) => {
-    switch (v) {
-      case 'workspace_public': return <Globe className="w-3 h-3 opacity-50" />;
-      case 'public_link': return <UsersIcon className="w-3 h-3 opacity-50" />;
-      default: return <Lock className="w-3 h-3 opacity-50" />;
+  const getRoleLabel = (role?: string | null) => {
+    switch (role) {
+      case 'workspace_owner': return 'Owner';
+      case 'workspace_admin': return 'Admin';
+      case 'workspace_member': return 'Member';
+      case 'workspace_guest': return 'Guest';
+      default: return '';
     }
   };
 
@@ -124,57 +124,82 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   };
 
   const hasActiveChild = (paths: string[]) => paths.some(p => isPathActive(p));
-
-  const wsChildPaths = ['/workspace/settings', '/workspace/members'];
   const projectPaths = projects.map(p => `/p/${p.slug || p.id}`);
-  const isWsActive = hasActiveChild([...wsChildPaths, ...projectPaths, '/groups']);
 
   /* ─── Collapsed mode ─── */
   if (collapsed) {
     return (
       <div className="tree-nav">
-        {/* Dashboard */}
-        <TreeItemCollapsed icon={LayoutDashboard} label="Dashboard" href="/dashboard" active={isPathActive('/dashboard')} />
-
-        {/* Workspace */}
+        {/* Workspace switcher - collapsed */}
         {isAvailable && activeWorkspace && (
           <DropdownMenu>
             <Tooltip>
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
-                  <button className={cn('sidebar-nav-item', isWsActive && 'active')}>
-                    <Building2 className="nav-icon" strokeWidth={1.8} />
+                  <button className="sidebar-nav-item ws-switcher-collapsed">
+                    <div className="ws-avatar-mini">
+                      {activeWorkspace.name.charAt(0).toUpperCase()}
+                    </div>
                   </button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={12}>
                 <p className="font-medium">{activeWorkspace.name}</p>
-                <p className="text-[10px] text-muted-foreground">{getRoleBadge(workspaceRole)} Workspace</p>
+                <p className="text-[10px] text-muted-foreground">{getRoleBadge(workspaceRole)} {getRoleLabel(workspaceRole)}</p>
               </TooltipContent>
             </Tooltip>
             <DropdownMenuContent side="right" align="start" className="w-56">
-              {!isGuest && (
-                <>
-                  <DropdownMenuItem onClick={() => navigate('/workspace/settings')}>
-                    <Eye className="w-3.5 h-3.5 mr-2" /> Tổng quan
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/workspace/members')}>
-                    <Users className="w-3.5 h-3.5 mr-2" /> Thành viên WS
-                  </DropdownMenuItem>
-                </>
-              )}
-              {projects.map(p => (
-                <DropdownMenuItem key={p.id} onClick={() => navigate(`/p/${p.slug || p.id}`)}>
-                  <FolderKanban className="w-3.5 h-3.5 mr-2" />
-                  <span className="truncate">{p.name}</span>
+              {workspaces.map(ws => (
+                <DropdownMenuItem
+                  key={ws.id}
+                  onClick={() => switchWorkspace(ws.id)}
+                  className={cn(ws.id === activeWorkspace.id && 'bg-accent')}
+                >
+                  <div className="ws-avatar-mini mr-2 text-[10px]">
+                    {ws.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="truncate flex-1">{ws.name}</span>
+                  {ws.id === activeWorkspace.id && <Check className="w-3.5 h-3.5 ml-1 text-primary" />}
                 </DropdownMenuItem>
               ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/workspace/new')}>
+                <Plus className="w-3.5 h-3.5 mr-2" />
+                Tạo Workspace mới
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
 
-        {/* Dự án */}
+        {/* Dashboard */}
+        <TreeItemCollapsed icon={LayoutDashboard} label="Dashboard" href="/dashboard" active={isPathActive('/dashboard')} />
+
+        {/* All Projects */}
         <TreeItemCollapsed icon={FolderKanban} label="Dự án" href="/groups" active={isPathActive('/groups')} />
+
+        {/* Workspace pages */}
+        {isAvailable && activeWorkspace && !isGuest && (
+          <>
+            <TreeItemCollapsed icon={Eye} label="Tổng quan WS" href="/workspace/settings" active={isPathActive('/workspace/settings')} />
+            <TreeItemCollapsed icon={Users} label="Thành viên WS" href="/workspace/members" active={isPathActive('/workspace/members')} />
+          </>
+        )}
+
+        {/* Project shortcuts */}
+        {projects.slice(0, 5).map(p => {
+          const href = `/p/${p.slug || p.id}`;
+          return (
+            <TreeItemCollapsed
+              key={p.id}
+              icon={FolderOpen}
+              label={p.name}
+              href={href}
+              active={location.pathname.startsWith(href)}
+            />
+          );
+        })}
+
+        <div className="sidebar-nav-separator" />
 
         {/* Personal */}
         {personalItems.map(item => (
@@ -192,127 +217,124 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   /* ─── Expanded mode ─── */
   return (
     <div className="tree-nav">
-      {/* Dashboard */}
-      <Link to="/dashboard" className={cn('sidebar-nav-item', isPathActive('/dashboard') && 'active')}>
-        <LayoutDashboard className="nav-icon" strokeWidth={1.8} />
-        <span className="nav-label">Dashboard</span>
-      </Link>
-
-      {/* Dự án (all projects page) */}
-      <Link to="/groups" className={cn('sidebar-nav-item', location.pathname === '/groups' && 'active')}>
-        <FolderKanban className="nav-icon" strokeWidth={1.8} />
-        <span className="nav-label">Dự án</span>
-      </Link>
-
-      {/* ── Workspace tree ── */}
+      {/* ══ Workspace Switcher ══ */}
       {isAvailable && activeWorkspace && (
-        <>
-          <div className="sidebar-nav-separator" />
-          <div className="sidebar-section-label">WORKSPACE</div>
-
-          {/* Workspace header (collapsible) */}
-          <button
-            onClick={() => toggle('workspace')}
-            className={cn(
-              'sidebar-nav-item w-full text-left group',
-              isWsActive && !isWsExpanded && 'semi-active'
-            )}
-          >
-            <ChevronRight className={cn('nav-chevron', isWsExpanded && 'expanded')} />
-            <Building2 className="nav-icon" strokeWidth={1.8} />
-            <span className="nav-label flex-1 truncate">{activeWorkspace.name}</span>
-            <span className="text-[10px] opacity-60 shrink-0">{getRoleBadge(workspaceRole)}</span>
-            {workspaces.length > 1 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <span className="text-[10px] opacity-40 hover:opacity-80 cursor-pointer px-0.5">⇅</span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="right" align="start" className="w-52">
-                  {workspaces.map(ws => (
-                    <DropdownMenuItem key={ws.id} onClick={() => switchWorkspace(ws.id)}
-                      className={cn(ws.id === activeWorkspace.id && 'bg-accent')}
-                    >
-                      <Building2 className="w-3.5 h-3.5 mr-2" />
-                      <span className="truncate flex-1">{ws.name}</span>
-                      <span className="text-[10px]">{getRoleBadge(ws.my_role)}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </button>
-
-          {isGuest && (
-            <div className="tree-guest-hint">
-              👽 Bạn đang truy cập với vai trò khách mời
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="ws-switcher">
+              <div className="ws-avatar">
+                {activeWorkspace.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="ws-switcher-info">
+                <span className="ws-switcher-name">{activeWorkspace.name}</span>
+                <span className="ws-switcher-role">
+                  {getRoleBadge(workspaceRole)} {getRoleLabel(workspaceRole)}
+                </span>
+              </div>
+              <ChevronsUpDown className="w-3.5 h-3.5 ml-auto shrink-0 opacity-40" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[--radix-dropdown-menu-trigger-width] min-w-56">
+            <div className="px-2 py-1.5">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Workspaces</p>
             </div>
-          )}
-
-          {/* Workspace children */}
-          {isWsExpanded && (
-            <div className="tree-children tree-level-1">
-              {!isGuest && (
-                <>
-                  <Link to="/workspace/settings" className={cn('sidebar-nav-item', isPathActive('/workspace/settings') && 'active')}>
-                    <span className="nav-label">Tổng quan</span>
-                  </Link>
-                  <Link to="/workspace/members" className={cn('sidebar-nav-item', isPathActive('/workspace/members') && 'active')}>
-                    <span className="nav-label">Thành viên</span>
-                  </Link>
-                </>
-              )}
-
-              {/* Projects sub-tree */}
-              {projects.length > 0 && (
-                <>
-                  <button
-                    onClick={() => toggle('projects')}
-                    className={cn(
-                      'sidebar-nav-item w-full text-left',
-                      hasActiveChild(projectPaths) && !isProjectsExpanded && 'semi-active'
-                    )}
-                  >
-                    <ChevronRight className={cn('nav-chevron', isProjectsExpanded && 'expanded')} />
-                    <span className="nav-label font-semibold text-foreground">Dự án</span>
-                    <span className="text-[10px] opacity-40">{projects.length}</span>
-                  </button>
-
-                  {isProjectsExpanded && (
-                    <div className="tree-children tree-level-2">
-                      {projects.map(p => {
-                        const href = `/p/${p.slug || p.id}`;
-                        const active = location.pathname.startsWith(href);
-                        return (
-                          <Link
-                            key={p.id}
-                            to={href}
-                            className={cn('sidebar-nav-item', active && 'active', !p.isMember && 'opacity-60')}
-                          >
-                            <span className="nav-label truncate">{p.name}</span>
-                            {!p.isMember && (
-                              <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">Mới</span>
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </>
+            {workspaces.map(ws => (
+              <DropdownMenuItem
+                key={ws.id}
+                onClick={() => switchWorkspace(ws.id)}
+                className={cn('gap-2', ws.id === activeWorkspace.id && 'bg-accent')}
+              >
+                <div className="ws-avatar-mini">
+                  {ws.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="truncate text-sm font-medium">{ws.name}</span>
+                  <span className="text-[10px] text-muted-foreground">{getRoleBadge(ws.my_role)} {getRoleLabel(ws.my_role)}</span>
+                </div>
+                {ws.id === activeWorkspace.id && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/workspace/new')} className="gap-2">
+              <Plus className="w-3.5 h-3.5" />
+              <span>Tạo Workspace mới</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
 
-      {/* Create workspace item */}
-      {isAvailable && (
-        <Link
-          to="/workspace/new"
-          className="sidebar-nav-item opacity-60 hover:opacity-100 border border-dashed border-border/50 mt-1"
-        >
-          <Plus className="nav-icon" strokeWidth={1.8} />
-          <span className="nav-label text-muted-foreground">Tạo Workspace</span>
-        </Link>
+      {isGuest && (
+        <div className="tree-guest-hint">
+          👽 Bạn đang truy cập với vai trò khách mời
+        </div>
+      )}
+
+      {/* ══ Workspace Navigation ══ */}
+      {isAvailable && activeWorkspace && (
+        <div className="ws-nav-section">
+          {/* Dashboard */}
+          <Link to="/dashboard" className={cn('sidebar-nav-item', isPathActive('/dashboard') && 'active')}>
+            <LayoutDashboard className="nav-icon" strokeWidth={1.8} />
+            <span className="nav-label">Dashboard</span>
+          </Link>
+
+          {/* Workspace management - only for non-guest */}
+          {!isGuest && (
+            <>
+              <Link to="/workspace/settings" className={cn('sidebar-nav-item', isPathActive('/workspace/settings') && 'active')}>
+                <Eye className="nav-icon" strokeWidth={1.8} />
+                <span className="nav-label">Tổng quan</span>
+              </Link>
+              <Link to="/workspace/members" className={cn('sidebar-nav-item', isPathActive('/workspace/members') && 'active')}>
+                <Users className="nav-icon" strokeWidth={1.8} />
+                <span className="nav-label">Thành viên</span>
+              </Link>
+            </>
+          )}
+
+          {/* Projects sub-tree */}
+          <button
+            onClick={() => toggle('projects')}
+            className={cn(
+              'sidebar-nav-item w-full text-left group',
+              hasActiveChild(projectPaths) && !isProjectsExpanded && 'semi-active'
+            )}
+          >
+            <ChevronRight className={cn('nav-chevron', isProjectsExpanded && 'expanded')} />
+            <FolderKanban className="nav-icon" strokeWidth={1.8} />
+            <span className="nav-label">Dự án</span>
+            <span className="text-[10px] opacity-40 tabular-nums">{projects.length}</span>
+          </button>
+
+          {isProjectsExpanded && (
+            <div className="tree-children tree-level-1">
+              {/* View all projects link */}
+              <Link
+                to="/groups"
+                className={cn('sidebar-nav-item', location.pathname === '/groups' && 'active')}
+              >
+                <span className="nav-label text-muted-foreground">Xem tất cả</span>
+              </Link>
+
+              {projects.map(p => {
+                const href = `/p/${p.slug || p.id}`;
+                const active = location.pathname.startsWith(href);
+                return (
+                  <Link
+                    key={p.id}
+                    to={href}
+                    className={cn('sidebar-nav-item', active && 'active', !p.isMember && 'opacity-60')}
+                  >
+                    <span className="nav-label truncate">{p.name}</span>
+                    {!p.isMember && (
+                      <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">Mới</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
 
       {/* ── Personal section ── */}
