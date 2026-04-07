@@ -13,6 +13,7 @@ import { AnimationProvider } from "@/contexts/AnimationContext";
 import { MusicProvider } from "@/contexts/MusicContext";
 import { ForceLightMode } from "@/components/ForceLightMode";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +44,8 @@ import Tips from "./pages/Tips";
 import DownloadPage from "./pages/Download";
 import Pricing from "./pages/Pricing";
 import Terms from "./pages/Terms";
+import WorkspaceSettings from "./pages/WorkspaceSettings";
+import WorkspaceMembers from "./pages/WorkspaceMembers";
 
 const queryClient = new QueryClient();
 
@@ -158,6 +161,9 @@ function AppRoutes() {
           <Route path="/admin/backup" element={<AdminBackup />} />
           <Route path="/admin/system" element={<AdminSystem />} />
           <Route path="/utilities" element={<Utilities />} />
+          {/* ═══ Workspace routes ═══ */}
+          <Route path="/workspace/settings" element={<WorkspaceSettings />} />
+          <Route path="/workspace/members" element={<WorkspaceMembers />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
@@ -178,15 +184,17 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <AuthProvider>
-                <MusicProvider>
-                  <AnimationProvider>
-                    <NavigationProvider>
-                      <FilePreviewProvider>
-                        <AppRoutes />
-                      </FilePreviewProvider>
-                    </NavigationProvider>
-                  </AnimationProvider>
-                </MusicProvider>
+                <WorkspaceProvider>
+                  <MusicProvider>
+                    <AnimationProvider>
+                      <NavigationProvider>
+                        <FilePreviewProvider>
+                          <AppRoutes />
+                        </FilePreviewProvider>
+                      </NavigationProvider>
+                    </AnimationProvider>
+                  </MusicProvider>
+                </WorkspaceProvider>
               </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>

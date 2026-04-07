@@ -67,6 +67,7 @@ import MusicPlayer from '@/components/MusicPlayer';
 import NetworkDiagnostic from '@/components/NetworkDiagnostic';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useLoginStreak } from '@/hooks/useLoginStreak';
+import WorkspaceSwitcher from '@/components/WorkspaceSwitcher';
 
 /* ------------------------------------------------------------------ */
 /*  Theme toggle (sidebar-friendly)                                    */
@@ -371,6 +372,9 @@ export default function DashboardLayout({
 
           {/* Scrollable navigation */}
           <div className="sidebar-nav-scroll">
+            {/* Workspace Switcher */}
+            <WorkspaceSwitcher collapsed={sidebarCollapsed} />
+
             <div className="sidebar-section-label">MAIN</div>
             {visibleMain.map(renderNavItem)}
 
