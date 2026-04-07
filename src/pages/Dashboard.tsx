@@ -719,10 +719,10 @@ export default function Dashboard() {
                 </div>
                 <div className="relative z-10 text-center space-y-4">
                   <img src={invitationIllustration} alt="Lời mời tham gia" className="w-40 h-40 object-contain mx-auto drop-shadow-2xl" />
-                  <h2 className="text-2xl font-bold">Lời mời tham gia</h2>
-                  <p className="text-sm opacity-80 leading-relaxed">
-                    Đây là danh sách các lời mời tham gia project mà bạn nhận được từ các trưởng nhóm.
-                  </p>
+                   <h2 className="text-2xl font-bold">Lời mời</h2>
+                   <p className="text-sm opacity-80 leading-relaxed">
+                     Danh sách lời mời tham gia Project và Workspace mà bạn nhận được.
+                   </p>
                   <div className="flex items-center justify-center gap-3 pt-4">
                     <div className="flex items-center gap-1.5 text-xs opacity-70">
                       <Check className="w-3.5 h-3.5" />
