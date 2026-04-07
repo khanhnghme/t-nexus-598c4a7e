@@ -304,14 +304,14 @@ export default function Dashboard() {
         });
       }
 
-      toast.success(accept ? 'Đã chấp nhận lời mời' : 'Đã từ chối lời mời');
+      toast.success(accept ? (t?.acceptedInvite || 'Invitation accepted') : (t?.declinedInvite || 'Invitation declined'));
       setPendingInvitations(prev => prev.filter(p => p.id !== invitation.id));
       if (accept) {
         fetchDashboardData();
         fetchProjectStats();
       }
     } catch (error: any) {
-      toast.error(error.message || 'Có lỗi xảy ra');
+      toast.error(error.message || (t?.errorOccurred || 'An error occurred'));
     } finally {
       setProcessingInvitation(null);
     }
@@ -363,14 +363,14 @@ export default function Dashboard() {
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
 
-      toast.success(accept ? 'Đã chấp nhận lời mời workspace' : 'Đã từ chối lời mời workspace');
+      toast.success(accept ? (t?.acceptedWsInvite || 'Workspace invitation accepted') : (t?.declinedWsInvite || 'Workspace invitation declined'));
       setPendingWsInvites(prev => prev.filter(p => p.id !== invite.id));
       if (accept) {
         await refreshWorkspaces();
         fetchDashboardData();
       }
     } catch (error: any) {
-      toast.error(error.message || 'Có lỗi xảy ra');
+      toast.error(error.message || (t?.errorOccurred || 'An error occurred'));
     } finally {
       setProcessingInvitation(null);
     }
