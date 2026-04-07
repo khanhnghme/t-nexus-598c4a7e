@@ -672,7 +672,7 @@ export const en = {
       invitationTitle: 'Invitations',
       invitationDesc: 'List of Project and Workspace invitations you have received.',
       acceptToJoin: 'Accept to join',
-      declineIfNot: 'Decline if you don't want to',
+      declineIfNot: "Decline if you don't want to",
       projectInvite: 'Project',
       workspaceInvite: 'Workspace',
       viceLeader: 'Vice leader',
