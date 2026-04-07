@@ -143,8 +143,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      // Skip all fetches if preload cache was consumed
-      if (hasPreload) return;
       fetchDashboardData();
       fetchProjectStats();
       fetchHiddenProjects();
