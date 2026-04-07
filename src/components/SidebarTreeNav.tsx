@@ -250,11 +250,9 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
               {!isGuest && (
                 <>
                   <Link to="/workspace/settings" className={cn('sidebar-nav-item', isPathActive('/workspace/settings') && 'active')}>
-                    <Eye className="nav-icon" strokeWidth={1.8} />
                     <span className="nav-label">Tổng quan</span>
                   </Link>
                   <Link to="/workspace/members" className={cn('sidebar-nav-item', isPathActive('/workspace/members') && 'active')}>
-                    <Users className="nav-icon" strokeWidth={1.8} />
                     <span className="nav-label">Thành viên</span>
                   </Link>
                 </>
@@ -271,7 +269,6 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                     )}
                   >
                     <ChevronRight className={cn('nav-chevron', isProjectsExpanded && 'expanded')} />
-                    <FolderKanban className="nav-icon" strokeWidth={1.8} />
                     <span className="nav-label">Dự án</span>
                     <span className="text-[10px] opacity-40">{projects.length}</span>
                   </button>
@@ -287,7 +284,6 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                             to={href}
                             className={cn('sidebar-nav-item', active && 'active', !p.isMember && 'opacity-60')}
                           >
-                            {getVisibilityIcon(p.visibility)}
                             <span className="nav-label truncate">{p.name}</span>
                             {!p.isMember && (
                               <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">Mới</span>
