@@ -727,21 +727,21 @@ export default function Dashboard() {
                   <div className="absolute bottom-20 right-5 w-40 h-40 rounded-full bg-white/15 blur-3xl" />
                 </div>
                 <div className="relative z-10 text-center space-y-4">
-                  <img src={invitationIllustration} alt="Lời mời tham gia" className="w-40 h-40 object-contain mx-auto drop-shadow-2xl" />
-                   <h2 className="text-2xl font-bold">Lời mời</h2>
+                  <img src={invitationIllustration} alt={t?.invitationIllustrationAlt || 'Join invitation'} className="w-40 h-40 object-contain mx-auto drop-shadow-2xl" />
+                   <h2 className="text-2xl font-bold">{t?.invitationTitle || 'Invitations'}</h2>
                    <p className="text-sm opacity-80 leading-relaxed">
-                     Danh sách lời mời tham gia Project và Workspace mà bạn nhận được.
+                     {t?.invitationDesc || 'List of Project and Workspace invitations you have received.'}
                    </p>
                   <div className="flex items-center justify-center gap-3 pt-4">
                     <div className="flex items-center gap-1.5 text-xs opacity-70">
                       <Check className="w-3.5 h-3.5" />
-                      <span>Chấp nhận để tham gia</span>
+                      <span>{t?.acceptToJoin || 'Accept to join'}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-center gap-3">
                     <div className="flex items-center gap-1.5 text-xs opacity-70">
                       <XIcon className="w-3.5 h-3.5" />
-                      <span>Từ chối nếu không muốn</span>
+                      <span>{t?.declineIfNot || "Decline if you don't want to"}</span>
                     </div>
                   </div>
                 </div>
@@ -750,18 +750,18 @@ export default function Dashboard() {
               <div className="flex-1 flex flex-col bg-background">
                 <div className="p-6 pb-3 border-b">
                   <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-lg">
-                      <MailOpen className="w-5 h-5 text-primary" />
-                      Lời mời đang chờ
-                      {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
-                        <Badge className="bg-primary text-primary-foreground text-xs">
-                          {pendingInvitations.length + pendingWsInvites.length}
-                        </Badge>
-                      )}
-                    </DialogTitle>
-                    <DialogDescription>
-                      Chấp nhận hoặc từ chối lời mời tham gia
-                    </DialogDescription>
+                     <DialogTitle className="flex items-center gap-2 text-lg">
+                       <MailOpen className="w-5 h-5 text-primary" />
+                       {t?.pendingInvitations || 'Pending invitations'}
+                       {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
+                         <Badge className="bg-primary text-primary-foreground text-xs">
+                           {pendingInvitations.length + pendingWsInvites.length}
+                         </Badge>
+                       )}
+                     </DialogTitle>
+                     <DialogDescription>
+                       {t?.acceptOrDecline || 'Accept or decline invitations'}
+                     </DialogDescription>
                   </DialogHeader>
                 </div>
 
