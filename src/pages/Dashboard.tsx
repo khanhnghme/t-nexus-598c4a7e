@@ -365,6 +365,7 @@ export default function Dashboard() {
     }
   };
 
+  const fetchProjectStats = async () => {
     if (!user) return;
     const { data: owned } = await supabase.from('groups').select('id').eq('created_by', user.id);
     const { data: joined } = await supabase.from('group_members').select('id').eq('user_id', user.id);
