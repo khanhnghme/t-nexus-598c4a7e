@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -55,6 +56,7 @@ import {
   Check,
   Users,
   Clock,
+  Building2,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -90,6 +92,21 @@ interface PendingInvitation {
   memberCount?: number;
 }
 
+interface PendingWorkspaceInvite {
+  id: string;
+  workspace_id: string;
+  scope: string;
+  invitee_email: string;
+  role_granted: string;
+  invited_by: string;
+  status: string;
+  created_at: string;
+  expires_at: string;
+  group_id: string | null;
+  workspace_name?: string;
+  inviter_name?: string;
+}
+
 export default function Dashboard() {
   const { user, profile, mustChangePassword, refreshProfile, isLeader, isAdmin } = useAuth();
   const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
@@ -101,6 +118,8 @@ export default function Dashboard() {
   const [showInvitationDialog, setShowInvitationDialog] = useState(false);
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
   const [processingInvitation, setProcessingInvitation] = useState<string | null>(null);
+  const [pendingWsInvites, setPendingWsInvites] = useState<PendingWorkspaceInvite[]>([]);
+  const [inviteTab, setInviteTab] = useState<'all' | 'project' | 'workspace'>('all');
   const [videoOpacity, setVideoOpacity] = useState(0);
   const [videoUrl, setVideoUrl] = useState('');
   const [videoEnabled, setVideoEnabled] = useState(false);
@@ -150,6 +169,7 @@ export default function Dashboard() {
       fetchHiddenProjects();
       fetchPendingInvitations();
       fetchPendingApprovals();
+      fetchPendingWsInvites();
     } else {
       setIsLoading(false);
     }
@@ -170,6 +190,11 @@ export default function Dashboard() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'pending_approvals', filter: `user_id=eq.${user.id}` },
         () => { fetchPendingApprovals(); }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'workspace_invites' },
+        () => { fetchPendingWsInvites(); }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -281,6 +306,64 @@ export default function Dashboard() {
       if (accept) {
         fetchDashboardData();
         fetchProjectStats();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Có lỗi xảy ra');
+    } finally {
+      setProcessingInvitation(null);
+    }
+  };
+
+  const fetchPendingWsInvites = async () => {
+    if (!user || !profile?.email) return;
+    try {
+      const { data } = await supabase
+        .from('workspace_invites')
+        .select('id, workspace_id, scope, invitee_email, role_granted, invited_by, status, created_at, expires_at, group_id')
+        .eq('invitee_email', profile.email)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (data && data.length > 0) {
+        const wsIds = [...new Set(data.map(d => d.workspace_id))];
+        const inviterIds = [...new Set(data.map(d => d.invited_by))];
+
+        const [wsRes, profilesRes] = await Promise.all([
+          supabase.from('workspaces').select('id, name').in('id', wsIds),
+          supabase.from('profiles').select('id, full_name').in('id', inviterIds),
+        ]);
+
+        const wsMap = new Map((wsRes.data || []).map(w => [w.id, w.name]));
+        const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p.full_name]));
+
+        setPendingWsInvites(data.map(d => ({
+          ...d,
+          workspace_name: wsMap.get(d.workspace_id) || 'Workspace',
+          inviter_name: profileMap.get(d.invited_by) || 'Người mời',
+        })));
+      } else {
+        setPendingWsInvites([]);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const handleWsInviteResponse = async (invite: PendingWorkspaceInvite, accept: boolean) => {
+    setProcessingInvitation(invite.id);
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke('workspace-management', {
+        body: {
+          action: accept ? 'accept_invite' : 'decline_invite',
+          invite_id: invite.id,
+        },
+      });
+
+      if (fnErr) throw fnErr;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success(accept ? 'Đã chấp nhận lời mời workspace' : 'Đã từ chối lời mời workspace');
+      setPendingWsInvites(prev => prev.filter(p => p.id !== invite.id));
+      if (accept) {
+        fetchDashboardData();
       }
     } catch (error: any) {
       toast.error(error.message || 'Có lỗi xảy ra');
@@ -567,9 +650,9 @@ export default function Dashboard() {
                       <p className="text-sm font-semibold leading-tight">Lời mời</p>
                       <p className="text-[10px] text-muted-foreground leading-tight">invites</p>
                     </div>
-                    {pendingInvitations.length > 0 && (
-                      <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#e56458] text-white rounded-full text-[10px] flex items-center justify-center font-bold animate-pulse shadow-sm">
-                        {pendingInvitations.length}
+                    {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
+                      <span className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full text-[10px] flex items-center justify-center font-bold animate-pulse shadow-sm">
+                        {pendingInvitations.length + pendingWsInvites.length}
                       </span>
                     )}
                   </span>
@@ -609,9 +692,9 @@ export default function Dashboard() {
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => setShowInvitationDialog(true)} className="relative border-border">
                   <MailOpen className="w-4 h-4" />
-                  {pendingInvitations.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#e56458] text-white rounded-full text-[10px] flex items-center justify-center">
-                      {pendingInvitations.length}
+                  {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full text-[10px] flex items-center justify-center">
+                      {pendingInvitations.length + pendingWsInvites.length}
                     </span>
                   )}
                 </Button>
@@ -641,10 +724,10 @@ export default function Dashboard() {
                 </div>
                 <div className="relative z-10 text-center space-y-4">
                   <img src={invitationIllustration} alt="Lời mời tham gia" className="w-40 h-40 object-contain mx-auto drop-shadow-2xl" />
-                  <h2 className="text-2xl font-bold">Lời mời tham gia</h2>
-                  <p className="text-sm opacity-80 leading-relaxed">
-                    Đây là danh sách các lời mời tham gia project mà bạn nhận được từ các trưởng nhóm.
-                  </p>
+                   <h2 className="text-2xl font-bold">Lời mời</h2>
+                   <p className="text-sm opacity-80 leading-relaxed">
+                     Danh sách lời mời tham gia Project và Workspace mà bạn nhận được.
+                   </p>
                   <div className="flex items-center justify-center gap-3 pt-4">
                     <div className="flex items-center gap-1.5 text-xs opacity-70">
                       <Check className="w-3.5 h-3.5" />
@@ -660,42 +743,69 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Right — Invitation list */}
               <div className="flex-1 flex flex-col bg-background">
                 <div className="p-6 pb-3 border-b">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-lg">
                       <MailOpen className="w-5 h-5 text-primary" />
                       Lời mời đang chờ
-                      {pendingInvitations.length > 0 && (
+                      {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
                         <Badge className="bg-primary text-primary-foreground text-xs">
-                          {pendingInvitations.length}
+                          {pendingInvitations.length + pendingWsInvites.length}
                         </Badge>
                       )}
                     </DialogTitle>
                     <DialogDescription>
-                      Chấp nhận hoặc từ chối lời mời tham gia project
+                      Chấp nhận hoặc từ chối lời mời tham gia
                     </DialogDescription>
                   </DialogHeader>
                 </div>
 
-                <ScrollArea className="flex-1 p-6">
-                  {pendingInvitations.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                        <MailOpen className="w-8 h-8 opacity-40" />
+                <Tabs value={inviteTab} onValueChange={(v) => setInviteTab(v as any)} className="flex-1 flex flex-col min-h-0">
+                  <div className="px-6 pt-3">
+                    <TabsList className="w-full">
+                      <TabsTrigger value="all" className="flex-1 text-xs">
+                        Tất cả
+                        {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
+                          <Badge variant="secondary" className="ml-1 text-[10px] px-1 h-4">{pendingInvitations.length + pendingWsInvites.length}</Badge>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger value="project" className="flex-1 text-xs">
+                        Project
+                        {pendingInvitations.length > 0 && (
+                          <Badge variant="secondary" className="ml-1 text-[10px] px-1 h-4">{pendingInvitations.length}</Badge>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger value="workspace" className="flex-1 text-xs">
+                        Workspace
+                        {pendingWsInvites.length > 0 && (
+                          <Badge variant="secondary" className="ml-1 text-[10px] px-1 h-4">{pendingWsInvites.length}</Badge>
+                        )}
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
+
+                  <ScrollArea className="flex-1 p-6">
+                    {/* Empty state */}
+                    {((inviteTab === 'all' && pendingInvitations.length === 0 && pendingWsInvites.length === 0) ||
+                      (inviteTab === 'project' && pendingInvitations.length === 0) ||
+                      (inviteTab === 'workspace' && pendingWsInvites.length === 0)) && (
+                      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                          <MailOpen className="w-8 h-8 opacity-40" />
+                        </div>
+                        <p className="font-medium">Không có lời mời nào</p>
+                        <p className="text-sm mt-1">Bạn sẽ nhận được thông báo khi có lời mời mới</p>
                       </div>
-                      <p className="font-medium">Không có lời mời nào</p>
-                      <p className="text-sm mt-1">Bạn sẽ nhận được thông báo khi có lời mời mới</p>
-                    </div>
-                  ) : (
+                    )}
+
                     <div className="space-y-3">
-                      {pendingInvitations.map((inv) => (
+                      {/* Project invitations */}
+                      {(inviteTab === 'all' || inviteTab === 'project') && pendingInvitations.map((inv) => (
                         <div
                           key={inv.id}
                           className="rounded-2xl border bg-card p-4 space-y-3 shadow-sm hover:shadow-md transition-shadow"
                         >
-                          {/* Project header with image */}
                           <div className="flex items-start gap-3">
                             {inv.groups?.image_url ? (
                               <img
@@ -713,9 +823,12 @@ export default function Dashboard() {
                                 <p className="font-semibold text-foreground truncate">
                                   {inv.groups?.name || 'Project'}
                                 </p>
-                                <Badge variant="secondary" className="text-[10px] shrink-0">
-                                  {inv.role === 'leader' ? 'Phó nhóm' : 'Thành viên'}
-                                </Badge>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Badge variant="outline" className="text-[10px]">Project</Badge>
+                                  <Badge variant="secondary" className="text-[10px]">
+                                    {inv.role === 'leader' ? 'Phó nhóm' : 'Thành viên'}
+                                  </Badge>
+                                </div>
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 Mời bởi <span className="font-medium text-foreground">{inv.inviter?.full_name || 'Leader'}</span>
@@ -725,7 +838,6 @@ export default function Dashboard() {
                             </div>
                           </div>
 
-                          {/* Project details */}
                           {inv.groups?.description && (
                             <p className="text-xs text-muted-foreground line-clamp-2 pl-[60px]">
                               {inv.groups.description}
@@ -749,7 +861,6 @@ export default function Dashboard() {
                             </Badge>
                           </div>
 
-                          {/* Actions */}
                           <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
                             <Button
                               size="sm"
@@ -776,9 +887,72 @@ export default function Dashboard() {
                           </div>
                         </div>
                       ))}
+
+                      {/* Workspace invitations */}
+                      {(inviteTab === 'all' || inviteTab === 'workspace') && pendingWsInvites.map((inv) => (
+                        <div
+                          key={inv.id}
+                          className="rounded-2xl border bg-card p-4 space-y-3 shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                              <Building2 className="w-6 h-6 text-accent-foreground" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="font-semibold text-foreground truncate">
+                                  {inv.workspace_name}
+                                </p>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">Workspace</Badge>
+                                  <Badge variant="secondary" className="text-[10px]">
+                                    {inv.role_granted === 'admin' ? 'Admin' : 'Thành viên'}
+                                  </Badge>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Mời bởi <span className="font-medium text-foreground">{inv.inviter_name}</span>
+                                {' · '}
+                                {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true, locale: vi })}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="pl-[60px]">
+                            <p className="text-xs text-muted-foreground">
+                              Bạn sẽ có quyền truy cập tất cả dự án trong workspace này sau khi chấp nhận.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs gap-1"
+                              onClick={() => handleWsInviteResponse(inv, false)}
+                              disabled={processingInvitation === inv.id}
+                            >
+                              Từ chối
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-8 text-xs gap-1"
+                              onClick={() => handleWsInviteResponse(inv, true)}
+                              disabled={processingInvitation === inv.id}
+                            >
+                              {processingInvitation === inv.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                              )}
+                              Chấp nhận
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </ScrollArea>
+                  </ScrollArea>
+                </Tabs>
               </div>
             </div>
           </DialogContent>
