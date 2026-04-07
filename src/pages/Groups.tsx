@@ -458,9 +458,20 @@ export default function Groups() {
                         <FolderKanban className="w-5 h-5 text-primary" />
                         Tạo dự án mới
                       </h2>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        Điền thông tin dự án và thêm thành viên (tùy chọn)
-                      </p>
+                      {wsAvailable && activeWorkspace ? (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <div className="w-4 h-4 rounded bg-primary/15 text-primary flex items-center justify-center text-[9px] font-bold">
+                            {activeWorkspace.name.charAt(0).toUpperCase()}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Dự án sẽ được tạo trong workspace <span className="font-semibold text-foreground">{activeWorkspace.name}</span>
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          Điền thông tin dự án và thêm thành viên (tùy chọn)
+                        </p>
+                      )}
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setIsDialogOpen(false)}>
                       <X className="w-5 h-5" />
