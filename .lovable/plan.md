@@ -1,143 +1,69 @@
 
 
-## Redesign Toàn bộ Hệ thống Phân quyền & Phân loại Thành viên
+## Kế hoạch kiểm tra & thay thế role cũ → role mới
 
-### Hiện trạng & Vấn đề
+### Phát hiện: Còn nhiều tham chiếu legacy chưa được cập nhật
 
-| Tầng | Hiện tại | Vấn đề |
-|------|----------|--------|
-| System | `app_role` enum: `owner_system`, `leader`, `member` | `leader`/`member` lẫn với project role; thiếu `system_admin` |
-| Workspace | `workspace_members.role`: text `admin`/`member` + `owner_id` | Không có enum riêng; thiếu `guest` |
-| Project | `group_members.role`: dùng chung `app_role` | Hoàn toàn sai — project role dùng system enum |
-| Plan | Chưa tồn tại | — |
-
-**36 files frontend** tham chiếu `isAdmin`/`isLeader`/`isOwnerSystem`/`owner_system`/`leader` cần cập nhật.
+Sau khi rà soát toàn bộ codebase, tìm thấy **~40+ dòng code** vẫn dùng role cũ thay vì role mới.
 
 ---
 
-### 1. Thiết kế Role & Plan mới
+### 1. Các file cần sửa (Frontend)
 
-#### 1.1 System Roles (`system_role` enum)
+| File | Vấn đề | Sửa thành |
+|------|--------|-----------|
+| `src/components/MemberDetailDialog.tsx` | `'owner_system'` trong switch/case và badge | `'system_owner'` |
+| `src/components/MemberManagementCard.tsx` | `case 'owner_system'`, `role: 'member' as any` | `'system_owner'`, `'project_member'` |
+| `src/components/MemberRoleManagementDialog.tsx` | `roles.includes('admin')` | `roles.includes('system_owner')` |
+| `src/components/SidebarTreeNav.tsx` | `case 'owner_system'` | `case 'system_owner'` |
+| `src/lib/roleLabels.ts` | `'owner_system'`, `'leader'`, `'member'`, `'admin'` trong switch | Đổi sang `system_owner`, `system_admin`, `project_admin`, `project_member` |
+| `src/lib/excelExport.ts` | `case 'owner_system'` | `case 'system_owner'` |
+| `src/pages/WorkspaceMembers.tsx` | `case 'admin'` (2 chỗ) | `case 'workspace_admin'` |
+| `src/pages/MemberManagement.tsx` | `roles.includes('admin')` (4 chỗ) | `roles.includes('system_owner')` hoặc `system_admin` |
+| `src/pages/Groups.tsx` | `case 'admin'` | `case 'system_admin'` |
+| `src/pages/Tips.tsx` | `id: 'admin'` | Context check — có thể là UI label, cần xem kỹ |
 
-| Role | Mô tả | Số lượng |
-|------|--------|----------|
-| `system_owner` | Toàn quyền hệ thống | 1 duy nhất |
-| `system_admin` | Quản trị user, workspace, config | Không giới hạn |
+### 2. Edge Functions
 
-#### 1.2 Workspace Roles (`workspace_role` enum)
+| File | Vấn đề | Sửa |
+|------|--------|-----|
+| `supabase/functions/team-assistant/index.ts` | `role === 'leader'`, fallback `'member'` | Đổi sang `project_admin`/`project_member` |
 
-| Role | Quyền | Là WS member? |
-|------|-------|:-:|
-| `workspace_owner` | Toàn quyền WS (via `workspaces.owner_id`) | Có |
-| `workspace_admin` | Quản lý settings, members, projects | Có |
-| `workspace_member` | Tạo project, xem WS-public projects | Có |
-| `workspace_guest` | Chỉ thấy project được mời cụ thể | **Không** |
+### 3. Database — `project_invitations.role` column
 
-#### 1.3 Project Roles (`project_role` enum)
+Bảng `project_invitations` vẫn dùng **`app_role` enum** (`owner_system`, `leader`, `member`) thay vì `project_role`. Cần migration đổi column type sang `project_role` và migrate data.
 
-| Role | View | Edit task | Manage members | Manage settings | Invite |
-|------|:---:|:---:|:---:|:---:|:---:|
-| `project_owner` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `project_admin` | ✅ | ✅ | ✅ | Hạn chế | ✅ |
-| `project_member` | ✅ | ✅ (assigned) | ❌ | ❌ | ❌ |
-| `project_guest` | ✅ (read-only) | ❌ | ❌ | ❌ | ❌ |
+### 4. Supabase generated types (`types.ts`)
 
-#### 1.4 User Plan (`user_plan` enum)
-
-| Plan | Ghi chú |
-|------|---------|
-| `plan_free` | Mặc định |
-| `plan_plus` | Nâng cấp cá nhân |
-| `plan_pro` | Premium |
-| `plan_business` | Doanh nghiệp |
-| `plan_custom` | Tùy chỉnh đặc biệt |
-
-**Áp dụng theo user** (`profiles.user_plan`, default `plan_free`). Giới hạn cụ thể tra từ bảng `plan_limits` (tạo structure, chưa enforce).
+File `src/integrations/supabase/types.ts` vẫn chứa `app_role` enum cũ — file này tự động sinh sau migration. Sau khi sửa DB column `project_invitations.role`, file sẽ tự cập nhật.
 
 ---
 
-### 2. Inheritance & Multi-role
+### Kế hoạch triển khai (3 bước)
 
-```text
-system_owner  → tương đương workspace_owner ở MỌI workspace
-system_admin  → tương đương workspace_admin ở MỌI workspace
-workspace_owner → tương đương project_owner ở MỌI project trong WS
-workspace_admin → tương đương project_admin ở MỌI project trong WS
-```
+**Bước 1: Database migration**
+- Đổi `project_invitations.role` từ `app_role` sang `project_role`
+- Migrate data: `member` → `project_member`, `leader` → `project_admin`, `owner_system` → `project_owner`
 
-Không kế thừa ngược. Multi-role → lấy quyền cao nhất.
+**Bước 2: Edge function**
+- Cập nhật `team-assistant/index.ts` — thay `'leader'`/`'member'` bằng `'project_admin'`/`'project_member'`
 
----
-
-### 3. Data Migration Mapping
-
-```text
-user_roles:
-  owner_system → system_owner
-  leader       → XÓA (sẽ giữ quyền qua workspace_member)
-  member       → XÓA
-
-workspace_members.role (text):
-  admin  → workspace_admin
-  member → workspace_member
-
-group_members.role (app_role):
-  owner_system → project_owner (hoặc map theo groups.created_by)
-  leader       → project_admin
-  member       → project_member
-```
+**Bước 3: Frontend (12 files)**
+- `MemberDetailDialog.tsx` — `owner_system` → `system_owner`
+- `MemberManagementCard.tsx` — `owner_system` → `system_owner`, bỏ `as any`
+- `MemberRoleManagementDialog.tsx` — `'admin'` → `'system_owner'`
+- `SidebarTreeNav.tsx` — `owner_system` → `system_owner`
+- `roleLabels.ts` — xóa case legacy, chỉ giữ role mới
+- `excelExport.ts` — `owner_system` → `system_owner`
+- `WorkspaceMembers.tsx` — `'admin'` → `'workspace_admin'`
+- `MemberManagement.tsx` — `'admin'` → `'system_owner'`/`'system_admin'`
+- `Groups.tsx` — `'admin'` → `'system_admin'`
+- `Tips.tsx` — kiểm tra context, cập nhật nếu cần
 
 ---
-
-### 4. Kế hoạch triển khai (4 phases)
-
-#### Phase 1: Database Migration
-1. Tạo 3 enum mới: `system_role`, `workspace_role`, `project_role`, `user_plan`
-2. Migrate data trong `user_roles`, `workspace_members`, `group_members`
-3. Thêm `user_plan` column vào `profiles` (default `plan_free`)
-4. Tạo bảng `plan_limits` (structure only, chưa enforce)
-5. Cập nhật tất cả DB functions: `has_role` → `has_system_role`, `is_admin` → `is_system_admin`, `is_owner_system` → `is_system_owner`, `is_group_leader` → `is_project_admin`, `is_moderator`, `is_leader`, `check_project_access`, `get_workspace_role`, `check_admin_user`
-6. Cập nhật tất cả RLS policies dùng function mới
-
-#### Phase 2: Edge Functions
-1. `workspace-management` — đổi role strings (`admin`→`workspace_admin`, etc.)
-2. `manage-users` — đổi sang `system_role`, xóa `leader`/`admin` role options
-3. `ensure-owner` — dùng `system_owner`
-
-#### Phase 3: Frontend Types & Context
-1. `src/types/database.ts` — đổi `AppRole` → 3 types riêng + `UserPlan`
-2. `src/contexts/AuthContext.tsx` — `isSystemOwner`, `isSystemAdmin`, bỏ `isLeader`
-3. `src/contexts/WorkspaceContext.tsx` — dùng `workspace_role` enum
-4. `src/lib/roleLabels.ts` — labels mới cho 3 tầng + plan
-5. `src/hooks/useWorkspaceMembers.ts` — role types mới
-
-#### Phase 4: UI Components (~30+ files)
-Tất cả files reference roles cũ → đổi sang enum mới:
-- `AdminUsers.tsx`, `Auth.tsx`, `GroupDetail.tsx`, `TaskDetail.tsx`
-- `MemberManagementCard.tsx`, `ProfileViewDialog.tsx`, `ProjectTransferDialog.tsx`
-- `SidebarTreeNav.tsx`, `FirstTimeOnboarding.tsx`, `CalendarTaskDetailDialog.tsx`
-- `TaskSubmissionDialog.tsx`, `Feedback.tsx`, `Dashboard.tsx`
-- Và ~17 files khác
-
----
-
-### 5. Files cần thay đổi
-
-| File | Action |
-|------|--------|
-| Migration SQL (1 file lớn) | Tạo mới — enums, data migrate, functions, RLS |
-| `supabase/functions/workspace-management/index.ts` | Sửa |
-| `supabase/functions/manage-users/index.ts` | Sửa |
-| `supabase/functions/ensure-owner/index.ts` | Sửa |
-| `src/types/database.ts` | Sửa |
-| `src/contexts/AuthContext.tsx` | Sửa |
-| `src/contexts/WorkspaceContext.tsx` | Sửa |
-| `src/lib/roleLabels.ts` | Sửa |
-| `src/hooks/useWorkspaceMembers.ts` | Sửa |
-| ~30 component/page files | Sửa — role references |
 
 ### Không thay đổi
-- Routes, WorkspaceContext structure, Supabase client
-- Notification/email/storage logic (chỉ đổi role check)
-- Plan enforcement (chỉ tạo structure, chưa enforce)
+- `AuthContext.tsx` — `isAdmin`/`isLeader` giữ làm deprecated aliases (đã map đúng sang `isSystemAdmin`)
+- `ProcessScores.tsx`, `CalendarTaskDetailDialog.tsx` — dùng `isLeader` từ context (đã là alias), không cần sửa
+- `DashboardLayout.tsx` — dùng `isAdmin` từ context (đã map đúng)
 
