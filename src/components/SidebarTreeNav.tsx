@@ -185,20 +185,6 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
           </>
         )}
 
-        {/* Project shortcuts */}
-        {projects.slice(0, 5).map(p => {
-          const href = `/p/${p.slug || p.id}`;
-          return (
-            <TreeItemCollapsed
-              key={p.id}
-              icon={FolderOpen}
-              label={p.name}
-              href={href}
-              active={location.pathname.startsWith(href)}
-            />
-          );
-        })}
-
         <div className="sidebar-nav-separator" />
 
         {/* Personal */}
