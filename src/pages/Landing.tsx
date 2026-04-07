@@ -490,7 +490,7 @@ export default function Landing() {
   const handleInitAdmin = async () => {
     setIsInitializing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ensure-admin');
+      const { data, error } = await supabase.functions.invoke('ensure-owner');
       if (error) throw error;
       if (data?.success) toast.success(data.message || 'Admin initialized successfully!');
       else toast.error(data?.error || 'An error occurred');
