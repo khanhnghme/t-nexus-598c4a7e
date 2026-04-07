@@ -175,22 +175,6 @@ export default function DashboardLayout({
     return 'Thành viên';
   };
 
-  // Keep nav items for search dialog
-  const allSearchItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, shortcut: '⌘D' },
-    { name: 'Dự án', href: '/groups', icon: FolderKanban, shortcut: '⌘P' },
-    { name: 'Lịch', href: '/calendar', icon: CalendarDays, shortcut: '⌘L' },
-    { name: 'Trao đổi', href: '/communication', icon: MessageSquare, shortcut: '⌘M' },
-    { name: 'Tài khoản', href: '/personal-info', icon: UserCircle },
-    { name: 'Mẹo', href: '/tips', icon: BookOpen },
-    { name: 'Góp ý', href: '/feedback', icon: Lightbulb },
-    ...(isAdmin ? [
-      { name: 'Thành viên', href: '/members', icon: Users },
-      { name: 'Sao lưu', href: '/admin/backup', icon: FolderArchive },
-      { name: 'Quản trị', href: '/admin/system', icon: Shield },
-      { name: 'Tiện ích', href: '/utilities', icon: Wrench },
-    ] : []),
-  ].filter(i => !hiddenNav.includes(i.href));
   /* ---------------------------------------------------------------- */
   return (
     <>
