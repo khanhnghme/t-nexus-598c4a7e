@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useWorkspaceMembers, type WorkspaceMemberInfo } from '@/hooks/useWorkspaceMembers';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Building2, Users, UserPlus, Crown, Shield, User, MoreHorizontal, Trash2, ArrowUpDown, Mail, Loader2, Ghost, CheckSquare, Square, AlertTriangle } from 'lucide-react';
@@ -64,6 +65,9 @@ export default function WorkspaceMembers() {
   const { activeWorkspace, workspaceRole, isAvailable } = useWorkspace();
   const { members, isLoading, refresh, inviteMember, removeMember, changeRole } = useWorkspaceMembers();
   const { toast } = useToast();
+  const { translations: { app: t } } = useLanguage();
+  const tw = t.wsMembers;
+  const tc = t.common;
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'workspace_admin' | 'workspace_member'>('workspace_member');
@@ -174,8 +178,8 @@ export default function WorkspaceMembers() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
         <Users className="w-12 h-12 opacity-30" />
-        <p className="text-lg font-medium">Workspace chưa khả dụng</p>
-        <p className="text-sm">Hệ thống workspace đang được thiết lập. Vui lòng quay lại sau.</p>
+        <p className="text-lg font-medium">{t.workspace.notAvailable}</p>
+        <p className="text-sm">{t.workspace.notAvailableDesc}</p>
       </div>
     );
   }
@@ -186,12 +190,12 @@ export default function WorkspaceMembers() {
 
     const result = await inviteMember(inviteEmail.trim(), inviteRole);
     if (result.success) {
-      toast({ title: 'Đã gửi lời mời', description: `Lời mời đã được gửi đến ${inviteEmail}` });
+      toast({ title: tw.inviteSent, description: tw.inviteSentTo.replace('{email}', inviteEmail) });
       setInviteEmail('');
       setInviteDialogOpen(false);
       await refresh();
     } else {
-      toast({ title: 'Lỗi', description: result.error, variant: 'destructive' });
+      toast({ title: tc.error, description: result.error, variant: 'destructive' });
     }
     setIsInviting(false);
   };
@@ -205,17 +209,17 @@ export default function WorkspaceMembers() {
       if (confirmAction.type === 'remove') {
         const result = await removeMember(confirmAction.userId);
         if (result.success) {
-          toast({ title: 'Đã xóa', description: `${confirmAction.name} đã bị xóa khỏi workspace.` });
+          toast({ title: tw.removed, description: tw.removedDesc.replace('{name}', confirmAction.name) });
         } else {
-          toast({ title: 'Lỗi', description: result.error, variant: 'destructive' });
+          toast({ title: tc.error, description: result.error, variant: 'destructive' });
         }
       } else if (confirmAction.type === 'change_role') {
         const result = await changeRole(confirmAction.userId, confirmAction.newRole);
         const roleLabel = confirmAction.newRole === 'workspace_admin' ? 'Admin' : 'Member';
         if (result.success) {
-          toast({ title: 'Đã cập nhật', description: `Vai trò của ${confirmAction.name} đã được đổi thành ${roleLabel}.` });
+          toast({ title: tw.roleUpdated, description: tw.roleUpdatedDesc.replace('{name}', confirmAction.name).replace('{role}', roleLabel) });
         } else {
-          toast({ title: 'Lỗi', description: result.error, variant: 'destructive' });
+          toast({ title: tc.error, description: result.error, variant: 'destructive' });
         }
       } else if (confirmAction.type === 'bulk_remove') {
         let successCount = 0;
@@ -223,7 +227,7 @@ export default function WorkspaceMembers() {
           const result = await removeMember(uid);
           if (result.success) successCount++;
         }
-        toast({ title: 'Hoàn tất', description: `Đã xóa ${successCount}/${confirmAction.count} thành viên.` });
+        toast({ title: tw.bulkDone, description: tw.bulkRemovedDesc.replace('{n}', String(successCount)).replace('{total}', String(confirmAction.count)) });
         setSelectedIds(new Set());
         setMultiSelectMode(false);
       } else if (confirmAction.type === 'bulk_role') {
@@ -233,7 +237,7 @@ export default function WorkspaceMembers() {
           if (result.success) successCount++;
         }
         const roleLabel = confirmAction.newRole === 'workspace_admin' ? 'Admin' : 'Member';
-        toast({ title: 'Hoàn tất', description: `Đã đổi vai trò ${successCount}/${confirmAction.count} thành viên thành ${roleLabel}.` });
+        toast({ title: tw.bulkDone, description: tw.bulkRoleDesc2.replace('{n}', String(successCount)).replace('{total}', String(confirmAction.count)).replace('{role}', roleLabel) });
         setSelectedIds(new Set());
         setMultiSelectMode(false);
       }
@@ -246,10 +250,10 @@ export default function WorkspaceMembers() {
   const getConfirmTitle = () => {
     if (!confirmAction) return '';
     switch (confirmAction.type) {
-      case 'remove': return 'Xóa thành viên';
-      case 'change_role': return 'Thay đổi vai trò';
-      case 'bulk_remove': return `Xóa ${confirmAction.count} thành viên`;
-      case 'bulk_role': return `Đổi vai trò ${confirmAction.count} thành viên`;
+      case 'remove': return tw.confirmRemove;
+      case 'change_role': return tw.confirmChangeRole;
+      case 'bulk_remove': return tw.confirmBulkRemove.replace('{n}', String(confirmAction.count));
+      case 'bulk_role': return tw.confirmBulkRole.replace('{n}', String(confirmAction.count));
     }
   };
 
@@ -257,16 +261,16 @@ export default function WorkspaceMembers() {
     if (!confirmAction) return '';
     switch (confirmAction.type) {
       case 'remove':
-        return `Bạn có chắc muốn xóa "${confirmAction.name}" khỏi workspace? Thành viên này sẽ mất quyền truy cập tất cả dự án trong workspace.`;
+        return tw.removeDesc.replace('{name}', confirmAction.name);
       case 'change_role': {
         const roleLabel = confirmAction.newRole === 'workspace_admin' ? 'Admin' : 'Member';
-        return `Bạn có chắc muốn đổi vai trò của "${confirmAction.name}" thành ${roleLabel}?`;
+        return tw.changeRoleDesc.replace('{name}', confirmAction.name).replace('{role}', roleLabel);
       }
       case 'bulk_remove':
-        return `Bạn có chắc muốn xóa ${confirmAction.count} thành viên đã chọn khỏi workspace? Họ sẽ mất quyền truy cập tất cả dự án.`;
+        return tw.bulkRemoveDesc.replace('{n}', String(confirmAction.count));
       case 'bulk_role': {
         const roleLabel = confirmAction.newRole === 'workspace_admin' ? 'Admin' : 'Member';
-        return `Bạn có chắc muốn đổi vai trò ${confirmAction.count} thành viên đã chọn thành ${roleLabel}?`;
+        return tw.bulkRoleDesc.replace('{n}', String(confirmAction.count)).replace('{role}', roleLabel);
       }
     }
   };
@@ -281,11 +285,12 @@ export default function WorkspaceMembers() {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'workspace_owner': return 'Owner';
-      case 'workspace_admin': return 'Admin';
-      case 'workspace_member': return 'Member';
-      case 'workspace_guest': return 'Guest';
+      case 'workspace_owner': return tw.owner;
+      case 'workspace_admin': return tw.admin;
+      case 'workspace_member': return tw.member;
+      case 'workspace_guest': return tw.guest;
       default: return role;
+    }
     }
   };
 
@@ -296,10 +301,10 @@ export default function WorkspaceMembers() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
             <Users className="w-6 h-6 text-primary" />
-            Thành viên Workspace
+            {tw.title}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Quản lý thành viên trong "{activeWorkspace.name}"
+            {tw.subtitle.replace('{name}', activeWorkspace.name)}
           </p>
         </div>
 
@@ -311,7 +316,7 @@ export default function WorkspaceMembers() {
               onClick={toggleMultiSelect}
             >
               <CheckSquare className="w-4 h-4 mr-1.5" />
-              {multiSelectMode ? 'Tắt chọn nhiều' : 'Chọn nhiều'}
+              {multiSelectMode ? tw.multiSelectOff : tw.multiSelect}
             </Button>
           )}
 
@@ -325,15 +330,14 @@ export default function WorkspaceMembers() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Mời vào Workspace</DialogTitle>
+                  <DialogTitle>{tw.inviteToWs}</DialogTitle>
                   <DialogDescription>
-                    Thành viên workspace sẽ tự động có quyền truy cập tất cả dự án công khai (Workspace Public).
-                    Với dự án riêng tư (Private), bạn cần mời riêng trong từng dự án.
+                    {tw.inviteDesc}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-2">
                   <div className="space-y-2">
-                    <Label htmlFor="invite-email">Email</Label>
+                    <Label htmlFor="invite-email">{tw.email}</Label>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <Input
@@ -347,7 +351,7 @@ export default function WorkspaceMembers() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Vai trò</Label>
+                    <Label>{tw.role}</Label>
                     <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'workspace_admin' | 'workspace_member')}>
                       <SelectTrigger>
                         <SelectValue />
@@ -369,16 +373,16 @@ export default function WorkspaceMembers() {
                     </Select>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
-                    ℹ️ Member: Truy cập dự án công khai, tạo dự án mới.
+                    {tw.memberRoleDesc}
                     <br />
-                    🛡️ Admin: Toàn bộ quyền Member + mời/xóa thành viên.
+                    {tw.adminRoleDesc}
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>Hủy</Button>
+                  <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>{tc.cancel}</Button>
                   <Button onClick={handleInvite} disabled={isInviting || !inviteEmail.trim()}>
                     {isInviting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserPlus className="w-4 h-4 mr-2" />}
-                    Gửi lời mời
+                    {tw.sendInvite}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -391,7 +395,7 @@ export default function WorkspaceMembers() {
       {multiSelectMode && selectedIds.size > 0 && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg border bg-muted/30">
           <span className="text-sm font-medium">
-            Đã chọn {selectedIds.size} thành viên
+            {tw.selected.replace('{n}', String(selectedIds.size))}
           </span>
           <div className="flex-1" />
           {isOwner && (
@@ -407,7 +411,7 @@ export default function WorkspaceMembers() {
                 })}
               >
                 <Shield className="w-3.5 h-3.5 mr-1.5" />
-                Nâng Admin
+                {tw.promoteAdmin}
               </Button>
               <Button
                 variant="outline"
@@ -420,7 +424,7 @@ export default function WorkspaceMembers() {
                 })}
               >
                 <User className="w-3.5 h-3.5 mr-1.5" />
-                Hạ Member
+                {tw.demoteMember}
               </Button>
             </>
           )}
@@ -434,7 +438,7 @@ export default function WorkspaceMembers() {
             })}
           >
             <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-            Xóa
+            {tc.delete}
           </Button>
         </div>
       )}
@@ -444,11 +448,11 @@ export default function WorkspaceMembers() {
         <TabsList>
           <TabsTrigger value="members">
             <Users className="w-3.5 h-3.5 mr-1.5" />
-            Thành viên ({members.length})
+            {tw.membersTab.replace('{n}', String(members.length))}
           </TabsTrigger>
           <TabsTrigger value="guests">
             <Ghost className="w-3.5 h-3.5 mr-1.5" />
-            Khách mời ({guests.length})
+            {tw.guestsTab.replace('{n}', String(guests.length))}
           </TabsTrigger>
         </TabsList>
 
@@ -456,12 +460,12 @@ export default function WorkspaceMembers() {
         <TabsContent value="members">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <Users className="w-4 h-4" />
-            <span>{members.length} thành viên</span>
-            <span className="text-xs">/ {activeWorkspace.max_members} tối đa</span>
+            <span>{tw.memberCount.replace('{n}', String(members.length))}</span>
+            <span className="text-xs">{tw.maxMemberCount.replace('{n}', String(activeWorkspace.max_members))}</span>
 
             {multiSelectMode && selectableMembers.length > 0 && (
               <Button variant="ghost" size="sm" className="ml-auto h-7 text-xs" onClick={selectAll}>
-                {selectedIds.size === selectableMembers.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                {selectedIds.size === selectableMembers.length ? tw.deselectAll : tw.selectAll}
               </Button>
             )}
           </div>
@@ -474,7 +478,7 @@ export default function WorkspaceMembers() {
             ) : members.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p>Chưa có thành viên nào.</p>
+                <p>{tw.noMembers}</p>
               </div>
             ) : (
               members.map((member) => {
@@ -531,7 +535,7 @@ export default function WorkspaceMembers() {
                                 newRole: member.role === 'workspace_admin' ? 'workspace_member' : 'workspace_admin',
                               })}>
                                 <ArrowUpDown className="w-3.5 h-3.5 mr-2" />
-                                {member.role === 'workspace_admin' ? 'Hạ xuống Member' : 'Nâng lên Admin'}
+                                {member.role === 'workspace_admin' ? tw.demoteToMember : tw.promoteToAdmin}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                             </>
@@ -545,7 +549,7 @@ export default function WorkspaceMembers() {
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="w-3.5 h-3.5 mr-2" />
-                            Xóa khỏi workspace
+                            {tw.removeFromWs}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -561,7 +565,7 @@ export default function WorkspaceMembers() {
         <TabsContent value="guests">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <Ghost className="w-4 h-4" />
-            <span>{guests.length} khách mời</span>
+            <span>{tw.guestCount.replace('{n}', String(guests.length))}</span>
           </div>
 
           <div className="rounded-xl border bg-card divide-y">
@@ -572,8 +576,8 @@ export default function WorkspaceMembers() {
             ) : guests.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Ghost className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p>Chưa có khách mời nào.</p>
-                <p className="text-xs mt-1">Khách mời là người dùng bên ngoài workspace được mời vào dự án cụ thể.</p>
+                <p>{tw.noGuests}</p>
+                <p className="text-xs mt-1">{tw.guestDesc}</p>
               </div>
             ) : (
               guests.map((guest, idx) => (
@@ -619,7 +623,7 @@ export default function WorkspaceMembers() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing}>Hủy</AlertDialogCancel>
+            <AlertDialogCancel disabled={isProcessing}>{tc.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={executeConfirmAction}
               disabled={isProcessing}
@@ -629,7 +633,7 @@ export default function WorkspaceMembers() {
               }
             >
               {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Xác nhận
+              {tc.confirm}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

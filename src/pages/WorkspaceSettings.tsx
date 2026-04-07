@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -57,6 +58,9 @@ export default function WorkspaceSettings() {
   const { user } = useAuth();
   const { members } = useWorkspaceMembers();
   const { toast } = useToast();
+  const { translations: { app: t } } = useLanguage();
+  const tw = t.workspace;
+  const tc = t.common;
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
@@ -85,8 +89,8 @@ export default function WorkspaceSettings() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
         <Building2 className="w-12 h-12 opacity-30" />
-        <p className="text-lg font-medium">Workspace chưa khả dụng</p>
-        <p className="text-sm">Hệ thống workspace đang được thiết lập. Vui lòng quay lại sau.</p>
+        <p className="text-lg font-medium">{tw.notAvailable}</p>
+        <p className="text-sm">{tw.notAvailableDesc}</p>
       </div>
     );
   }
@@ -106,9 +110,9 @@ export default function WorkspaceSettings() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       await refreshWorkspaces();
-      toast({ title: 'Đã lưu', description: 'Cài đặt workspace đã được cập nhật.' });
+      toast({ title: tc.saved, description: tw.settingsUpdated });
     } catch (err: any) {
-      toast({ title: 'Lỗi', description: err.message, variant: 'destructive' });
+      toast({ title: tc.error, description: err.message, variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
@@ -124,10 +128,10 @@ export default function WorkspaceSettings() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       await refreshWorkspaces();
-      toast({ title: 'Đã xóa', description: 'Workspace đã được xóa.' });
+      toast({ title: tc.deleted, description: tw.wsDeleted });
       navigate('/dashboard');
     } catch (err: any) {
-      toast({ title: 'Lỗi', description: err.message, variant: 'destructive' });
+      toast({ title: tc.error, description: err.message, variant: 'destructive' });
     } finally {
       setIsDeleting(false);
     }
@@ -147,47 +151,47 @@ export default function WorkspaceSettings() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
           <LayoutGrid className="w-6 h-6 text-primary" />
-          Tổng quan Workspace
+          {tw.title}
         </h1>
         <p className="text-muted-foreground mt-1">
-          Quản lý thông tin, thống kê và cài đặt của workspace.
+          {tw.subtitle}
         </p>
       </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Thành viên" value={memberCount} sub={`Tối đa ${activeWorkspace.max_members}`} color="blue" />
-        <StatCard icon={FolderKanban} label="Dự án" value={projectCount} sub={`Tối đa ${activeWorkspace.max_projects}`} color="green" />
-        <StatCard icon={HardDrive} label="Dung lượng" value={storageLabel} sub={`Đã dùng ${storageUsed} MB`} color="amber" />
-        <StatCard icon={Crown} label="Gói dịch vụ" value={activeWorkspace.plan.charAt(0).toUpperCase() + activeWorkspace.plan.slice(1)} color="primary" />
+        <StatCard icon={Users} label={tw.members} value={memberCount} sub={tw.maxMembers.replace('{n}', String(activeWorkspace.max_members))} color="blue" />
+        <StatCard icon={FolderKanban} label={tw.projects} value={projectCount} sub={tw.maxProjects.replace('{n}', String(activeWorkspace.max_projects))} color="green" />
+        <StatCard icon={HardDrive} label={tw.storage} value={storageLabel} sub={tw.usedStorage.replace('{n}', String(storageUsed))} color="amber" />
+        <StatCard icon={Crown} label={tw.plan} value={activeWorkspace.plan.charAt(0).toUpperCase() + activeWorkspace.plan.slice(1)} color="primary" />
       </div>
 
       {/* Tabs: Info & Settings */}
       <Tabs defaultValue="info" className="w-full">
         <TabsList className="w-full justify-start">
-          <TabsTrigger value="info" className="gap-1.5"><Building2 className="w-4 h-4" />Thông tin</TabsTrigger>
-          <TabsTrigger value="plan" className="gap-1.5"><Crown className="w-4 h-4" />Gói dịch vụ</TabsTrigger>
-          {isOwner && <TabsTrigger value="danger" className="gap-1.5 text-destructive"><AlertTriangle className="w-4 h-4" />Nguy hiểm</TabsTrigger>}
+          <TabsTrigger value="info" className="gap-1.5"><Building2 className="w-4 h-4" />{tw.infoTab}</TabsTrigger>
+          <TabsTrigger value="plan" className="gap-1.5"><Crown className="w-4 h-4" />{tw.planTab}</TabsTrigger>
+          {isOwner && <TabsTrigger value="danger" className="gap-1.5 text-destructive"><AlertTriangle className="w-4 h-4" />{tw.dangerTab}</TabsTrigger>}
         </TabsList>
 
         {/* Info Tab */}
         <TabsContent value="info" className="mt-4">
           <Card>
             <CardContent className="p-6 space-y-5">
-              <h2 className="text-lg font-semibold flex items-center gap-2"><Settings2 className="w-5 h-5 text-muted-foreground" />Thông tin chung</h2>
+              <h2 className="text-lg font-semibold flex items-center gap-2"><Settings2 className="w-5 h-5 text-muted-foreground" />{tw.generalInfo}</h2>
 
               <div className="space-y-2">
-                <Label htmlFor="ws-name">Tên Workspace</Label>
-                <Input id="ws-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nhập tên workspace..." disabled={!canEdit} />
+                <Label htmlFor="ws-name">{tw.workspaceName}</Label>
+                <Input id="ws-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={tw.workspaceNamePlaceholder} disabled={!canEdit} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ws-desc">Mô tả</Label>
-                <Textarea id="ws-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả ngắn về workspace..." rows={3} disabled={!canEdit} />
+                <Label htmlFor="ws-desc">{tw.description}</Label>
+                <Textarea id="ws-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={tw.descriptionPlaceholder} rows={3} disabled={!canEdit} />
               </div>
 
               <div className="space-y-2">
-                <Label>Slug (URL)</Label>
+                <Label>{tw.slugUrl}</Label>
                 <div className="flex items-center gap-2">
                   <Input value={activeWorkspace.slug} disabled className="font-mono text-sm" />
                   <Button variant="outline" size="icon" onClick={copySlug}>
@@ -199,7 +203,7 @@ export default function WorkspaceSettings() {
               {canEdit && (
                 <Button onClick={handleSave} disabled={isSaving || !name.trim()}>
                   <Save className="w-4 h-4 mr-2" />
-                  {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                  {isSaving ? tc.saving : tw.saveChanges}
                 </Button>
               )}
             </CardContent>
@@ -210,7 +214,7 @@ export default function WorkspaceSettings() {
         <TabsContent value="plan" className="mt-4">
           <Card>
             <CardContent className="p-6 space-y-4">
-              <h2 className="text-lg font-semibold">Gói dịch vụ</h2>
+              <h2 className="text-lg font-semibold">{tw.planSection}</h2>
               <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
                   <Crown className="w-5 h-5" />
@@ -218,10 +222,10 @@ export default function WorkspaceSettings() {
                 <div className="flex-1">
                   <div className="font-semibold capitalize">{activeWorkspace.plan} Plan</div>
                   <div className="text-sm text-muted-foreground">
-                    Tối đa {activeWorkspace.max_projects} dự án · {activeWorkspace.max_members} thành viên · {storageLabel} lưu trữ
+                    {tw.planDetails.replace('{projects}', String(activeWorkspace.max_projects)).replace('{members}', String(activeWorkspace.max_members)).replace('{storage}', storageLabel)}
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>Nâng cấp</Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>{tc.upgrade}</Button>
               </div>
             </CardContent>
           </Card>
@@ -234,28 +238,27 @@ export default function WorkspaceSettings() {
               <CardContent className="p-6 space-y-4">
                 <h2 className="text-lg font-semibold text-destructive flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5" />
-                  Vùng nguy hiểm
+                  {tw.dangerZone}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Xóa workspace sẽ xóa vĩnh viễn tất cả dự án, task, file và dữ liệu liên quan.
-                  Hành động này không thể hoàn tác.
+                  {tw.dangerDesc}
                 </p>
                 <AlertDialog onOpenChange={(open) => { if (!open) setDeleteConfirmName(''); }}>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" disabled={isDeleting}>
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Xóa Workspace
+                      {tw.deleteWorkspace}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Xóa Workspace "{activeWorkspace.name}"?</AlertDialogTitle>
+                      <AlertDialogTitle>{tw.deleteConfirmTitle.replace('{name}', activeWorkspace.name)}</AlertDialogTitle>
                       <AlertDialogDescription asChild>
                         <div className="space-y-3">
-                          <p>Tất cả dự án, task, file và thành viên trong workspace này sẽ bị xóa vĩnh viễn. Hành động này KHÔNG thể hoàn tác.</p>
+                          <p>{tw.deleteConfirmDesc}</p>
                           <div className="space-y-2">
                             <Label className="text-foreground font-medium">
-                              Nhập <span className="font-bold text-destructive">"{activeWorkspace.name}"</span> để xác nhận:
+                              {tw.deleteConfirmLabel.replace('{name}', activeWorkspace.name)}
                             </Label>
                             <Input
                               value={deleteConfirmName}
@@ -268,13 +271,13 @@ export default function WorkspaceSettings() {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Hủy</AlertDialogCancel>
+                      <AlertDialogCancel>{tc.cancel}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDelete}
                         disabled={!deleteNameMatches || isDeleting}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
                       >
-                        {isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+                        {isDeleting ? tc.deleting : tw.deletePermanently}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
