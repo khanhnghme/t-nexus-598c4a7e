@@ -1273,6 +1273,7 @@ export type Database = {
           nav_hidden_pages: Json
           onboarding_completed: boolean
           phone: string | null
+          preferred_locale: string
           project_limit: number | null
           skills: string | null
           social_links: Json
@@ -1304,6 +1305,7 @@ export type Database = {
           nav_hidden_pages?: Json
           onboarding_completed?: boolean
           phone?: string | null
+          preferred_locale?: string
           project_limit?: number | null
           skills?: string | null
           social_links?: Json
@@ -1335,6 +1337,7 @@ export type Database = {
           nav_hidden_pages?: Json
           onboarding_completed?: boolean
           phone?: string | null
+          preferred_locale?: string
           project_limit?: number | null
           skills?: string | null
           social_links?: Json
