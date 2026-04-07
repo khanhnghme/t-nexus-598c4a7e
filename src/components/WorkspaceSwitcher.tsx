@@ -8,13 +8,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Building2, Check, ChevronDown, Plus, Settings } from 'lucide-react';
+import { Building2, Check, ChevronDown, Plus, Settings, Ghost } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  Workspace Switcher — Top of sidebar                           */
-/* ═══════════════════════════════════════════════════════════════ */
 
 interface WorkspaceSwitcherProps {
   collapsed?: boolean;
@@ -24,8 +20,9 @@ export default function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps)
   const { workspaces, activeWorkspace, switchWorkspace, isAvailable, workspaceRole } = useWorkspace();
   const navigate = useNavigate();
 
-  // Don't render if workspace feature isn't available yet
   if (!isAvailable || !activeWorkspace) return null;
+
+  const isGuest = !workspaceRole;
 
   const getRoleBadge = (role?: string) => {
     switch (role) {
@@ -43,6 +40,32 @@ export default function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps)
       default: return '';
     }
   };
+
+  // Guest mode: show workspace name but no dropdown
+  if (isGuest) {
+    if (collapsed) {
+      return (
+        <div className="flex items-center justify-center w-full h-9" title={activeWorkspace.name}>
+          <Ghost className="w-4.5 h-4.5 opacity-60" />
+        </div>
+      );
+    }
+    return (
+      <div className="workspace-switcher">
+        <div className="workspace-switcher-btn cursor-default">
+          <div className="workspace-switcher-icon">
+            <Building2 className="w-3.5 h-3.5" />
+          </div>
+          <div className="workspace-switcher-info">
+            <div className="workspace-switcher-name">{activeWorkspace.name}</div>
+            <div className="workspace-switcher-role">
+              👽 Guest Access
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (collapsed) {
     return (
@@ -135,10 +158,7 @@ export default function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps)
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            onClick={() => {
-              // Create new workspace — will be handled by a dialog/page
-              navigate('/workspace/new');
-            }}
+            onClick={() => navigate('/workspace/new')}
             className="gap-2"
           >
             <Plus className="w-3.5 h-3.5" />
