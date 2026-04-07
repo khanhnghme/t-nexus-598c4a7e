@@ -12,8 +12,10 @@ export default function Auth() {
   if (authLoading) return <LoadingScreen message="Đang kiểm tra hệ thống..." />;
 
   // If user has active session + remember flag → show session confirmation screen
+  // But NOT if we're in the middle of a signup/OTP flow (no session should exist then)
   const hasRememberFlag = localStorage.getItem('t-nexus_remember_login') === 'true';
-  if (user && profile && profile.is_approved && hasRememberFlag) {
+  const isSignupOtpFlow = sessionStorage.getItem('t-nexus_signup_otp_flow') === 'true';
+  if (user && profile && profile.is_approved && hasRememberFlag && !isSignupOtpFlow) {
     return (
       <RememberLoginScreen
         profile={profile}

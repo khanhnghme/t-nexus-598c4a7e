@@ -408,75 +408,39 @@ export function MemberAuthForm() {
         return;
       }
 
-      // Set flag to prevent useEffect from navigating during signup flow
+      // Register via backend — no client session created
       isRegisteringRef.current = true;
-      const { data: signUpData, error } = await signUp(regEmail.trim(), regPassword, regStudentId.trim(), regFullName.trim(), regInstitution);
+      const { data: registerData, error: registerError } = await supabase.functions.invoke('signup-email-otp', {
+        body: {
+          action: 'register',
+          email: regEmail.trim().toLowerCase(),
+          password: regPassword,
+          student_id: regStudentId.trim(),
+          full_name: regFullName.trim(),
+          institution: regInstitution,
+        },
+      });
 
-      if (error) {
+      if (registerError || !registerData?.success) {
         isRegisteringRef.current = false;
         setIsLoading(false);
-        const msg = error.message?.toLowerCase() || '';
-        if (msg.includes('already registered') || msg.includes('already exists')) {
-          toast({ title: 'Email đã tồn tại', description: 'Email này đã được sử dụng. Vui lòng dùng email khác.', variant: 'destructive' });
+        const errMsg = registerData?.error || registerError?.message || 'Đăng ký thất bại';
+        if (errMsg.includes('MSSV đã tồn tại')) {
+          toast({ title: 'MSSV đã tồn tại', description: errMsg, variant: 'destructive' });
+        } else if (errMsg.includes('Email đã được sử dụng')) {
+          toast({ title: 'Email đã tồn tại', description: errMsg, variant: 'destructive' });
         } else {
-          toast({ title: 'Đăng ký thất bại', description: error.message, variant: 'destructive' });
+          toast({ title: 'Đăng ký thất bại', description: errMsg, variant: 'destructive' });
         }
       } else {
-        // Save plain password for demo purposes (fire-and-forget, don't block signup flow)
-        if (signUpData?.user?.id) {
-          supabase.functions.invoke('manage-users', {
-            body: { action: 'save_demo_password', user_id: signUpData.user.id, password: regPassword },
-          }).catch(err => console.warn('demo_passwords signup save failed:', err));
-        }
-
-        // Check if auto-approve is enabled
-        const [{ data: settingData }, { data: verifSetting }] = await Promise.all([
-          supabase.from('system_settings').select('value').eq('key', 'auto_approve_accounts').maybeSingle(),
-          supabase.from('system_settings').select('value').eq('key', 'require_email_verification').maybeSingle(),
-        ]);
-        const isAutoApproved = settingData?.value && (settingData.value as any).enabled === true;
-        const requireVerification = verifSetting?.value && (verifSetting.value as any).enabled === true;
-
-        if (requireVerification) {
-          // Send OTP code for email verification
-          if (signUpData?.user?.id) {
-            setRegUserId(signUpData.user.id);
-            try {
-              await supabase.functions.invoke('signup-email-otp', {
-                body: { action: 'send_code', email: regEmail.trim().toLowerCase(), user_id: signUpData.user.id },
-              });
-            } catch (e) {
-              console.warn('Failed to send OTP:', e);
-            }
-          }
-          await supabase.auth.signOut({ scope: 'local' });
-          setIsLoading(false);
-          setRegisterSuccess('verify_email');
-          toast({
-            title: 'Kiểm tra email',
-            description: 'Mã OTP 6 số đã được gửi đến email của bạn.',
-          });
-        } else {
-          // Auto-confirm user email via edge function (since auto_confirm is OFF globally)
-          if (signUpData?.user?.id) {
-            try {
-              await supabase.functions.invoke('auto-confirm-user', {
-                body: { user_id: signUpData.user.id },
-              });
-            } catch (e) {
-              console.warn('Auto-confirm failed:', e);
-            }
-          }
-          await supabase.auth.signOut({ scope: 'local' });
-          setIsLoading(false);
-          setRegisterSuccess(isAutoApproved ? 'approved' : 'pending');
-          toast({
-            title: 'Đăng ký thành công',
-            description: isAutoApproved
-              ? 'Tài khoản đã được kích hoạt. Bạn có thể đăng nhập ngay!'
-              : 'Tài khoản đang chờ Admin duyệt.',
-          });
-        }
+        // Backend created user + sent OTP, no session exists on client
+        setRegUserId(registerData.user_id);
+        setIsLoading(false);
+        setRegisterSuccess('verify_email');
+        toast({
+          title: 'Kiểm tra email',
+          description: 'Mã OTP 6 số đã được gửi đến email của bạn.',
+        });
       }
     } catch (err) {
       isRegisteringRef.current = false;

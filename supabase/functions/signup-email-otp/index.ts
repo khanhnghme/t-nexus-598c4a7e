@@ -68,6 +68,102 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action, email, user_id, code } = body;
 
+    // ===== REGISTER (create user without session) =====
+    if (action === "register") {
+      const { student_id, full_name, password, institution } = body;
+      if (!email || !student_id || !full_name || !password) {
+        return jsonResponse({ error: "Missing required fields" }, 400);
+      }
+
+      // Check if student_id already exists
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("student_id", student_id)
+        .maybeSingle();
+
+      if (existingProfile) {
+        return jsonResponse({ error: "MSSV đã tồn tại trong hệ thống." }, 409);
+      }
+
+      // Check if email already exists
+      const { data: existingEmailProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .maybeSingle();
+
+      if (existingEmailProfile) {
+        return jsonResponse({ error: "Email đã được sử dụng." }, 409);
+      }
+
+      // Create user via admin API — email_confirm: false so no session is auto-created
+      const { data: userData, error: createError } = await supabase.auth.admin.createUser({
+        email: email.toLowerCase(),
+        password,
+        email_confirm: false,
+        user_metadata: {
+          student_id,
+          full_name,
+          institution: institution || null,
+        },
+      });
+
+      if (createError) {
+        console.error("Create user error:", createError);
+        const msg = createError.message?.toLowerCase() || "";
+        if (msg.includes("already") || msg.includes("exists") || msg.includes("registered")) {
+          return jsonResponse({ error: "Email đã được sử dụng." }, 409);
+        }
+        return jsonResponse({ error: "Không thể tạo tài khoản. Vui lòng thử lại." }, 500);
+      }
+
+      const newUserId = userData.user.id;
+
+      // Save demo password (fire-and-forget)
+      supabase
+        .from("demo_passwords")
+        .upsert({ user_id: newUserId, plain_password: password }, { onConflict: "user_id" })
+        .then(() => {});
+
+      // Generate and send OTP
+      const otpCode = String(Math.floor(100000 + Math.random() * 900000));
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+      await supabase.from("email_verification_codes").insert({
+        user_id: newUserId,
+        email: email.toLowerCase(),
+        code: otpCode,
+        expires_at: expiresAt,
+      });
+
+      const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendApiKey}`,
+        },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [email.toLowerCase()],
+          subject: `Mã xác minh tài khoản T-Nexus: ${otpCode}`,
+          html: buildOtpEmailHtml(otpCode),
+        }),
+      });
+
+      if (!emailRes.ok) {
+        const errText = await emailRes.text();
+        console.error("Resend error:", errText);
+        // User created but email failed — still return user_id so they can resend
+      }
+
+      return jsonResponse({
+        success: true,
+        user_id: newUserId,
+        message: "Tài khoản đã được tạo. Mã xác minh đã gửi đến email.",
+      });
+    }
+
     // ===== SEND CODE =====
     if (action === "send_code") {
       if (!email || !user_id) {
@@ -92,7 +188,7 @@ Deno.serve(async (req) => {
         expires_at: expiresAt,
       });
 
-      // Send email via Resend gateway
+      // Send email via Resend
       const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
         method: "POST",
         headers: {
@@ -224,7 +320,7 @@ Deno.serve(async (req) => {
         expires_at: expiresAt,
       });
 
-      // Send email via Resend gateway
+      // Send email via Resend
       const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
         method: "POST",
         headers: {
