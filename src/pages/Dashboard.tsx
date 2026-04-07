@@ -191,6 +191,11 @@ export default function Dashboard() {
         { event: '*', schema: 'public', table: 'pending_approvals', filter: `user_id=eq.${user.id}` },
         () => { fetchPendingApprovals(); }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'workspace_invites' },
+        () => { fetchPendingWsInvites(); }
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user]);
