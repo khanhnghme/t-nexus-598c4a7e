@@ -650,9 +650,9 @@ export default function Dashboard() {
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-pink-500/10">
                       <MailOpen className="w-3.5 h-3.5 text-pink-500" />
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold leading-tight">Lời mời</p>
-                      <p className="text-[10px] text-muted-foreground leading-tight">invites</p>
+                     <div className="text-left">
+                       <p className="text-sm font-semibold leading-tight">{t?.invitations || 'Invitations'}</p>
+                       <p className="text-[10px] text-muted-foreground leading-tight">invites</p>
                     </div>
                     {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
                       <span className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full text-[10px] flex items-center justify-center font-bold animate-pulse shadow-sm">
@@ -672,7 +672,7 @@ export default function Dashboard() {
                       <KeyRound className="w-3.5 h-3.5 text-teal-600" />
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-semibold leading-tight">Tham gia</p>
+                      <p className="text-sm font-semibold leading-tight">{t?.join || 'Join'}</p>
                       <p className="text-[10px] text-muted-foreground leading-tight">by code</p>
                     </div>
                   </span>
