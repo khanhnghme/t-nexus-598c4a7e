@@ -1,61 +1,83 @@
 
 
-## Rà soát & Đồng bộ toàn bộ hệ thống với Workspace
+## Phase 1: Đổi admin → owner_system (Database + Edge Functions + RLS)
 
-### Vấn đề phát hiện
+Đây là phase đầu tiên, tập trung vào nền tảng database và backend. Giữ nguyên role `leader` và `member`.
 
-1. **Bug: Nút "+" tạo Workspace** → navigate tới `/workspace/new` nhưng **route này không tồn tại** trong App.tsx → hiển thị trang 404
-2. **Dashboard** không lọc projects theo workspace — fetch tất cả groups user tham gia, bất kể workspace nào
-3. **Calendar** không lọc theo workspace — hiển thị tasks từ tất cả groups
-4. **Không có trang tạo Workspace mới**
+### Mô hình role mới
 
-### Kế hoạch thực hiện
+| Cũ | Mới | Ghi chú |
+|----|-----|---------|
+| `admin` | `owner_system` | Chỉ 1 tài khoản duy nhất |
+| `leader` | `leader` | Giữ nguyên |
+| `member` | `member` | Giữ nguyên |
 
-**Bước 1: Tạo trang CreateWorkspace + route**
+### Bước 1: Database Migration
 
-- Tạo `src/pages/CreateWorkspace.tsx` — form đơn giản (tên, mô tả)
-- Gọi edge function `workspace-management` action `create_workspace`
-- Sau khi tạo xong → `refreshWorkspaces()` → switch sang workspace mới → redirect `/workspace/settings`
-- Thêm route `/workspace/new` vào App.tsx
+**1 migration file** thực hiện:
 
-**Bước 2: Cải thiện UX nút tạo Workspace trong sidebar**
+1. **Đổi enum `app_role`**: Thêm giá trị `owner_system`, migrate data từ `admin` → `owner_system`, xóa giá trị `admin` cũ
+   - Vì Postgres không cho xóa enum value trực tiếp → tạo enum mới, đổi cột, drop enum cũ
+   
+2. **Cập nhật tất cả DB functions** dùng `'admin'` → `'owner_system'`:
+   - `is_admin()` → đổi tên thành `is_owner_system()`, check role `owner_system`
+   - `is_moderator()` → check `owner_system` thay vì `admin`
+   - `is_group_leader()` → thay `admin` bằng `owner_system`
+   - `has_role()` → giữ nguyên (generic)
+   - `check_admin_user()` → đổi thành `check_owner_system_user()`
+   - `check_project_access()` → cập nhật
 
-- Thay nút `+` nhỏ bằng một item rõ ràng hơn: hiển thị dòng "＋ Tạo Workspace" bên dưới danh sách workspace hiện tại (style giống 1 nav item nhưng dùng màu nhạt + border dashed)
-- Khi collapsed: hiển thị icon `Plus` với tooltip "Tạo Workspace mới"
+3. **Cập nhật tất cả RLS policies** tham chiếu `is_admin()` → `is_owner_system()`
 
-**Bước 3: Dashboard lọc theo Workspace**
+4. **Reset tất cả user_roles**: DELETE tất cả records có role `admin` (hoặc `owner_system` sau khi migrate)
 
-Sửa `src/pages/Dashboard.tsx`:
-- Import `useWorkspace`
-- Trong `fetchDashboardData()`: nếu `isAvailable && activeWorkspace`, thêm `.eq('workspace_id', activeWorkspace.id)` vào query groups
-- Thêm `activeWorkspace` vào dependency của useEffect fetch data
-- Hiển thị tên workspace hiện tại ở header Dashboard (nhỏ, subtitle)
+### Bước 2: Cập nhật Edge Functions (7 files)
 
-**Bước 4: Calendar lọc theo Workspace**
+| File | Thay đổi |
+|------|----------|
+| `ensure-admin/index.ts` | Đổi tên → `ensure-owner` hoặc giữ tên, đổi role insert thành `owner_system` |
+| `manage-users/index.ts` | Thay `'admin'` → `'owner_system'` trong tất cả action handlers |
+| `workspace-management/index.ts` | Thay references `admin` → `owner_system` |
+| `auth-email-hook/index.ts` | Kiểm tra & đổi nếu có |
+| `signup-email-otp/index.ts` | Kiểm tra & đổi nếu có |
+| Các functions khác | Scan & fix |
 
-Sửa `src/pages/Calendar.tsx`:
-- Import `useWorkspace`
-- Trong query `calendar-tasks`: nếu workspace available, lọc tasks chỉ từ groups thuộc `activeWorkspace.id`
-- Thêm `activeWorkspace?.id` vào queryKey để auto-refetch khi switch workspace
+### Bước 3: Frontend — AuthContext + Types
 
-**Bước 5: Notification / Communication context**
+1. **`src/types/database.ts`**: `AppRole = 'owner_system' | 'leader' | 'member'`
+2. **`src/contexts/AuthContext.tsx`**: 
+   - `isAdmin` → `isOwnerSystem` (check `roles.includes('owner_system')`)
+   - Giữ `isLeader` = `roles.includes('leader') || isOwnerSystem`
+3. **`src/lib/roleLabels.ts`**: `admin` → `owner_system`, label "OwnerSystem"
 
-Kiểm tra và thêm filter workspace_id nếu cần cho:
-- `src/pages/Communication.tsx` — messages theo workspace
-- Notifications — giữ nguyên (notifications là per-user, không cần filter workspace)
+### Bước 4: Frontend — UI Labels + Access Control (27+ files)
 
-### Files affected
+Tất cả file dùng `isAdmin`:
+- Thay `isAdmin` → `isOwnerSystem` 
+- Thay text "Admin" / "Quản trị viên" → "OwnerSystem"
+- Thay "Dành cho Admin / Leader" → "Dành cho OwnerSystem"
 
-| File | Action |
-|------|--------|
-| `src/pages/CreateWorkspace.tsx` | Tạo mới |
-| `src/App.tsx` | Thêm route `/workspace/new` |
-| `src/components/SidebarTreeNav.tsx` | Cải thiện UX nút tạo WS |
-| `src/pages/Dashboard.tsx` | Thêm filter workspace |
-| `src/pages/Calendar.tsx` | Thêm filter workspace |
+### Bước 5: Xóa trang AdminAuthForm + route /admin-auth
 
-### Không thay đổi
-- Groups.tsx — đã có filter workspace rồi
-- WorkspaceContext, edge functions — giữ nguyên
-- Notifications — per-user, không cần workspace filter
+- Xóa `src/components/AdminAuthForm.tsx`
+- Xóa route `/admin-auth` trong `App.tsx`
+- OwnerSystem đăng nhập chung qua `/auth`
+
+### Bước 6: Setup Owner mới
+
+Sau khi reset xong (tất cả admin role bị xóa):
+- Khi vào app lần đầu, nếu DB không có bất kỳ `owner_system` nào → hiển thị "Setup OwnerSystem" flow
+- Flow này gọi edge function `ensure-admin` (đã đổi logic) để tạo owner_system từ ADMIN_EMAIL secret
+- Hoặc: hiển thị form setup trên Landing page (đã có nút "Initialize Admin" → đổi thành "Setup OwnerSystem")
+
+### Kết quả Phase 1
+- DB chỉ còn 3 role: `owner_system`, `leader`, `member`
+- Tất cả tài khoản admin cũ bị reset về không có role
+- Hệ thống yêu cầu setup lại OwnerSystem mới
+- UI + logic hoàn toàn đồng bộ
+
+### Lưu ý quan trọng
+- Phase này rất lớn (~50+ files), sẽ chia thành nhiều lần commit
+- Bắt đầu từ migration → edge functions → frontend context → UI files
+- Không thay đổi logic Workspace, project, hoặc các tính năng khác
 
