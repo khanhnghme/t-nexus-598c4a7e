@@ -390,7 +390,7 @@ export default function Dashboard() {
     if (isAdmin) return (
       <Badge variant="outline" className="bg-accent text-foreground border-border gap-1 font-medium text-[10px] shadow-none">
         <Shield className="w-3 h-3" strokeWidth={1.5} />
-        Quản trị viên
+        OwnerSystem
       </Badge>
     );
     if (isLeader) return (

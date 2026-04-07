@@ -46,7 +46,7 @@ export function getRoleDisplayName(role: string, isGroupCreator?: boolean): stri
     case 'leader':
       return 'Phó nhóm';
     case 'owner_system':
-      return 'Admin';
+      return 'OwnerSystem';
     case 'member':
     default:
       return 'Thành viên';

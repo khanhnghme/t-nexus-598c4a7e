@@ -184,7 +184,7 @@ export default function DashboardLayout({
   };
 
   const getRoleText = () => {
-    if (isAdmin) return 'Quản trị viên';
+    if (isAdmin) return 'OwnerSystem';
     if (isLeader) return 'Thành viên NC';
     return 'Thành viên';
   };

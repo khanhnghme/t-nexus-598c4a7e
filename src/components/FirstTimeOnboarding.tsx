@@ -92,7 +92,7 @@ export default function FirstTimeOnboarding({
 
   const getRoleInfo = () => {
     if (isAdmin) return {
-      label: 'Quản trị viên',
+      label: 'OwnerSystem',
       icon: <Shield className="w-5 h-5" />,
       color: 'bg-destructive text-destructive-foreground',
       gradient: 'from-destructive/20 to-destructive/5',

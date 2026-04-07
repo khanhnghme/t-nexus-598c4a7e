@@ -70,7 +70,7 @@ export default function MemberRoleManagementDialog({
   const isAdminRole = systemRoles.includes('admin');
   const isMemberRole = !isLeaderRole && !isAdminRole;
 
-  const currentRoleLabel = isAdminRole ? 'Admin' : isLeaderRole ? 'Thành viên Nâng cao' : 'Thành viên';
+  const currentRoleLabel = isAdminRole ? 'OwnerSystem' : isLeaderRole ? 'Leader' : 'Thành viên';
 
   const ownedGroups = groups.filter(g => g.is_owner);
   const memberGroups = groups.filter(g => !g.is_owner);
@@ -138,15 +138,15 @@ export default function MemberRoleManagementDialog({
 
       await logActivity({
         userId: user!.id,
-        userName: currentProfile?.full_name || 'Admin',
+        userName: currentProfile?.full_name || 'OwnerSystem',
         action: 'PROMOTE_MEMBER',
         actionType: 'member',
-        description: `Nâng quyền ${member.full_name} từ Thành viên → Thành viên Nâng cao`,
+        description: `Nâng quyền ${member.full_name} từ Thành viên → Leader`,
         metadata: { target_user_id: member.id, from_role: 'member', to_role: 'leader' },
       });
 
-      await notifyRoleChanged({ userIds: [member.id], adminName: currentProfile?.full_name || 'Admin', newRole: 'Thành viên Nâng cao', action: 'promote' });
-      toast({ title: 'Đã nâng quyền', description: `${member.full_name} đã trở thành Thành viên Nâng cao.` });
+      await notifyRoleChanged({ userIds: [member.id], adminName: currentProfile?.full_name || 'OwnerSystem', newRole: 'Leader', action: 'promote' });
+      toast({ title: 'Đã nâng quyền', description: `${member.full_name} đã trở thành Leader.` });
       onRoleChanged();
       setShowPromoteConfirm(false);
       onOpenChange(false);
@@ -186,14 +186,14 @@ export default function MemberRoleManagementDialog({
 
       await logActivity({
         userId: user!.id,
-        userName: currentProfile?.full_name || 'Admin',
+        userName: currentProfile?.full_name || 'OwnerSystem',
         action: 'DEMOTE_MEMBER',
         actionType: 'member',
-        description: `Hạ quyền ${member.full_name} từ Thành viên Nâng cao → Thành viên`,
+        description: `Hạ quyền ${member.full_name} từ Leader → Thành viên`,
         metadata: { target_user_id: member.id, from_role: 'leader', to_role: 'member' },
       });
 
-      await notifyRoleChanged({ userIds: [member.id], adminName: currentProfile?.full_name || 'Admin', newRole: 'Thành viên', action: 'demote' });
+      await notifyRoleChanged({ userIds: [member.id], adminName: currentProfile?.full_name || 'OwnerSystem', newRole: 'Thành viên', action: 'demote' });
       toast({ title: 'Đã hạ quyền', description: `${member.full_name} đã trở thành Thành viên.` });
       onRoleChanged();
       setShowDemoteConfirm(false);
@@ -216,7 +216,7 @@ export default function MemberRoleManagementDialog({
 
       await logActivity({
         userId: user!.id,
-        userName: currentProfile?.full_name || 'Admin',
+        userName: currentProfile?.full_name || 'OwnerSystem',
         action: 'UPDATE_MEMBER_LIMITS',
         actionType: 'member',
         description: `Cập nhật giới hạn cho ${member.full_name}: ${projectLimit} projects`,
@@ -394,7 +394,7 @@ export default function MemberRoleManagementDialog({
                     <Button variant="outline" className="w-full justify-start gap-2 h-11" onClick={() => setShowPromoteConfirm(true)}>
                       <ArrowUp className="w-4 h-4 text-green-600" />
                       <div className="text-left">
-                        <p className="text-sm font-medium">Nâng quyền → Thành viên Nâng cao</p>
+                        <p className="text-sm font-medium">Nâng quyền → Leader</p>
                         <p className="text-xs text-muted-foreground">Cho phép tạo project, áp dụng giới hạn mặc định</p>
                       </div>
                     </Button>
@@ -436,7 +436,7 @@ export default function MemberRoleManagementDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Nâng quyền thành viên</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc muốn nâng quyền <strong>{member.full_name}</strong> từ <strong>Thành viên</strong> lên <strong>Thành viên Nâng cao</strong>?
+              Bạn có chắc muốn nâng quyền <strong>{member.full_name}</strong> từ <strong>Thành viên</strong> lên <strong>Leader</strong>?
               <br /><br />
               Giới hạn mặc định sẽ được áp dụng:
               <br />• Số project: {DEFAULT_PROJECT_LIMIT}
@@ -458,7 +458,7 @@ export default function MemberRoleManagementDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Hạ quyền thành viên</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc muốn hạ quyền <strong>{member.full_name}</strong> từ <strong>Thành viên Nâng cao</strong> xuống <strong>Thành viên</strong>?
+              Bạn có chắc muốn hạ quyền <strong>{member.full_name}</strong> từ <strong>Leader</strong> xuống <strong>Thành viên</strong>?
               <br /><br />
               Sau khi hạ quyền, người này sẽ không thể tạo project mới.
             </AlertDialogDescription>

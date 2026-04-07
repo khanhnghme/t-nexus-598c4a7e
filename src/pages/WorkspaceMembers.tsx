@@ -178,7 +178,7 @@ export default function WorkspaceMembers() {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'owner': return 'Owner';
-      case 'admin': return 'Admin';
+      case 'admin': return 'OwnerSystem';
       case 'member': return 'Member';
       default: return role;
     }

@@ -214,7 +214,7 @@ export default function PersonalInfo() {
 
   const getRoleInfo = () => {
     if (isAdmin) return {
-      label: 'Quản trị viên',
+      label: 'OwnerSystem',
       description: 'Toàn quyền hệ thống',
       icon: Shield,
       gradient: 'from-red-500 to-rose-600',
