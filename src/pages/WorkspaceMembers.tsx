@@ -49,7 +49,7 @@ export default function WorkspaceMembers() {
   const { toast } = useToast();
 
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'project_member'>('project_member');
+  const [inviteRole, setInviteRole] = useState<'workspace_admin' | 'workspace_member'>('workspace_member');
   const [isInviting, setIsInviting] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [guests, setGuests] = useState<GuestInfo[]>([]);
@@ -158,7 +158,7 @@ export default function WorkspaceMembers() {
     }
   };
 
-  const handleChangeRole = async (userId: string, newRole: 'admin' | 'project_member', name: string) => {
+  const handleChangeRole = async (userId: string, newRole: 'workspace_admin' | 'workspace_member', name: string) => {
     const result = await changeRole(userId, newRole);
     if (result.success) {
       toast({ title: 'Đã cập nhật', description: `Vai trò của ${name} đã được đổi thành ${newRole}.` });
@@ -231,18 +231,18 @@ export default function WorkspaceMembers() {
                 </div>
                 <div className="space-y-2">
                   <Label>Vai trò</Label>
-                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'admin' | 'project_member')}>
+                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'workspace_admin' | 'workspace_member')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="member">
+                      <SelectItem value="workspace_member">
                         <div className="flex items-center gap-2">
                           <User className="w-3.5 h-3.5" />
                           <span>Member</span>
                         </div>
                       </SelectItem>
-                      <SelectItem value="admin">
+                      <SelectItem value="workspace_admin">
                         <div className="flex items-center gap-2">
                           <Shield className="w-3.5 h-3.5" />
                           <span>Admin</span>
@@ -321,7 +321,7 @@ export default function WorkspaceMembers() {
                     {getRoleLabel(member.role)}
                   </div>
 
-                  {canManage && member.role !== 'owner' && (
+                  {canManage && member.role !== 'workspace_owner' && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -331,7 +331,7 @@ export default function WorkspaceMembers() {
                       <DropdownMenuContent align="end">
                         {isOwner && (
                           <>
-                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, member.role === 'workspace_admin' ? 'project_member' : 'admin', member.full_name)}>
+                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, member.role === 'workspace_admin' ? 'workspace_member' : 'workspace_admin', member.full_name)}>
                               <ArrowUpDown className="w-3.5 h-3.5 mr-2" />
                               {member.role === 'workspace_admin' ? 'Hạ xuống Member' : 'Nâng lên Admin'}
                             </DropdownMenuItem>

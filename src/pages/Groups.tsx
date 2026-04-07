@@ -338,7 +338,7 @@ export default function Groups() {
           role: 'project_member' as const,
           status: 'pending',
         }));
-        await supabase.from('project_invitations').insert(invitations);
+        await supabase.from('project_invitations').insert(invitations as any);
 
         // Send notifications
         for (const m of selectedMembers) {

@@ -15,7 +15,7 @@ import {
   ListTodo, FileUp, Activity, Hash, TrendingUp, AlertTriangle,
   Loader2, BarChart3, Target, Star, FolderOpen, Building
 } from 'lucide-react';
-import type { Profile } from '@/types/database';
+import type { Profile, ProjectRole } from '@/types/database';
 
 interface TaskInfo {
   id: string;
@@ -55,7 +55,7 @@ interface ProfileViewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   profile: Profile | null;
-  role?: 'project_owner' | 'project_admin' | 'project_member';
+  role?: ProjectRole;
   isGroupCreator?: boolean;
   groupId?: string;
 }
@@ -64,7 +64,7 @@ export default function ProfileViewDialog({
   open,
   onOpenChange,
   profile,
-  role = 'project_member',
+  role = 'project_member' as any,
   isGroupCreator = false,
   groupId,
 }: ProfileViewDialogProps) {
@@ -192,8 +192,8 @@ export default function ProfileViewDialog({
       return <Badge className="bg-accent/15 text-accent gap-1 border-accent/30"><Crown className="w-3 h-3" />Trưởng nhóm</Badge>;
     }
     switch (role) {
-      case 'owner_system':
-        return <Badge className="bg-destructive/10 text-destructive gap-1"><Shield className="w-3 h-3" />Admin</Badge>;
+      case 'project_owner':
+        return <Badge className="bg-destructive/10 text-destructive gap-1"><Shield className="w-3 h-3" />Chủ dự án</Badge>;
       case 'project_admin':
         return <Badge className="bg-primary/10 text-primary gap-1"><Crown className="w-3 h-3" />Phó nhóm</Badge>;
       default:
