@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarMonthView from '@/components/calendar/CalendarMonthView';
 import CalendarWeekView from '@/components/calendar/CalendarWeekView';
@@ -16,6 +17,7 @@ import { parseLocalDateTime } from '@/lib/datetime';
 
 export default function CalendarPage() {
   const { user } = useAuth();
+  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -45,7 +47,7 @@ export default function CalendarPage() {
   }, [currentDate, viewMode]);
 
   const { data: taskEvents = [], refetch: refetchTasks } = useQuery({
-    queryKey: ['calendar-tasks', user?.id, dateRange.start.toISOString(), dateRange.end.toISOString()],
+    queryKey: ['calendar-tasks', user?.id, dateRange.start.toISOString(), dateRange.end.toISOString(), activeWorkspace?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data: memberships } = await supabase.from('group_members').select('group_id').eq('user_id', user.id);
@@ -53,14 +55,21 @@ export default function CalendarPage() {
       const groupIds = memberships.map((m) => m.group_id);
       const { data: assignments } = await supabase.from('task_assignments').select('task_id').eq('user_id', user.id);
       const assignedTaskIds = assignments?.map((a) => a.task_id) || [];
-      const { data: tasks } = await supabase
+      let tasksQuery = supabase
         .from('tasks')
-        .select('id, title, deadline, status, group_id, slug, groups!inner(name, slug)')
+        .select('id, title, deadline, status, group_id, slug, groups!inner(name, slug, workspace_id)')
         .in('group_id', groupIds)
         .not('deadline', 'is', null);
-      if (!tasks?.length) return [];
+
+      const { data: tasks } = await tasksQuery;
+      let filteredTasks = tasks || [];
+      // Filter by active workspace
+      if (wsAvailable && activeWorkspace?.id) {
+        filteredTasks = filteredTasks.filter((t: any) => t.groups?.workspace_id === activeWorkspace.id);
+      }
+      if (!filteredTasks.length) return [];
       const events: CalendarEvent[] = [];
-      tasks.forEach((task: any) => {
+      filteredTasks.forEach((task: any) => {
         const isAssigned = assignedTaskIds.includes(task.id);
         if (assignedTaskIds.length > 0 && !isAssigned) return;
         const deadline = parseLocalDateTime(task.deadline);

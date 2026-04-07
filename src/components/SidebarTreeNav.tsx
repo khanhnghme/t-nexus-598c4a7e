@@ -206,22 +206,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       {isAvailable && activeWorkspace && (
         <>
           <div className="sidebar-nav-separator" />
-          <div className="sidebar-section-label flex items-center justify-between">
-            <span>WORKSPACE</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => navigate('/workspace/new')}
-                  className="p-0.5 rounded hover:bg-white/10 transition-colors opacity-50 hover:opacity-100"
-                >
-                  <Plus className="w-3 h-3" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8}>
-                <p>Tạo Workspace mới</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <div className="sidebar-section-label">WORKSPACE</div>
 
           {/* Workspace header (collapsible) */}
           <button
@@ -315,6 +300,17 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
             </div>
           )}
         </>
+      )}
+
+      {/* Create workspace item */}
+      {isAvailable && (
+        <Link
+          to="/workspace/new"
+          className="sidebar-nav-item opacity-60 hover:opacity-100 border border-dashed border-border/50 mt-1"
+        >
+          <Plus className="nav-icon" strokeWidth={1.8} />
+          <span className="nav-label text-muted-foreground">Tạo Workspace</span>
+        </Link>
       )}
 
       {/* ── Personal section ── */}

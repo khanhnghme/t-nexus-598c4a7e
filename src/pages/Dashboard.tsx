@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import MandatoryNotification from '@/components/MandatoryNotification';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import StreakBadge from '@/components/StreakBadge';
 import StreakFullScreenCelebration from '@/components/StreakFullScreenCelebration';
 import { useLoginStreak } from '@/hooks/useLoginStreak';
@@ -91,6 +92,7 @@ interface PendingInvitation {
 
 export default function Dashboard() {
   const { user, profile, mustChangePassword, refreshProfile, isLeader, isAdmin } = useAuth();
+  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
   const streak = useLoginStreak(user?.id);
 
   const [groups, setGroups] = useState<Group[]>([]);
@@ -152,7 +154,7 @@ export default function Dashboard() {
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, activeWorkspace?.id]);
 
   // Realtime for invitations and pending approvals
   useEffect(() => {
@@ -361,11 +363,18 @@ export default function Dashboard() {
         return;
       }
 
-      const { data: groupsData, error: groupsError } = await supabase
+      let query = supabase
         .from('groups')
         .select('*')
         .in('id', groupIds)
         .order('created_at', { ascending: false });
+
+      // Filter by active workspace if available
+      if (wsAvailable && activeWorkspace?.id) {
+        query = query.eq('workspace_id', activeWorkspace.id);
+      }
+
+      const { data: groupsData, error: groupsError } = await query;
 
       if (groupsError) throw groupsError;
 
