@@ -60,7 +60,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { vi as viLocale, enUS } from 'date-fns/locale';
 
 import invitationIllustration from '@/assets/invitation-illustration.png';
 
@@ -477,19 +477,19 @@ export default function Dashboard() {
     if (isAdmin) return (
       <Badge variant="outline" className="bg-accent text-foreground border-border gap-1 font-medium text-[10px] shadow-none">
         <Shield className="w-3 h-3" strokeWidth={1.5} />
-        OwnerSystem
+        {t?.ownerSystem || 'OwnerSystem'}
       </Badge>
     );
     if (isLeader) return (
       <Badge variant="outline" className="bg-accent text-foreground border-border gap-1 font-medium text-[10px] shadow-none">
         <Star className="w-3 h-3" strokeWidth={1.5} />
-        Thành viên Nâng cao
+        {t?.advancedMember || 'Advanced Member'}
       </Badge>
     );
     return (
       <Badge variant="outline" className="bg-accent text-muted-foreground border-border gap-1 font-medium text-[10px] shadow-none">
         <User className="w-3 h-3" strokeWidth={1.5} />
-        Thành viên
+        {t?.memberRole || 'Member'}
       </Badge>
     );
   };
