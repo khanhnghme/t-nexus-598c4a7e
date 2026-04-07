@@ -109,7 +109,7 @@ interface PendingWorkspaceInvite {
 
 export default function Dashboard() {
   const { user, profile, mustChangePassword, refreshProfile, isLeader, isAdmin } = useAuth();
-  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
+  const { activeWorkspace, isAvailable: wsAvailable, refreshWorkspaces } = useWorkspace();
   const streak = useLoginStreak(user?.id);
 
   const [groups, setGroups] = useState<Group[]>([]);
