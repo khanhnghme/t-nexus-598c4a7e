@@ -104,7 +104,9 @@ function ProtectedLayout() {
     );
   }
 
-  if (isLoading) return <LoadingScreen />;
+  if (isLoading) return (
+    <div className="fixed inset-0 z-[9999]" style={{ background: 'linear-gradient(160deg, hsl(228 27% 8%) 0%, hsl(228 22% 12%) 50%, hsl(228 27% 10%) 100%)' }} />
+  );
   if (!user) return <Navigate to="/auth" replace />;
   if (profile && !profile.is_approved) return <Navigate to="/auth" replace />;
   return (
