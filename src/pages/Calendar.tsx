@@ -184,6 +184,9 @@ export default function CalendarPage() {
           onNext={handleNext}
           onToday={() => setCurrentDate(new Date())}
           onAddEvent={() => handleAddEvent()}
+          workspaces={wsAvailable ? workspaces.map(w => ({ id: w.id, name: w.name })) : []}
+          wsFilter={calendarWsFilter}
+          onWsFilterChange={setCalendarWsFilter}
         />
 
         {viewMode === 'month' && (
