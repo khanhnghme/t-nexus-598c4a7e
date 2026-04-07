@@ -15,7 +15,7 @@ import {
   ListTodo, FileUp, Activity, Hash, TrendingUp, AlertTriangle,
   Loader2, BarChart3, Target, Star, FolderOpen, Building
 } from 'lucide-react';
-import type { Profile } from '@/types/database';
+import type { Profile, ProjectRole } from '@/types/database';
 
 interface TaskInfo {
   id: string;
