@@ -46,6 +46,7 @@ import Pricing from "./pages/Pricing";
 import Terms from "./pages/Terms";
 import WorkspaceSettings from "./pages/WorkspaceSettings";
 import WorkspaceMembers from "./pages/WorkspaceMembers";
+import CreateWorkspace from "./pages/CreateWorkspace";
 
 const queryClient = new QueryClient();
 
@@ -162,6 +163,7 @@ function AppRoutes() {
           <Route path="/admin/system" element={<AdminSystem />} />
           <Route path="/utilities" element={<Utilities />} />
           {/* ═══ Workspace routes ═══ */}
+          <Route path="/workspace/new" element={<CreateWorkspace />} />
           <Route path="/workspace/settings" element={<WorkspaceSettings />} />
           <Route path="/workspace/members" element={<WorkspaceMembers />} />
         </Route>
