@@ -56,7 +56,7 @@ export default function ProjectTransferDialog({
         const { data: adminRoles } = await supabase
           .from('user_roles')
           .select('user_id')
-          .eq('role', 'owner_system');
+          .eq('role', 'project_owner');
         const adminIds = (adminRoles || []).map(r => r.user_id);
         let adminProfiles: Record<string, { full_name: string; avatar_url: string | null }> = {};
         if (adminIds.length > 0) {
@@ -109,7 +109,7 @@ export default function ProjectTransferDialog({
                   user_id: adminId,
                   full_name: adminProfiles[adminId]?.full_name || 'OwnerSystem',
                   avatar_url: adminProfiles[adminId]?.avatar_url || null,
-                  role: 'owner_system',
+                  role: 'project_owner',
                 });
               }
             });
@@ -164,14 +164,14 @@ export default function ProjectTransferDialog({
         // Update new owner's group_members role to leader
         await supabase
           .from('group_members')
-          .update({ role: 'leader' })
+          .update({ role: 'project_admin' })
           .eq('group_id', group.id)
           .eq('user_id', newOwnerId);
 
         // Downgrade old owner to member in group
         await supabase
           .from('group_members')
-          .update({ role: 'member' })
+          .update({ role: 'project_member' })
           .eq('group_id', group.id)
           .eq('user_id', member.id);
 
@@ -267,7 +267,7 @@ export default function ProjectTransferDialog({
                                   <UserAvatar src={m.avatar_url} name={m.full_name} size="sm" />
                                   <span>{m.full_name}</span>
                                   <span className="text-xs text-muted-foreground">
-                                    ({m.role === 'owner_system' ? 'OwnerSystem' : m.role === 'leader' ? 'Phó nhóm' : 'Thành viên'})
+                                    ({m.role === 'project_owner' ? 'OwnerSystem' : m.role === 'project_admin' ? 'Phó nhóm' : 'Thành viên'})
                                   </span>
                                 </div>
                               </SelectItem>

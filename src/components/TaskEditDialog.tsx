@@ -535,7 +535,7 @@ export default function TaskEditDialog({
                           </div>
                           {groupCreatorId && member.user_id === groupCreatorId ? (
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-warning/10 text-warning border-warning/30 shrink-0">TN</Badge>
-                          ) : member.role === 'leader' && (
+                          ) : member.role === 'project_admin' && (
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30 shrink-0">PN</Badge>
                           )}
                         </div>

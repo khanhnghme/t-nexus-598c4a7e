@@ -29,7 +29,7 @@ interface ActivityLogFiltersProps {
 
 const ACTION_TYPES = [
   { value: 'all', label: 'Tất cả loại' },
-  { value: 'member', label: 'Thành viên' },
+  { value: 'project_member', label: 'Thành viên' },
   { value: 'stage', label: 'Giai đoạn' },
   { value: 'task', label: 'Task' },
   { value: 'resource', label: 'Tài nguyên' },

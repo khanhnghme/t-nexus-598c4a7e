@@ -6,10 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// ─────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────
-
 type Action =
   | "create_workspace"
   | "update_workspace"
@@ -27,25 +23,18 @@ type Action =
 
 interface RequestBody {
   action: Action;
-  // Workspace fields
   workspace_id?: string;
   name?: string;
   description?: string;
   logo_url?: string;
-  // Invite fields
   invite_id?: string;
   email?: string;
-  role?: string; // 'admin' | 'member' | 'editor' | 'viewer'
-  group_id?: string; // For project guest invites
-  // Member management
+  role?: string;
+  group_id?: string;
   target_user_id?: string;
   new_role?: string;
   new_owner_id?: string;
 }
-
-// ─────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -58,24 +47,18 @@ function err(message: string, status = 400) {
   return json({ error: message }, status);
 }
 
-// ─────────────────────────────────────────────────
-// Main Handler
-// ─────────────────────────────────────────────────
-
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Admin client (service role — bypasses RLS)
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Get calling user from auth header
     const authHeader = req.headers.get("Authorization");
     let callerId: string | null = null;
 
@@ -95,7 +78,6 @@ serve(async (req: Request) => {
       if (!callerId) return err("Authentication required", 401);
       if (!body.name) return err("Name is required");
 
-      // Generate slug
       const { data: slug } = await supabaseAdmin.rpc("generate_workspace_slug", {
         _name: body.name,
       });
@@ -117,7 +99,6 @@ serve(async (req: Request) => {
         .single();
 
       if (wsErr) return err(wsErr.message);
-
       return json({ success: true, workspace: ws });
     }
 
@@ -128,13 +109,12 @@ serve(async (req: Request) => {
       if (!callerId) return err("Authentication required", 401);
       if (!body.workspace_id) return err("workspace_id required");
 
-      // Check: must be owner or admin
       const { data: role } = await supabaseAdmin.rpc("get_workspace_role", {
         _user_id: callerId,
         _workspace_id: body.workspace_id,
       });
 
-      if (role !== "owner" && role !== "admin") {
+      if (role !== "workspace_owner" && role !== "workspace_admin") {
         return err("Only owner or admin can update workspace settings", 403);
       }
 
@@ -161,7 +141,6 @@ serve(async (req: Request) => {
       if (!callerId) return err("Authentication required", 401);
       if (!body.workspace_id) return err("workspace_id required");
 
-      // Only owner can delete
       const { data: isOwner } = await supabaseAdmin.rpc("is_workspace_owner", {
         _user_id: callerId,
         _workspace_id: body.workspace_id,
@@ -185,29 +164,26 @@ serve(async (req: Request) => {
       if (!callerId) return err("Authentication required", 401);
       if (!body.workspace_id || !body.email) return err("workspace_id and email required");
 
-      const inviteRole = body.role || "member";
-      if (inviteRole !== "admin" && inviteRole !== "member") {
-        return err("Role must be 'admin' or 'member'");
+      const inviteRole = body.role || "workspace_member";
+      if (inviteRole !== "workspace_admin" && inviteRole !== "workspace_member") {
+        return err("Role must be 'workspace_admin' or 'workspace_member'");
       }
 
-      // Check: must be owner or admin
       const { data: callerRole } = await supabaseAdmin.rpc("get_workspace_role", {
         _user_id: callerId,
         _workspace_id: body.workspace_id,
       });
 
-      if (callerRole !== "owner" && callerRole !== "admin") {
+      if (callerRole !== "workspace_owner" && callerRole !== "workspace_admin") {
         return err("Only owner or admin can invite members", 403);
       }
 
-      // Check if user exists
       const { data: inviteeProfile } = await supabaseAdmin
         .from("profiles")
         .select("id")
         .eq("email", body.email)
         .maybeSingle();
 
-      // Check if already a member
       if (inviteeProfile) {
         const { data: existingMember } = await supabaseAdmin
           .from("workspace_members")
@@ -216,7 +192,6 @@ serve(async (req: Request) => {
           .eq("user_id", inviteeProfile.id)
           .maybeSingle();
 
-        // Also check if owner
         const { data: ws } = await supabaseAdmin
           .from("workspaces")
           .select("owner_id")
@@ -228,7 +203,6 @@ serve(async (req: Request) => {
         }
       }
 
-      // Check for existing pending invite
       const { data: existingInvite } = await supabaseAdmin
         .from("workspace_invites")
         .select("id")
@@ -269,9 +243,8 @@ serve(async (req: Request) => {
         return err("workspace_id, group_id, and email required");
       }
 
-      const guestRole = body.role || "member";
+      const guestRole = body.role || "project_member";
 
-      // Check: caller must have authority in this project
       const { data: callerWsRole } = await supabaseAdmin.rpc("get_workspace_role", {
         _user_id: callerId,
         _workspace_id: body.workspace_id,
@@ -285,16 +258,15 @@ serve(async (req: Request) => {
         .maybeSingle();
 
       const canInvite =
-        callerWsRole === "owner" ||
-        callerWsRole === "admin" ||
-        callerGroupMember?.role === "leader" ||
-        callerGroupMember?.role === "admin";
+        callerWsRole === "workspace_owner" ||
+        callerWsRole === "workspace_admin" ||
+        callerGroupMember?.role === "project_owner" ||
+        callerGroupMember?.role === "project_admin";
 
       if (!canInvite) {
         return err("Insufficient permissions to invite guests to this project", 403);
       }
 
-      // Check if user exists
       const { data: inviteeProfile } = await supabaseAdmin
         .from("profiles")
         .select("id")
@@ -336,7 +308,6 @@ serve(async (req: Request) => {
 
       if (findErr || !invite) return err("Invite not found or already processed");
 
-      // Verify invite is for this user
       const { data: callerProfile } = await supabaseAdmin
         .from("profiles")
         .select("email")
@@ -347,7 +318,6 @@ serve(async (req: Request) => {
         return err("This invite is not for you", 403);
       }
 
-      // Check expiry
       if (new Date(invite.expires_at) < new Date()) {
         await supabaseAdmin
           .from("workspace_invites")
@@ -357,32 +327,29 @@ serve(async (req: Request) => {
       }
 
       if (invite.scope === "workspace") {
-        // Add to workspace_members
         const { error: addErr } = await supabaseAdmin
           .from("workspace_members")
           .insert({
             workspace_id: invite.workspace_id,
             user_id: callerId,
-            role: invite.role_granted as "admin" | "member",
+            role: invite.role_granted, // workspace_admin or workspace_member
             invited_by: invite.invited_by,
           });
 
         if (addErr) return err(addErr.message);
       } else if (invite.scope === "project" && invite.group_id) {
-        // Add to group_members as guest
         const { error: addErr } = await supabaseAdmin
           .from("group_members")
           .insert({
             group_id: invite.group_id,
             user_id: callerId,
-            role: invite.role_granted as "admin" | "leader" | "member",
+            role: invite.role_granted, // project_member, project_guest, etc.
             is_guest: true,
           });
 
         if (addErr) return err(addErr.message);
       }
 
-      // Mark invite as accepted
       await supabaseAdmin
         .from("workspace_invites")
         .update({ status: "accepted", invitee_user_id: callerId })
@@ -420,11 +387,10 @@ serve(async (req: Request) => {
         _workspace_id: body.workspace_id,
       });
 
-      if (callerRole !== "owner" && callerRole !== "admin") {
+      if (callerRole !== "workspace_owner" && callerRole !== "workspace_admin") {
         return err("Only owner or admin can remove members", 403);
       }
 
-      // Cannot remove the owner
       const { data: ws } = await supabaseAdmin
         .from("workspaces")
         .select("owner_id")
@@ -435,13 +401,12 @@ serve(async (req: Request) => {
         return err("Cannot remove the workspace owner");
       }
 
-      // Admin cannot remove other admins (only owner can)
-      if (callerRole === "admin") {
+      if (callerRole === "workspace_admin") {
         const { data: targetRole } = await supabaseAdmin.rpc("get_workspace_role", {
           _user_id: body.target_user_id,
           _workspace_id: body.workspace_id,
         });
-        if (targetRole === "admin") {
+        if (targetRole === "workspace_admin") {
           return err("Admins cannot remove other admins. Only the owner can.", 403);
         }
       }
@@ -465,7 +430,6 @@ serve(async (req: Request) => {
         return err("workspace_id, target_user_id, and new_role required");
       }
 
-      // Only owner can change roles
       const { data: isOwner } = await supabaseAdmin.rpc("is_workspace_owner", {
         _user_id: callerId,
         _workspace_id: body.workspace_id,
@@ -473,8 +437,8 @@ serve(async (req: Request) => {
 
       if (!isOwner) return err("Only workspace owner can change roles", 403);
 
-      if (body.new_role !== "admin" && body.new_role !== "member") {
-        return err("Role must be 'admin' or 'member'");
+      if (body.new_role !== "workspace_admin" && body.new_role !== "workspace_member") {
+        return err("Role must be 'workspace_admin' or 'workspace_member'");
       }
 
       const { error: updErr } = await supabaseAdmin
@@ -494,7 +458,6 @@ serve(async (req: Request) => {
       if (!callerId) return err("Authentication required", 401);
       if (!body.workspace_id) return err("workspace_id required");
 
-      // Owner cannot leave (must transfer ownership first)
       const { data: isOwner } = await supabaseAdmin.rpc("is_workspace_owner", {
         _user_id: callerId,
         _workspace_id: body.workspace_id,
@@ -520,13 +483,11 @@ serve(async (req: Request) => {
     if (body.action === "list_my_workspaces") {
       if (!callerId) return err("Authentication required", 401);
 
-      // Get workspaces where user is owner
       const { data: owned } = await supabaseAdmin
         .from("workspaces")
         .select("*, workspace_members(count)")
         .eq("owner_id", callerId);
 
-      // Get workspaces where user is member
       const { data: memberOf } = await supabaseAdmin
         .from("workspace_members")
         .select("role, workspace:workspaces(*)")
@@ -535,12 +496,12 @@ serve(async (req: Request) => {
       const workspaces = [
         ...(owned || []).map((w: any) => ({
           ...w,
-          my_role: "owner",
+          my_role: "workspace_owner",
           member_count: w.workspace_members?.[0]?.count || 0,
         })),
         ...(memberOf || []).map((m: any) => ({
           ...m.workspace,
-          my_role: m.role,
+          my_role: m.role, // already workspace_admin or workspace_member
         })),
       ];
 
@@ -554,7 +515,6 @@ serve(async (req: Request) => {
       if (!callerId) return err("Authentication required", 401);
       if (!body.workspace_id) return err("workspace_id required");
 
-      // Verify caller is a participant
       const { data: isParticipant } = await supabaseAdmin.rpc("is_workspace_participant", {
         _user_id: callerId,
         _workspace_id: body.workspace_id,
@@ -562,21 +522,18 @@ serve(async (req: Request) => {
 
       if (!isParticipant) return err("Not a workspace participant", 403);
 
-      // Get workspace owner
       const { data: ws } = await supabaseAdmin
         .from("workspaces")
         .select("owner_id")
         .eq("id", body.workspace_id)
         .single();
 
-      // Get owner profile
       const { data: ownerProfile } = await supabaseAdmin
         .from("profiles")
         .select("id, full_name, email, avatar_url, student_id")
         .eq("id", ws?.owner_id)
         .single();
 
-      // Get members
       const { data: members } = await supabaseAdmin
         .from("workspace_members")
         .select("user_id, role, joined_at, profiles:user_id(id, full_name, email, avatar_url, student_id)")
@@ -585,12 +542,12 @@ serve(async (req: Request) => {
       const result = [
         {
           ...ownerProfile,
-          role: "owner",
+          role: "workspace_owner",
           joined_at: null,
         },
         ...(members || []).map((m: any) => ({
           ...m.profiles,
-          role: m.role,
+          role: m.role, // workspace_admin or workspace_member
           joined_at: m.joined_at,
         })),
       ];
@@ -607,7 +564,6 @@ serve(async (req: Request) => {
         return err("workspace_id and new_owner_id required");
       }
 
-      // Only current owner can transfer
       const { data: isOwner } = await supabaseAdmin.rpc("is_workspace_owner", {
         _user_id: callerId,
         _workspace_id: body.workspace_id,
@@ -615,7 +571,6 @@ serve(async (req: Request) => {
 
       if (!isOwner) return err("Only current owner can transfer ownership", 403);
 
-      // New owner must be a current member
       const { data: newOwnerMember } = await supabaseAdmin
         .from("workspace_members")
         .select("user_id")
@@ -625,26 +580,23 @@ serve(async (req: Request) => {
 
       if (!newOwnerMember) return err("New owner must be an existing workspace member");
 
-      // Transfer: update workspace owner_id
       await supabaseAdmin
         .from("workspaces")
         .update({ owner_id: body.new_owner_id })
         .eq("id", body.workspace_id);
 
-      // Remove new owner from workspace_members (they're now the owner)
       await supabaseAdmin
         .from("workspace_members")
         .delete()
         .eq("workspace_id", body.workspace_id)
         .eq("user_id", body.new_owner_id);
 
-      // Add old owner as admin
       await supabaseAdmin
         .from("workspace_members")
         .insert({
           workspace_id: body.workspace_id,
           user_id: callerId,
-          role: "admin",
+          role: "workspace_admin",
         });
 
       return json({ success: true });

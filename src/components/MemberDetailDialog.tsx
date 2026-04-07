@@ -182,7 +182,7 @@ export default function MemberDetailDialog({
 
   // System role labels (for user_roles)
   const systemRoleLabel: Record<string, string> = {
-    'admin': 'OwnerSystem', 'leader': 'Thành viên Nâng cao', 'member': 'Thành viên'
+    'admin': 'OwnerSystem', 'project_admin': 'Thành viên Nâng cao', 'project_member': 'Thành viên'
   };
 
   // Use centralized role label utility
@@ -190,8 +190,8 @@ export default function MemberDetailDialog({
     if (isCreator) return 'Trưởng nhóm';
     switch (role) {
       case 'owner_system': return 'OwnerSystem';
-      case 'leader': return 'Phó nhóm';
-      case 'member': return 'Thành viên';
+      case 'project_admin': return 'Phó nhóm';
+      case 'project_member': return 'Thành viên';
       default: return role;
     }
   };
@@ -383,7 +383,7 @@ export default function MemberDetailDialog({
                             )}
                             <span className="text-sm font-medium">{g.name}</span>
                           </div>
-                          <Badge variant={g.is_creator ? 'default' : g.role === 'leader' ? 'default' : 'secondary'} className={`text-xs ${g.is_creator ? 'bg-accent/15 text-accent border-accent/30' : ''}`}>
+                          <Badge variant={g.is_creator ? 'default' : g.role === 'project_admin' ? 'default' : 'secondary'} className={`text-xs ${g.is_creator ? 'bg-accent/15 text-accent border-accent/30' : ''}`}>
                             {getGroupRoleLabel(g.role, g.is_creator)}
                           </Badge>
                         </div>

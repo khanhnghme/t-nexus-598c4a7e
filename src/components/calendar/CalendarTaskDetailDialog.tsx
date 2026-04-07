@@ -133,7 +133,7 @@ export default function CalendarTaskDetailDialog({ open, onOpenChange, event, on
           .eq('user_id', user.id)
           .single();
 
-        setIsLeaderInGroup(membership?.role === 'leader' || membership?.role === 'owner_system');
+        setIsLeaderInGroup(membership?.role === 'project_admin' || membership?.role === 'project_owner');
       }
     } catch (err) {
       console.error('Error fetching task data:', err);

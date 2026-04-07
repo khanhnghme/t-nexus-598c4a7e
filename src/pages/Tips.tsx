@@ -53,7 +53,7 @@ interface SectionData {
 
 const sections: SectionData[] = [
   {
-    id: 'member',
+    id: 'project_member',
     label: 'Phần I — Thành viên',
     roleLabel: 'Dành cho tất cả thành viên',
     roleIcon: User,

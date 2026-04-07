@@ -1,4 +1,26 @@
-export type AppRole = 'owner_system' | 'leader' | 'member';
+// ═══════════════════════════════════════════════════════
+// System-level Roles (user_roles table)
+// ═══════════════════════════════════════════════════════
+export type SystemRole = 'system_owner' | 'system_admin';
+
+// ═══════════════════════════════════════════════════════
+// Workspace-level Roles
+// ═══════════════════════════════════════════════════════
+export type WorkspaceRole = 'workspace_owner' | 'workspace_admin' | 'workspace_member' | 'workspace_guest';
+
+// ═══════════════════════════════════════════════════════
+// Project-level Roles (group_members table)
+// ═══════════════════════════════════════════════════════
+export type ProjectRole = 'project_owner' | 'project_admin' | 'project_member' | 'project_guest';
+
+// ═══════════════════════════════════════════════════════
+// User Plan
+// ═══════════════════════════════════════════════════════
+export type UserPlan = 'plan_free' | 'plan_plus' | 'plan_pro' | 'plan_business' | 'plan_custom';
+
+/** @deprecated Use SystemRole instead */
+export type AppRole = SystemRole;
+
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE' | 'VERIFIED';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
@@ -12,28 +34,26 @@ export interface Profile {
   must_change_password: boolean;
   created_at: string;
   updated_at: string;
-  // Extended profile fields
   year_batch: string | null;
   major: string | null;
   phone: string | null;
   skills: string | null;
   bio: string | null;
-  // Suspension fields
   suspended_until: string | null;
   suspension_reason: string | null;
   suspended_at: string | null;
   suspended_by: string | null;
-  // Limits
   project_limit: number | null;
   onboarding_completed: boolean;
   institution: string | null;
   nav_hidden_pages: any;
+  user_plan: UserPlan;
 }
 
 export interface UserRole {
   id: string;
   user_id: string;
-  role: AppRole;
+  role: SystemRole;
   created_at: string;
 }
 
@@ -41,7 +61,6 @@ export interface UserRole {
 // Workspace Types
 // ═══════════════════════════════════════════════════════
 
-export type WorkspaceRole = 'owner' | 'admin' | 'member';
 export type ProjectVisibility = 'private' | 'workspace_public' | 'public_link';
 export type InviteScope = 'workspace' | 'project';
 
@@ -58,7 +77,6 @@ export interface Workspace {
   max_storage_mb: number;
   created_at: string;
   updated_at: string;
-  // Joined data
   my_role?: WorkspaceRole;
   member_count?: number;
 }
@@ -66,10 +84,9 @@ export interface Workspace {
 export interface WorkspaceMember {
   workspace_id: string;
   user_id: string;
-  role: 'admin' | 'member';
+  role: WorkspaceRole;
   invited_by: string | null;
   joined_at: string;
-  // Joined data
   profiles?: Profile;
 }
 
@@ -86,7 +103,6 @@ export interface WorkspaceInvite {
   status: 'pending' | 'accepted' | 'declined' | 'expired';
   expires_at: string;
   created_at: string;
-  // Joined data
   workspaces?: Workspace;
   groups?: Group;
   inviter_profile?: Profile;
@@ -116,7 +132,6 @@ export interface Group {
   show_activity_public?: boolean;
   show_members_public?: boolean;
   leader_id?: string | null;
-  // Workspace fields
   workspace_id?: string | null;
   visibility?: ProjectVisibility;
 }
@@ -125,7 +140,7 @@ export interface GroupMember {
   id: string;
   group_id: string;
   user_id: string;
-  role: AppRole;
+  role: ProjectRole;
   joined_at: string;
   is_guest?: boolean;
   profiles?: Profile;
@@ -191,12 +206,11 @@ export interface ProjectInvitation {
   group_id: string;
   invited_user_id: string;
   invited_by: string;
-  role: AppRole;
+  role: ProjectRole;
   status: InvitationStatus;
   expires_at: string | null;
   created_at: string;
   updated_at: string;
-  // Joined data
   profiles?: Profile;
   groups?: Group;
   inviter_profile?: Profile;

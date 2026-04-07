@@ -55,7 +55,7 @@ interface ProfileViewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   profile: Profile | null;
-  role?: 'owner_system' | 'leader' | 'member';
+  role?: 'project_owner' | 'project_admin' | 'project_member';
   isGroupCreator?: boolean;
   groupId?: string;
 }
@@ -64,7 +64,7 @@ export default function ProfileViewDialog({
   open,
   onOpenChange,
   profile,
-  role = 'member',
+  role = 'project_member',
   isGroupCreator = false,
   groupId,
 }: ProfileViewDialogProps) {
@@ -194,7 +194,7 @@ export default function ProfileViewDialog({
     switch (role) {
       case 'owner_system':
         return <Badge className="bg-destructive/10 text-destructive gap-1"><Shield className="w-3 h-3" />Admin</Badge>;
-      case 'leader':
+      case 'project_admin':
         return <Badge className="bg-primary/10 text-primary gap-1"><Crown className="w-3 h-3" />Phó nhóm</Badge>;
       default:
         return <Badge variant="secondary" className="gap-1"><UserCheck className="w-3 h-3" />Thành viên</Badge>;

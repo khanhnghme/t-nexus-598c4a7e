@@ -173,7 +173,7 @@ export default function JoinByCodeDialog({ open, onOpenChange, onJoined }: JoinB
           userId: user.id,
           userName: profile.full_name,
           action: 'REQUEST_JOIN_BY_CODE',
-          actionType: 'member',
+          actionType: 'project_member',
           description: `Gửi yêu cầu tham gia project "${groupPreview.name}" bằng mã (chờ duyệt)`,
           groupId: groupPreview.id,
         });
@@ -185,7 +185,7 @@ export default function JoinByCodeDialog({ open, onOpenChange, onJoined }: JoinB
       } else {
         const { error: joinError } = await supabase
           .from('group_members')
-          .insert({ group_id: groupPreview.id, user_id: user.id, role: 'member' });
+          .insert({ group_id: groupPreview.id, user_id: user.id, role: 'project_member' });
 
         if (joinError) {
           if (joinError.message?.includes('giới hạn')) {
@@ -205,7 +205,7 @@ export default function JoinByCodeDialog({ open, onOpenChange, onJoined }: JoinB
           userId: user.id,
           userName: profile.full_name,
           action: 'JOIN_BY_CODE',
-          actionType: 'member',
+          actionType: 'project_member',
           description: `Tham gia project "${groupPreview.name}" bằng mã`,
           groupId: groupPreview.id,
         });

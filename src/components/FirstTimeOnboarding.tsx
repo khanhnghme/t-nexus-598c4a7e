@@ -52,8 +52,8 @@ export default function FirstTimeOnboarding({
   const { refreshProfile, roles } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isAdmin = roles.includes('owner_system');
-  const isLeader = roles.includes('leader') || isAdmin;
+  const isAdmin = roles.includes('system_owner');
+  const isLeader = roles.includes('system_admin') || isAdmin;
 
   const allSteps: StepId[] = mustChangePassword
     ? ['welcome', 'password', 'info', 'finish']

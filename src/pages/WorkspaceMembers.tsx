@@ -49,14 +49,14 @@ export default function WorkspaceMembers() {
   const { toast } = useToast();
 
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'member'>('member');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'project_member'>('project_member');
   const [isInviting, setIsInviting] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [guests, setGuests] = useState<GuestInfo[]>([]);
   const [guestsLoading, setGuestsLoading] = useState(false);
 
-  const isOwner = workspaceRole === 'owner';
-  const canManage = isOwner || workspaceRole === 'admin';
+  const isOwner = workspaceRole === 'workspace_owner';
+  const canManage = isOwner || workspaceRole === 'workspace_admin';
 
   const fetchGuests = useCallback(async () => {
     if (!activeWorkspace) return;
@@ -158,7 +158,7 @@ export default function WorkspaceMembers() {
     }
   };
 
-  const handleChangeRole = async (userId: string, newRole: 'admin' | 'member', name: string) => {
+  const handleChangeRole = async (userId: string, newRole: 'admin' | 'project_member', name: string) => {
     const result = await changeRole(userId, newRole);
     if (result.success) {
       toast({ title: 'Đã cập nhật', description: `Vai trò của ${name} đã được đổi thành ${newRole}.` });
@@ -179,7 +179,7 @@ export default function WorkspaceMembers() {
     switch (role) {
       case 'owner': return 'Owner';
       case 'admin': return 'OwnerSystem';
-      case 'member': return 'Member';
+      case 'project_member': return 'Member';
       default: return role;
     }
   };
@@ -231,7 +231,7 @@ export default function WorkspaceMembers() {
                 </div>
                 <div className="space-y-2">
                   <Label>Vai trò</Label>
-                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'admin' | 'member')}>
+                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'admin' | 'project_member')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -331,9 +331,9 @@ export default function WorkspaceMembers() {
                       <DropdownMenuContent align="end">
                         {isOwner && (
                           <>
-                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, member.role === 'admin' ? 'member' : 'admin', member.full_name)}>
+                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, member.role === 'workspace_admin' ? 'project_member' : 'admin', member.full_name)}>
                               <ArrowUpDown className="w-3.5 h-3.5 mr-2" />
-                              {member.role === 'admin' ? 'Hạ xuống Member' : 'Nâng lên Admin'}
+                              {member.role === 'workspace_admin' ? 'Hạ xuống Member' : 'Nâng lên Admin'}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                           </>

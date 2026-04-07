@@ -169,8 +169,8 @@ export default function MemberManagement() {
     return currentList.filter(m => {
       const roles = memberRoles[m.id] || [];
       switch (roleFilter) {
-        case 'member': return !roles.includes('admin') && !roles.includes('leader');
-        case 'leader': return roles.includes('leader') && !roles.includes('admin');
+        case 'project_member': return !roles.includes('admin') && !roles.includes('system_admin');
+        case 'project_admin': return roles.includes('system_admin') && !roles.includes('admin');
         case 'admin': return roles.includes('admin');
         default: return true;
       }
@@ -289,10 +289,10 @@ export default function MemberManagement() {
   const handleApprovePending = async (member: Profile) => {
     const { error } = await supabase.from('profiles').update({ is_approved: true }).eq('id', member.id);
     if (error) { toast({ title: 'Lỗi', description: error.message, variant: 'destructive' }); return; }
-    await supabase.from('user_roles').upsert({ user_id: member.id, role: 'member' }, { onConflict: 'user_id,role' } as any);
+    await supabase.from('user_roles').upsert({ user_id: member.id, role: 'project_member' }, { onConflict: 'user_id,role' } as any);
     await logActivity({
       userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-      action: 'APPROVE_MEMBER_REGISTRATION', actionType: 'member',
+      action: 'APPROVE_MEMBER_REGISTRATION', actionType: 'project_member',
       description: `Duyệt tài khoản đăng ký của ${member.full_name} (${member.student_id})`,
     });
     toast({ title: 'Đã duyệt', description: `Tài khoản ${member.full_name} đã được kích hoạt.` });
@@ -307,7 +307,7 @@ export default function MemberManagement() {
     if (error || data?.error) { toast({ title: 'Lỗi', description: data?.error || error?.message, variant: 'destructive' }); return; }
     await logActivity({
       userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-      action: 'REJECT_MEMBER_REGISTRATION', actionType: 'member',
+      action: 'REJECT_MEMBER_REGISTRATION', actionType: 'project_member',
       description: `Từ chối và xóa tài khoản đăng ký của ${member.full_name} (${member.student_id})`,
     });
     toast({ title: 'Đã xóa', description: `Đã xóa tài khoản ${member.full_name} khỏi hệ thống.` });
@@ -331,7 +331,7 @@ export default function MemberManagement() {
     }
     await logActivity({
       userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-      action: 'CREATE_SYSTEM_MEMBER', actionType: 'member',
+      action: 'CREATE_SYSTEM_MEMBER', actionType: 'project_member',
       description: `Tạo tài khoản hệ thống cho ${newFullName}`,
     });
     toast({ title: 'Tạo thành viên thành công', description: `Đã tạo tài khoản cho ${newFullName}. Mật khẩu mặc định: 123456` });
@@ -358,7 +358,7 @@ export default function MemberManagement() {
     }
     await logActivity({
       userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-      action: 'CHANGE_MEMBER_PASSWORD', actionType: 'member',
+      action: 'CHANGE_MEMBER_PASSWORD', actionType: 'project_member',
       description: `Đổi mật khẩu cho ${selectedMember.full_name}`,
     });
     toast({ title: 'Cập nhật thành công', description: `Đã đổi mật khẩu cho ${selectedMember.full_name}` });
@@ -393,7 +393,7 @@ export default function MemberManagement() {
     }
     await logActivity({
       userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-      action: 'EDIT_SYSTEM_MEMBER', actionType: 'member',
+      action: 'EDIT_SYSTEM_MEMBER', actionType: 'project_member',
       description: `Cập nhật thông tin tài khoản ${editFullName}`,
     });
     toast({ title: 'Cập nhật thành công', description: `Đã cập nhật thông tin cho ${editFullName}` });
@@ -414,7 +414,7 @@ export default function MemberManagement() {
         if (error || data?.error) throw new Error(data?.error || error?.message || 'Có lỗi xảy ra');
         await logActivity({
           userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-          action: 'DELETE_SYSTEM_MEMBER', actionType: 'member',
+          action: 'DELETE_SYSTEM_MEMBER', actionType: 'project_member',
           description: `Xóa tài khoản ${memberRef.full_name} khỏi hệ thống`,
         });
         fetchMembers();
@@ -430,7 +430,7 @@ export default function MemberManagement() {
     if (error) { toast({ title: 'Lỗi', description: error.message, variant: 'destructive' }); return; }
     await logActivity({
       userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-      action: 'UNSUSPEND_MEMBER', actionType: 'member',
+      action: 'UNSUSPEND_MEMBER', actionType: 'project_member',
       description: `Mở khóa tài khoản ${member.full_name}`,
     });
     toast({ title: 'Đã mở khóa', description: `Tài khoản ${member.full_name} đã được mở khóa.` });
@@ -473,7 +473,7 @@ export default function MemberManagement() {
     if (names.length > 0) {
       await logActivity({
         userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-        action: 'BULK_SUSPEND_MEMBERS', actionType: 'member',
+        action: 'BULK_SUSPEND_MEMBERS', actionType: 'project_member',
         description: `Tạm khóa hàng loạt ${names.length} tài khoản: ${names.join(', ')}`,
       });
       toast({ title: 'Đã khóa hàng loạt', description: `${names.length} tài khoản đã bị tạm khóa (1 ngày).` });
@@ -496,7 +496,7 @@ export default function MemberManagement() {
     if (names.length > 0) {
       await logActivity({
         userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-        action: 'BULK_UNSUSPEND_MEMBERS', actionType: 'member',
+        action: 'BULK_UNSUSPEND_MEMBERS', actionType: 'project_member',
         description: `Mở khóa hàng loạt ${names.length} tài khoản: ${names.join(', ')}`,
       });
       toast({ title: 'Đã mở khóa hàng loạt', description: `${names.length} tài khoản đã được mở khóa.` });
@@ -519,7 +519,7 @@ export default function MemberManagement() {
     if (names.length > 0) {
       await logActivity({
         userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-        action: 'BULK_DELETE_MEMBERS', actionType: 'member',
+        action: 'BULK_DELETE_MEMBERS', actionType: 'project_member',
         description: `Xóa hàng loạt ${names.length} tài khoản: ${names.join(', ')}`,
       });
       toast({ title: 'Đã xóa hàng loạt', description: `${names.length} tài khoản đã bị xóa.` });
@@ -535,14 +535,14 @@ export default function MemberManagement() {
       const member = members.find(m => m.id === id);
       if (!member) continue;
       const roles = memberRoles[id] || [];
-      if (roles.includes('leader') || roles.includes('admin')) continue;
-      const { error } = await supabase.from('user_roles').insert({ user_id: id, role: 'leader' });
+      if (roles.includes('system_admin') || roles.includes('admin')) continue;
+      const { error } = await supabase.from('user_roles').insert({ user_id: id, role: 'project_admin' });
       if (!error) { promoted.push(member.full_name); promotedIds.push(id); }
     }
     if (promoted.length > 0) {
       await logActivity({
         userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-        action: 'BULK_PROMOTE_MEMBERS', actionType: 'member',
+        action: 'BULK_PROMOTE_MEMBERS', actionType: 'project_member',
         description: `Nâng cấp hàng loạt ${promoted.length} tài khoản lên Leader: ${promoted.join(', ')}`,
       });
       await notifyRoleChanged({ userIds: promotedIds, adminName: currentProfile?.full_name || 'Admin', newRole: 'Leader', action: 'promote' });
@@ -562,15 +562,15 @@ export default function MemberManagement() {
       const member = members.find(m => m.id === id);
       if (!member) continue;
       const roles = memberRoles[id] || [];
-      if (!roles.includes('leader')) continue;
+      if (!roles.includes('system_admin')) continue;
       if (roles.includes('admin')) continue;
-      const { error } = await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'leader');
+      const { error } = await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'project_admin');
       if (!error) { demoted.push(member.full_name); demotedIds.push(id); }
     }
     if (demoted.length > 0) {
       await logActivity({
         userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-        action: 'BULK_DEMOTE_MEMBERS', actionType: 'member',
+        action: 'BULK_DEMOTE_MEMBERS', actionType: 'project_member',
         description: `Hạ cấp hàng loạt ${demoted.length} tài khoản về Thành viên: ${demoted.join(', ')}`,
       });
       await notifyRoleChanged({ userIds: demotedIds, adminName: currentProfile?.full_name || 'Admin', newRole: 'Thành viên', action: 'demote' });
@@ -624,7 +624,7 @@ export default function MemberManagement() {
             {isAdminMember && (
               <Badge className="bg-destructive/10 text-destructive text-xs gap-1"><Shield className="w-3 h-3" />Admin</Badge>
             )}
-            {!isAdminMember && roles.includes('leader') && (
+            {!isAdminMember && roles.includes('system_admin') && (
               <Badge className="bg-warning/20 text-warning border-warning/30 text-xs gap-1"><Star className="w-3 h-3" />Leader</Badge>
             )}
             {member.id === user?.id && <Badge variant="outline" className="text-xs">Bạn</Badge>}
@@ -914,7 +914,7 @@ export default function MemberManagement() {
                     fullName: m.full_name,
                     studentId: m.student_id,
                     email: m.email,
-                    role: isMemberAdmin(m.id) ? 'OwnerSystem' : (memberRoles[m.id]?.includes('leader') ? 'Leader' : 'Thành viên')
+                    role: isMemberAdmin(m.id) ? 'OwnerSystem' : (memberRoles[m.id]?.includes('project_admin') ? 'Leader' : 'Thành viên')
                   }));
                   exportMembersToExcel(exportData, 'danh-sach-thanh-vien-he-thong');
                 }}
@@ -1225,7 +1225,7 @@ export default function MemberManagement() {
         open={isDetailDialogOpen}
         onOpenChange={(open) => { setIsDetailDialogOpen(open); if (!open) setSelectedMember(null); }}
         member={selectedMember}
-        systemRoles={selectedMember ? (memberRoles[selectedMember.id] || ['member']) : []}
+        systemRoles={selectedMember ? (memberRoles[selectedMember.id] || ['project_member']) : []}
       />
 
       {/* Bulk Action Confirm Dialog */}
@@ -1303,7 +1303,7 @@ export default function MemberManagement() {
             if (success > 0) {
               await logActivity({
                 userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-                action: 'BULK_IMPORT_MEMBERS', actionType: 'member',
+                action: 'BULK_IMPORT_MEMBERS', actionType: 'project_member',
                 description: `Import hàng loạt ${success} thành viên từ Excel`,
               });
             }
@@ -1320,7 +1320,7 @@ export default function MemberManagement() {
             if (success > 0) {
               await logActivity({
                 userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
-                action: 'BULK_REMOVE_MEMBERS', actionType: 'member',
+                action: 'BULK_REMOVE_MEMBERS', actionType: 'project_member',
                 description: `Xóa hàng loạt ${success} thành viên từ Excel`,
               });
             }

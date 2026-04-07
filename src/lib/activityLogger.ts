@@ -4,7 +4,7 @@ interface LogActivityParams {
   userId: string;
   userName: string;
   action: string;
-  actionType: 'member' | 'task' | 'stage' | 'resource' | 'score' | 'project' | 'setting' | 'system' | 'meeting';
+  actionType: 'project_member' | 'task' | 'stage' | 'resource' | 'score' | 'project' | 'setting' | 'system' | 'meeting';
   description: string;
   groupId?: string;
   metadata?: Record<string, any>;

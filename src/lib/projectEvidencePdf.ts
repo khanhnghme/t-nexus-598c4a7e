@@ -198,7 +198,7 @@ const formatFileSize = (bytes: number): string => {
 };
 
 const formatRole = (role: string): string => {
-  return role === 'leader' ? 'Leader' : 'Thanh vien';
+  return role === 'project_admin' ? 'Leader' : 'Thanh vien';
 };
 
 const formatAppealStatus = (status: string): string => {
@@ -642,7 +642,7 @@ const generateProjectEvidencePdf = async (data: ExportData, includeTimestampInNa
   yPos = addSectionHeading(doc, '1.3 Thong tin nhom', yPos);
   
   const totalMembers = members.length;
-  const leader = members.find(m => m.role === 'leader');
+  const leader = members.find(m => m.role === 'project_admin');
   
   doc.setFillColor(245, 247, 250);
   doc.roundedRect(14, yPos, pageWidth - 28, 20, 3, 3, 'FD');

@@ -173,7 +173,7 @@ export default function Groups() {
         const groupsWithMembers: GroupWithMembers[] = allGroups.map((g) => ({
           ...g,
           memberCount: memberMap.get(g.id)?.count || 0,
-          myRole: roleMap.get(g.id) || (joinedSet.has(g.id) ? 'member' : ''),
+          myRole: roleMap.get(g.id) || (joinedSet.has(g.id) ? 'project_member' : ''),
           memberAvatars: memberMap.get(g.id)?.avatars || [],
         }));
 
@@ -325,7 +325,7 @@ export default function Groups() {
       const { error: memberError } = await supabase.from('group_members').insert({
         group_id: newGroup.id,
         user_id: user!.id,
-        role: 'leader',
+        role: 'project_admin',
       });
       if (memberError) throw memberError;
 
@@ -335,7 +335,7 @@ export default function Groups() {
           group_id: newGroup.id,
           invited_user_id: m.id,
           invited_by: user!.id,
-          role: 'member' as const,
+          role: 'project_member' as const,
           status: 'pending',
         }));
         await supabase.from('project_invitations').insert(invitations);
@@ -375,7 +375,7 @@ export default function Groups() {
     switch (role) {
       case 'admin':
         return <Badge className="bg-destructive/10 text-destructive">Admin</Badge>;
-      case 'leader':
+      case 'project_admin':
         return <Badge className="bg-warning/10 text-warning">Leader</Badge>;
       default:
         return <Badge variant="secondary">Member</Badge>;
@@ -800,7 +800,7 @@ export default function Groups() {
                           <Badge className="bg-muted text-muted-foreground shadow-lg font-medium text-[10px]">
                             Chưa tham gia
                           </Badge>
-                        ) : group.myRole === 'admin' ? (
+                        ) : group.myRole === 'workspace_admin' ? (
                           <Badge className="bg-destructive text-destructive-foreground shadow-lg font-semibold">
                             <Crown className="w-3 h-3 mr-1" />
                             Admin
@@ -810,7 +810,7 @@ export default function Groups() {
                             <Crown className="w-3 h-3 mr-1" />
                             Trưởng nhóm
                           </Badge>
-                        ) : group.myRole === 'leader' ? (
+                        ) : group.myRole === 'project_admin' ? (
                           <Badge className="bg-warning text-warning-foreground shadow-lg font-semibold">
                             <Crown className="w-3 h-3 mr-1" />
                             Phó nhóm
