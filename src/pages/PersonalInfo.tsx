@@ -407,8 +407,9 @@ export default function PersonalInfo() {
         {/* Two-column: Nav Customization (left) + Personal Info (right) */}
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
           {/* Left: Nav Customization */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
             <NavCustomizationCard userId={user?.id} isAdmin={isAdmin} />
+            <LanguageCard />
           </div>
 
           {/* Right: Personal Info Card */}
