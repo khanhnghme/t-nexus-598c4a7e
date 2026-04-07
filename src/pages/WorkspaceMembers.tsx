@@ -291,7 +291,6 @@ export default function WorkspaceMembers() {
       case 'workspace_guest': return tw.guest;
       default: return role;
     }
-    }
   };
 
   return (
