@@ -62,10 +62,6 @@ export default function WorkspaceSettings() {
   const tw = t.workspace;
   const tc = t.common;
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { members } = useWorkspaceMembers();
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
