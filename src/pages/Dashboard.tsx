@@ -56,6 +56,7 @@ import {
   Check,
   Users,
   Clock,
+  Building2,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
