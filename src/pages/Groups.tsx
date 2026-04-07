@@ -70,7 +70,7 @@ interface MemberToAdd {
 
 export default function Groups() {
   const { user, isLeader, isAdmin, profile } = useAuth();
-  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
+  const { activeWorkspace, isAvailable: wsAvailable, workspaceRole } = useWorkspace();
   const { toast } = useToast();
   const [groups, setGroups] = useState<GroupWithMembers[]>([]);
   const [isLoading, setIsLoading] = useState(true);
