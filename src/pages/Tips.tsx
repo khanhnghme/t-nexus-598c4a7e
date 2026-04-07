@@ -235,7 +235,7 @@ const sections: SectionData[] = [
   {
     id: 'admin',
     label: 'Phần III — Admin',
-    roleLabel: 'Admin',
+    roleLabel: 'OwnerSystem',
     roleIcon: Lock,
     gradientClass: 'from-destructive/80 to-destructive',
     badgeClass: 'bg-destructive/15 text-destructive',

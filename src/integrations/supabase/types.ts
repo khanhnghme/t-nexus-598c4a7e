@@ -2339,7 +2339,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
@@ -2580,6 +2580,7 @@ export type Database = {
       }
       is_leader: { Args: { _user_id: string }; Returns: boolean }
       is_moderator: { Args: { _user_id: string }; Returns: boolean }
+      is_owner_system: { Args: { _user_id: string }; Returns: boolean }
       is_task_assignee: {
         Args: { _task_id: string; _user_id: string }
         Returns: boolean
@@ -2611,7 +2612,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "leader" | "member"
+      app_role: "owner_system" | "leader" | "member"
       approval_status: "pending" | "approved" | "rejected"
       invite_scope: "workspace" | "project"
       project_visibility: "private" | "workspace_public" | "public_link"
@@ -2744,7 +2745,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "leader", "member"],
+      app_role: ["owner_system", "leader", "member"],
       approval_status: ["pending", "approved", "rejected"],
       invite_scope: ["workspace", "project"],
       project_visibility: ["private", "workspace_public", "public_link"],

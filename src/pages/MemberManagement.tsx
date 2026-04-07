@@ -543,12 +543,12 @@ export default function MemberManagement() {
       await logActivity({
         userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
         action: 'BULK_PROMOTE_MEMBERS', actionType: 'member',
-        description: `Nâng cấp hàng loạt ${promoted.length} tài khoản lên Thành viên Nâng cao: ${promoted.join(', ')}`,
+        description: `Nâng cấp hàng loạt ${promoted.length} tài khoản lên Leader: ${promoted.join(', ')}`,
       });
-      await notifyRoleChanged({ userIds: promotedIds, adminName: currentProfile?.full_name || 'Admin', newRole: 'Thành viên Nâng cao', action: 'promote' });
-      toast({ title: 'Đã nâng cấp hàng loạt', description: `${promoted.length} tài khoản đã được nâng lên Thành viên Nâng cao.` });
+      await notifyRoleChanged({ userIds: promotedIds, adminName: currentProfile?.full_name || 'Admin', newRole: 'Leader', action: 'promote' });
+      toast({ title: 'Đã nâng cấp hàng loạt', description: `${promoted.length} tài khoản đã được nâng lên Leader.` });
     } else {
-      toast({ title: 'Không có thay đổi', description: 'Các tài khoản đã chọn đều đã là Thành viên Nâng cao hoặc Admin.', variant: 'destructive' });
+      toast({ title: 'Không có thay đổi', description: 'Các tài khoản đã chọn đều đã là Leader hoặc Admin.', variant: 'destructive' });
     }
     setIsBulkProcessing(false); clearSelection(); setBulkAction(null); fetchMembers();
   };
@@ -625,7 +625,7 @@ export default function MemberManagement() {
               <Badge className="bg-destructive/10 text-destructive text-xs gap-1"><Shield className="w-3 h-3" />Admin</Badge>
             )}
             {!isAdminMember && roles.includes('leader') && (
-              <Badge className="bg-warning/20 text-warning border-warning/30 text-xs gap-1"><Star className="w-3 h-3" />Thành viên Nâng cao</Badge>
+              <Badge className="bg-warning/20 text-warning border-warning/30 text-xs gap-1"><Star className="w-3 h-3" />Leader</Badge>
             )}
             {member.id === user?.id && <Badge variant="outline" className="text-xs">Bạn</Badge>}
             {suspended && <Badge variant="destructive" className="text-xs gap-1"><Lock className="w-3 h-3" />Đã khóa</Badge>}
@@ -706,8 +706,8 @@ export default function MemberManagement() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả vai trò</SelectItem>
-              <SelectItem value="member">Thành viên Thường</SelectItem>
-              <SelectItem value="leader">Thành viên Nâng cao</SelectItem>
+              <SelectItem value="member">Thành viên</SelectItem>
+              <SelectItem value="leader">Leader</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
             </SelectContent>
           </Select>
@@ -914,7 +914,7 @@ export default function MemberManagement() {
                     fullName: m.full_name,
                     studentId: m.student_id,
                     email: m.email,
-                    role: isMemberAdmin(m.id) ? 'Admin' : (memberRoles[m.id]?.includes('leader') ? 'Thành viên Nâng cao' : 'Thành viên Thường')
+                    role: isMemberAdmin(m.id) ? 'OwnerSystem' : (memberRoles[m.id]?.includes('leader') ? 'Leader' : 'Thành viên')
                   }));
                   exportMembersToExcel(exportData, 'danh-sach-thanh-vien-he-thong');
                 }}
@@ -1243,8 +1243,8 @@ export default function MemberManagement() {
               {bulkAction === 'delete' && (<>Bạn sắp xóa <span className="font-semibold">{selectedIds.size}</span> tài khoản khỏi hệ thống.<br /><br /><span className="text-destructive font-medium">Thao tác này không thể hoàn tác!</span></>)}
               {bulkAction === 'suspend' && (<>Bạn sắp tạm khóa <span className="font-semibold">{selectedIds.size}</span> tài khoản (mặc định 1 ngày).</>)}
               {bulkAction === 'unsuspend' && (<>Bạn sắp mở khóa <span className="font-semibold">{selectedIds.size}</span> tài khoản.</>)}
-              {bulkAction === 'promote' && (<>Bạn sắp nâng cấp <span className="font-semibold">{selectedIds.size}</span> tài khoản lên <span className="font-semibold">Thành viên Nâng cao</span>. Các tài khoản đã là Thành viên Nâng cao hoặc Admin sẽ được bỏ qua.</>)}
-              {bulkAction === 'demote' && (<>Bạn sắp hạ cấp <span className="font-semibold">{selectedIds.size}</span> tài khoản về <span className="font-semibold">Thành viên</span>. Chỉ các tài khoản đang là Thành viên Nâng cao mới bị ảnh hưởng (Admin sẽ được bỏ qua).</>)}
+              {bulkAction === 'promote' && (<>Bạn sắp nâng cấp <span className="font-semibold">{selectedIds.size}</span> tài khoản lên <span className="font-semibold">Leader</span>. Các tài khoản đã là Leader hoặc Admin sẽ được bỏ qua.</>)}
+              {bulkAction === 'demote' && (<>Bạn sắp hạ cấp <span className="font-semibold">{selectedIds.size}</span> tài khoản về <span className="font-semibold">Thành viên</span>. Chỉ các tài khoản đang là Leader mới bị ảnh hưởng (Admin sẽ được bỏ qua).</>)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

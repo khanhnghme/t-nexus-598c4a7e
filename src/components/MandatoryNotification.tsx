@@ -75,7 +75,7 @@ export default function MandatoryNotification({ mode, userId, locale = 'en' }: M
     markRead: isVi ? '✓ Đã đọc' : '✓ Mark as read',
     waitSeconds: (s: number) => isVi ? `Chờ ${s}s` : `Wait ${s}s`,
     goBack: isVi ? 'Quay lại' : 'Back',
-    admin: isVi ? 'Quản trị viên' : 'Administrator',
+    admin: isVi ? 'OwnerSystem' : 'Administrator',
     expiresOn: isVi ? 'Hết hạn' : 'Expires',
   };
   const [notifications, setNotifications] = useState<Notification[]>([]);

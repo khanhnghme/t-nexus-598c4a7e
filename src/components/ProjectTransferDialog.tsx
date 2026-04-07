@@ -56,7 +56,7 @@ export default function ProjectTransferDialog({
         const { data: adminRoles } = await supabase
           .from('user_roles')
           .select('user_id')
-          .eq('role', 'admin');
+          .eq('role', 'owner_system');
         const adminIds = (adminRoles || []).map(r => r.user_id);
         let adminProfiles: Record<string, { full_name: string; avatar_url: string | null }> = {};
         if (adminIds.length > 0) {
@@ -107,9 +107,9 @@ export default function ProjectTransferDialog({
               if (adminId !== member.id && !groupUserIds.includes(adminId)) {
                 members.unshift({
                   user_id: adminId,
-                  full_name: adminProfiles[adminId]?.full_name || 'Admin',
+                  full_name: adminProfiles[adminId]?.full_name || 'OwnerSystem',
                   avatar_url: adminProfiles[adminId]?.avatar_url || null,
-                  role: 'admin',
+                  role: 'owner_system',
                 });
               }
             });
@@ -179,7 +179,7 @@ export default function ProjectTransferDialog({
 
         await logActivity({
           userId: user!.id,
-          userName: currentProfile?.full_name || 'Admin',
+          userName: currentProfile?.full_name || 'OwnerSystem',
           action: 'TRANSFER_PROJECT_OWNERSHIP',
           actionType: 'project',
           groupId: group.id,
@@ -267,7 +267,7 @@ export default function ProjectTransferDialog({
                                   <UserAvatar src={m.avatar_url} name={m.full_name} size="sm" />
                                   <span>{m.full_name}</span>
                                   <span className="text-xs text-muted-foreground">
-                                    ({m.role === 'admin' ? 'Admin' : m.role === 'leader' ? 'Phó nhóm' : 'Thành viên'})
+                                    ({m.role === 'owner_system' ? 'OwnerSystem' : m.role === 'leader' ? 'Phó nhóm' : 'Thành viên'})
                                   </span>
                                 </div>
                               </SelectItem>

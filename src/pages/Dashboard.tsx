@@ -264,7 +264,7 @@ export default function Dashboard() {
         .from('group_members')
         .select('user_id')
         .eq('group_id', invitation.group_id)
-        .in('role', ['leader', 'admin']);
+        .in('role', ['leader', 'owner_system']);
 
       if (leaders && leaders.length > 0) {
         await notifyInvitationResponse({
@@ -390,7 +390,7 @@ export default function Dashboard() {
     if (isAdmin) return (
       <Badge variant="outline" className="bg-accent text-foreground border-border gap-1 font-medium text-[10px] shadow-none">
         <Shield className="w-3 h-3" strokeWidth={1.5} />
-        Quản trị viên
+        OwnerSystem
       </Badge>
     );
     if (isLeader) return (

@@ -42,7 +42,7 @@ interface MemberRow {
   id: string;
   userId: string;
   groupId: string;
-  role: 'admin' | 'leader' | 'member';
+  role: 'owner_system' | 'leader' | 'member';
   joinedAt: string;
   fullName?: string;
   studentId?: string;
@@ -426,14 +426,14 @@ export default function AdminUsers() {
               {currentSection === 'tasks' && 'Điều hướng nhanh tới các trang quản lý task hiện có.'}
               {currentSection === 'scores' && 'Thông tin điểm số theo task và giai đoạn (sẽ mở rộng sau).'}
               {currentSection === 'groups' && 'Liên kết tới trang quản lý nhóm học phần chi tiết.'}
-              {currentSection === 'accounts' && 'Dành cho Admin: duyệt tài khoản, khoá và cấp quyền Leader.'}
+              {currentSection === 'accounts' && 'Dành cho OwnerSystem: duyệt tài khoản, khoá và cấp quyền Leader.'}
               {currentSection === 'activity' && 'Tổng quan kế hoạch cho phần nhật ký hoạt động.'}
             </p>
           </div>
           <div className="text-right text-xs text-muted-foreground">
             <p>
               Vai trò hiện tại:{' '}
-              <Badge variant="outline">{isAdmin ? 'Admin' : 'Leader'}</Badge>
+              <Badge variant="outline">{isAdmin ? 'OwnerSystem' : 'Leader'}</Badge>
             </p>
             {user?.email && <p className="mt-1">{user.email}</p>}
           </div>
@@ -479,8 +479,8 @@ export default function AdminUsers() {
                                   {m.fullName || 'Không rõ tên'}
                                 </p>
                                 <Badge variant="outline" className="text-[11px]">
-                                  {m.role === 'admin'
-                                    ? 'Admin'
+                                  {m.role === 'owner_system'
+                                    ? 'OwnerSystem'
                                     : m.role === 'leader'
                                       ? 'Leader'
                                       : 'Member'}

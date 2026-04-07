@@ -52,7 +52,7 @@ export default function FirstTimeOnboarding({
   const { refreshProfile, roles } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isAdmin = roles.includes('admin');
+  const isAdmin = roles.includes('owner_system');
   const isLeader = roles.includes('leader') || isAdmin;
 
   const allSteps: StepId[] = mustChangePassword
@@ -92,7 +92,7 @@ export default function FirstTimeOnboarding({
 
   const getRoleInfo = () => {
     if (isAdmin) return {
-      label: 'Quản trị viên',
+      label: 'OwnerSystem',
       icon: <Shield className="w-5 h-5" />,
       color: 'bg-destructive text-destructive-foreground',
       gradient: 'from-destructive/20 to-destructive/5',

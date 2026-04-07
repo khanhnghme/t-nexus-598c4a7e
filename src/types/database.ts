@@ -1,4 +1,4 @@
-export type AppRole = 'admin' | 'leader' | 'member';
+export type AppRole = 'owner_system' | 'leader' | 'member';
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE' | 'VERIFIED';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
