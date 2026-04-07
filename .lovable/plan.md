@@ -1,134 +1,61 @@
 
 
-## Redesign Sidebar: Vertical Tree Navigation
+## Rà soát & Đồng bộ toàn bộ hệ thống với Workspace
 
-### Tổng quan
+### Vấn đề phát hiện
 
-Chuyển đổi sidebar từ kiểu menu phẳng (flat list với section labels) sang kiểu cây phân cấp dọc (vertical tree) với 3 cấp rõ ràng: **System → Workspace → Project**, hỗ trợ expand/collapse, active state tự động mở nhánh cha, và indent trực quan.
+1. **Bug: Nút "+" tạo Workspace** → navigate tới `/workspace/new` nhưng **route này không tồn tại** trong App.tsx → hiển thị trang 404
+2. **Dashboard** không lọc projects theo workspace — fetch tất cả groups user tham gia, bất kể workspace nào
+3. **Calendar** không lọc theo workspace — hiển thị tasks từ tất cả groups
+4. **Không có trang tạo Workspace mới**
 
-### Cấu trúc cây mới
+### Kế hoạch thực hiện
 
-```text
-┌─────────────────────────────┐
-│ [Logo] T-Nexus    [🔍🌙🔔] │
-│ ⌘K Tìm kiếm...             │
-├─────────────────────────────┤
-│ ■ Dashboard                 │
-│                             │
-│ ▼ Workspace A         👑   │
-│   ├─ Tổng quan (ws/settings)│
-│   ├─ Thành viên (ws/members)│
-│   ├─ Cài đặt                │
-│   └─▼ Dự án                 │
-│      ├─ 🔒 Project 1        │
-│      ├─ 🌐 Project 2        │
-│      └─ 🌐 Project 3 (Mới) │
-│                             │
-│ ── PERSONAL ──              │
-│ ■ Lịch                      │
-│ ■ Trao đổi                  │
-│ ■ Tài khoản                 │
-│ ■ Mẹo                       │
-│ ■ Góp ý                     │
-│                             │
-│ ── ADMIN ──                 │
-│ ■ Thành viên                │
-│ ■ Sao lưu                   │
-│ ■ Quản trị                  │
-│ ■ Tiện ích                  │
-├─────────────────────────────┤
-│ [Avatar] Tên user     ▾    │
-└─────────────────────────────┘
-```
+**Bước 1: Tạo trang CreateWorkspace + route**
 
-### Thay đổi chi tiết
+- Tạo `src/pages/CreateWorkspace.tsx` — form đơn giản (tên, mô tả)
+- Gọi edge function `workspace-management` action `create_workspace`
+- Sau khi tạo xong → `refreshWorkspaces()` → switch sang workspace mới → redirect `/workspace/settings`
+- Thêm route `/workspace/new` vào App.tsx
 
-**1. Tạo component `SidebarTreeNav.tsx`** (thay thế inline nav trong DashboardLayout)
+**Bước 2: Cải thiện UX nút tạo Workspace trong sidebar**
 
-Component chính chứa toàn bộ logic cây:
-- **Dashboard**: item cấp 1, link `/dashboard`
-- **Workspace node** (collapsible): hiển thị tên workspace + role badge
-  - Tổng quan → `/workspace/settings`
-  - Thành viên → `/workspace/members`
-  - **Dự án** (collapsible sub-node):
-    - Liệt kê projects từ `SidebarProjects` logic (merged joined + public)
-    - Mỗi project link tới `/p/{slug}`
-    - Icon visibility (🔒/🌐)
-    - Badge "Mới" cho WS Public chưa join
-- **Personal section**: Lịch, Trao đổi, Tài khoản, Mẹo, Góp ý
-- **Admin section** (chỉ hiện nếu isAdmin): Thành viên, Sao lưu, Quản trị, Tiện ích
+- Thay nút `+` nhỏ bằng một item rõ ràng hơn: hiển thị dòng "＋ Tạo Workspace" bên dưới danh sách workspace hiện tại (style giống 1 nav item nhưng dùng màu nhạt + border dashed)
+- Khi collapsed: hiển thị icon `Plus` với tooltip "Tạo Workspace mới"
 
-Logic expand/collapse:
-- State `expandedNodes` (Set) quản lý nodes đang mở
-- Auto-expand: khi route hiện tại match 1 node con, tự động mở nhánh cha
-  - VD: đang ở `/workspace/members` → auto expand "Workspace A"
-  - Đang ở `/p/project-slug` → auto expand "Workspace A" → "Dự án"
-- Click chevron toggle expand/collapse
-- Click tên item navigates (nếu có href)
+**Bước 3: Dashboard lọc theo Workspace**
 
-**2. Sửa `DashboardLayout.tsx`**
+Sửa `src/pages/Dashboard.tsx`:
+- Import `useWorkspace`
+- Trong `fetchDashboardData()`: nếu `isAvailable && activeWorkspace`, thêm `.eq('workspace_id', activeWorkspace.id)` vào query groups
+- Thêm `activeWorkspace` vào dependency của useEffect fetch data
+- Hiển thị tên workspace hiện tại ở header Dashboard (nhỏ, subtitle)
 
-- Xóa `mainNav`, `personalNav`, `adminNav` arrays và `renderNavItem` function
-- Xóa inline `WorkspaceSwitcher` và `SidebarProjects` renders
-- Thay bằng `<SidebarTreeNav collapsed={sidebarCollapsed} />`
-- Giữ nguyên: logo, search, bottom user profile, mobile logic
+**Bước 4: Calendar lọc theo Workspace**
 
-**3. Xóa `WorkspaceSwitcher.tsx`** (logic merge vào SidebarTreeNav)
+Sửa `src/pages/Calendar.tsx`:
+- Import `useWorkspace`
+- Trong query `calendar-tasks`: nếu workspace available, lọc tasks chỉ từ groups thuộc `activeWorkspace.id`
+- Thêm `activeWorkspace?.id` vào queryKey để auto-refetch khi switch workspace
 
-Workspace switcher dropdown sẽ được tích hợp trực tiếp vào tree node:
-- Click vào tên workspace → expand/collapse
-- Dropdown chỉ hiện khi có > 1 workspace (small icon bên cạnh tên)
-- Guest mode: hiện tên workspace + "👽 Guest" badge, không dropdown
+**Bước 5: Notification / Communication context**
 
-**4. Refactor `SidebarProjects.tsx` → logic-only hook**
-
-Chuyển fetch logic thành `useWorkspaceProjects()` hook, không render UI riêng. `SidebarTreeNav` sẽ dùng hook này để lấy danh sách projects.
-
-**5. Thêm CSS cho tree navigation**
-
-```text
-Indent levels:
-- Level 0: padding-left 10px (Dashboard, Personal, Admin items)
-- Level 1: padding-left 26px (WS children: Tổng quan, Thành viên, Dự án node)
-- Level 2: padding-left 42px (Project items)
-
-Tree branch lines:
-- Pseudo-element ::before tạo đường dọc nhẹ (1px, opacity 20%)
-- Kết nối từ parent xuống children
-
-Chevron:
-- Rotate 0° khi collapsed, 90° khi expanded
-- Transition 150ms
-
-Active state:
-- Giữ nguyên active bar bên trái (::before)
-- Parent node khi có child active: text hơi sáng hơn (semi-active state)
-```
-
-**6. Collapsed mode**
-
-Khi sidebar collapsed:
-- Level 0 items: hiện icon only (như hiện tại)
-- Workspace node: hiện icon Building2 only, click mở dropdown với full tree
-- Projects: ẩn, chỉ hiện qua workspace dropdown
-- Tooltip hiện tên khi hover
+Kiểm tra và thêm filter workspace_id nếu cần cho:
+- `src/pages/Communication.tsx` — messages theo workspace
+- Notifications — giữ nguyên (notifications là per-user, không cần filter workspace)
 
 ### Files affected
 
 | File | Action |
 |------|--------|
-| `src/components/SidebarTreeNav.tsx` | Tạo mới — component chính |
-| `src/hooks/useWorkspaceProjects.ts` | Tạo mới — extract logic từ SidebarProjects |
-| `src/components/layout/DashboardLayout.tsx` | Sửa — thay nav cũ bằng SidebarTreeNav |
-| `src/components/SidebarProjects.tsx` | Xóa |
-| `src/components/WorkspaceSwitcher.tsx` | Xóa |
-| `src/index.css` | Sửa — thêm tree nav styles |
+| `src/pages/CreateWorkspace.tsx` | Tạo mới |
+| `src/App.tsx` | Thêm route `/workspace/new` |
+| `src/components/SidebarTreeNav.tsx` | Cải thiện UX nút tạo WS |
+| `src/pages/Dashboard.tsx` | Thêm filter workspace |
+| `src/pages/Calendar.tsx` | Thêm filter workspace |
 
 ### Không thay đổi
-
-- Routes trong App.tsx
-- WorkspaceContext, useWorkspaceMembers
-- Logic search (⌘K), theme toggle, notification bell
-- Bottom user profile section
-- Mobile topbar
+- Groups.tsx — đã có filter workspace rồi
+- WorkspaceContext, edge functions — giữ nguyên
+- Notifications — per-user, không cần workspace filter
 
