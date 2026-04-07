@@ -771,6 +771,17 @@ export default function Groups() {
                       {/* Strong gradient overlay for text readability */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
+                      {/* Visibility badge */}
+                      <div className="absolute top-3 left-3 drop-shadow-md">
+                        {group.visibility === 'workspace_public' ? (
+                          <Badge className="bg-blue-500/90 text-white shadow-lg text-[10px] px-1.5 py-0.5">🌐 WS Public</Badge>
+                        ) : group.visibility === 'public_link' ? (
+                          <Badge className="bg-green-500/90 text-white shadow-lg text-[10px] px-1.5 py-0.5">🌍 Public</Badge>
+                        ) : (
+                          <Badge className="bg-black/60 text-white shadow-lg text-[10px] px-1.5 py-0.5">🔒 Private</Badge>
+                        )}
+                      </div>
+
                       {/* Role badge - solid opaque bg, never blends with image */}
                       <div className="absolute top-3 right-3 drop-shadow-md">
                         {group.myRole === 'admin' ? (
