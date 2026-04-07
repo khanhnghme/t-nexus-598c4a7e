@@ -10,17 +10,17 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { r2Storage } from '@/lib/r2Storage';
-import { useAuth } from '@/contexts/AuthContext';
-import tNexusLogo from '@/assets/t-nexus-logo.png';
+import { useLanguage } from '@/contexts/LanguageContext';
+import tNexusTextWhite from '@/assets/t-nexus-text-white.png';
 import welcomeImg from '@/assets/onboarding-welcome.png';
 import securityImg from '@/assets/onboarding-security.png';
 import profileImg from '@/assets/onboarding-profile.png';
 import completeImg from '@/assets/onboarding-complete.png';
 import {
   Loader2, Key, Camera, User, Check, ChevronRight,
-  GraduationCap, BookOpen, Phone, Sparkles, Shield, Star,
+  GraduationCap, BookOpen, Phone, Sparkles, Shield,
   Rocket, Eye, EyeOff, Mail, ListChecks, Users, FolderKanban,
-  Award, MessageSquare, ChevronLeft,
+  Award, MessageSquare, ChevronLeft, Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,13 +32,15 @@ interface FirstTimeOnboardingProps {
   userFullName: string;
   userEmail: string;
   userStudentId: string;
+  userPlan?: string;
   mustChangePassword: boolean;
   onComplete: () => void;
 }
 
-type StepId = 'welcome' | 'password' | 'info' | 'finish';
+type StepId = 'language' | 'welcome' | 'password' | 'info' | 'finish';
 
 const stepIcons: Record<StepId, React.ReactNode> = {
+  language: <Globe className="w-4 h-4" />,
   welcome: <Sparkles className="w-4 h-4" />,
   password: <Key className="w-4 h-4" />,
   info: <User className="w-4 h-4" />,
@@ -46,36 +48,31 @@ const stepIcons: Record<StepId, React.ReactNode> = {
 };
 
 export default function FirstTimeOnboarding({
-  open, userId, userFullName, userEmail, userStudentId, mustChangePassword, onComplete,
+  open, userId, userFullName, userEmail, userStudentId, userPlan, mustChangePassword, onComplete,
 }: FirstTimeOnboardingProps) {
   const { toast } = useToast();
-  const { refreshProfile, roles } = useAuth();
+  const { translations: { app: appT }, setLocale, locale } = useLanguage();
+  const t = appT.onboarding;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isAdmin = roles.includes('system_owner');
-  const isLeader = roles.includes('system_admin') || isAdmin;
+  // Language selection: null = not selected yet
+  const [selectedLang, setSelectedLang] = useState<'en' | 'vi' | null>(null);
 
   const allSteps: StepId[] = mustChangePassword
-    ? ['welcome', 'password', 'info', 'finish']
-    : ['welcome', 'info', 'finish'];
+    ? ['language', 'welcome', 'password', 'info', 'finish']
+    : ['language', 'welcome', 'info', 'finish'];
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const currentStep = allSteps[currentStepIndex];
 
-  // Celebration
   const [showCelebration, setShowCelebration] = useState(false);
-
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  // Avatar
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // Profile
   const [yearBatch, setYearBatch] = useState('');
   const [major, setMajor] = useState('');
   const [phone, setPhone] = useState('');
@@ -90,51 +87,51 @@ export default function FirstTimeOnboarding({
   const goNext = () => setCurrentStepIndex(i => Math.min(i + 1, allSteps.length - 1));
   const goBack = () => setCurrentStepIndex(i => Math.max(i - 1, 0));
 
-  const getRoleInfo = () => {
-    if (isAdmin) return {
-      label: 'OwnerSystem',
-      icon: <Shield className="w-5 h-5" />,
-      color: 'bg-destructive text-destructive-foreground',
-      gradient: 'from-destructive/20 to-destructive/5',
-      borderColor: 'border-destructive/30',
-      desc: 'Toàn quyền quản lý hệ thống: người dùng, dự án, cấu hình và phân quyền.',
-      features: ['Quản lý tất cả người dùng', 'Cấu hình hệ thống', 'Tạo dự án không giới hạn'],
-    };
-    if (isLeader) return {
-      label: 'Thành viên Nâng cao',
-      icon: <Star className="w-5 h-5" />,
-      color: 'bg-warning text-warning-foreground',
-      gradient: 'from-warning/20 to-warning/5',
-      borderColor: 'border-warning/30',
-      desc: 'Tạo và quản lý dự án nhóm, phân công nhiệm vụ, chấm điểm thành viên.',
-      features: ['Tạo & quản lý dự án', 'Phân công nhiệm vụ', 'Chấm điểm thành viên'],
-    };
-    return {
-      label: 'Thành viên',
-      icon: <User className="w-5 h-5" />,
-      color: 'bg-secondary text-secondary-foreground',
-      gradient: 'from-secondary/40 to-secondary/10',
-      borderColor: 'border-secondary/40',
-      desc: 'Tham gia dự án, nhận và hoàn thành nhiệm vụ, nộp bài và trao đổi nhóm.',
-      features: ['Tham gia dự án qua mã mời', 'Hoàn thành nhiệm vụ', 'Nộp bài & trao đổi'],
-    };
+  const getPlanLabel = () => {
+    switch (userPlan) {
+      case 'plan_plus': return t.planPlus;
+      case 'plan_pro': return t.planPro;
+      case 'plan_enterprise': return t.planEnterprise;
+      default: return t.planFree;
+    }
   };
 
-  const roleInfo = getRoleInfo();
+  const getPlanColor = () => {
+    switch (userPlan) {
+      case 'plan_plus': return 'bg-blue-500/10 text-blue-600 border-blue-200';
+      case 'plan_pro': return 'bg-purple-500/10 text-purple-600 border-purple-200';
+      case 'plan_enterprise': return 'bg-amber-500/10 text-amber-600 border-amber-200';
+      default: return 'bg-secondary text-secondary-foreground border-secondary';
+    }
+  };
+
+  // --- Language selection handler ---
+  const handleLanguageSelect = async (lang: 'en' | 'vi') => {
+    setSelectedLang(lang);
+    await setLocale(lang);
+  };
+
+  const handleLanguageContinue = () => {
+    if (!selectedLang) {
+      toast({ title: t.langRequired, variant: 'destructive' });
+      return;
+    }
+    goNext();
+  };
 
   // --- Handlers ---
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 6) {
-      toast({ title: 'Mật khẩu quá ngắn', description: 'Tối thiểu 6 ký tự', variant: 'destructive' });
+      toast({ title: t.pwTooShort, description: t.minChars, variant: 'destructive' });
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast({ title: 'Mật khẩu không khớp', variant: 'destructive' });
+      toast({ title: t.pwNotMatch, variant: 'destructive' });
       return;
     }
     if (newPassword === '123456') {
-      toast({ title: 'Không hợp lệ', description: 'Chọn mật khẩu khác mặc định', variant: 'destructive' });
+      toast({ title: t.pwSameDefault, variant: 'destructive' });
       return;
     }
     setIsChangingPassword(true);
@@ -143,10 +140,10 @@ export default function FirstTimeOnboarding({
     });
     setIsChangingPassword(false);
     if (error || data?.error) {
-      toast({ title: 'Đổi mật khẩu thất bại', description: data?.error || error?.message, variant: 'destructive' });
+      toast({ title: t.pwChangeFail, description: data?.error || error?.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Đổi mật khẩu thành công ✓' });
+    toast({ title: t.pwChangeSuccess });
     goNext();
   };
 
@@ -154,10 +151,10 @@ export default function FirstTimeOnboarding({
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      toast({ title: 'Định dạng không hợp lệ', variant: 'destructive' }); return;
+      toast({ title: t.invalidFormat, variant: 'destructive' }); return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      toast({ title: 'File quá lớn (tối đa 5MB)', variant: 'destructive' }); return;
+      toast({ title: t.fileTooLarge, variant: 'destructive' }); return;
     }
     const reader = new FileReader();
     reader.onload = (ev) => setPreviewUrl(ev.target?.result as string);
@@ -178,7 +175,7 @@ export default function FirstTimeOnboarding({
 
   const handleInfoNext = () => {
     if (!validateInfo()) {
-      toast({ title: 'Vui lòng điền đầy đủ thông tin bắt buộc', variant: 'destructive' });
+      toast({ title: t.fillRequired, variant: 'destructive' });
       return;
     }
     goNext();
@@ -188,36 +185,13 @@ export default function FirstTimeOnboarding({
     const duration = 3000;
     const end = Date.now() + duration;
     const colors = ['#0ea5e9', '#6366f1', '#f59e0b', '#10b981', '#ec4899', '#8b5cf6'];
-
     const frame = () => {
-      confetti({
-        particleCount: 3,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0, y: 0.7 },
-        colors,
-        zIndex: 99999,
-      });
-      confetti({
-        particleCount: 3,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1, y: 0.7 },
-        colors,
-        zIndex: 99999,
-      });
+      confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors, zIndex: 99999 });
+      confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.7 }, colors, zIndex: 99999 });
       if (Date.now() < end) requestAnimationFrame(frame);
     };
     frame();
-
-    // Big burst
-    confetti({
-      particleCount: 100,
-      spread: 100,
-      origin: { y: 0.6 },
-      colors,
-      zIndex: 99999,
-    });
+    confetti({ particleCount: 100, spread: 100, origin: { y: 0.6 }, colors, zIndex: 99999 });
   }, []);
 
   const handleFinish = async () => {
@@ -248,37 +222,35 @@ export default function FirstTimeOnboarding({
       const { error } = await supabase.from('profiles').update(updateData).eq('id', userId);
       if (error) throw error;
 
-      // Show celebration
       setShowCelebration(true);
       fireCelebration();
 
-      // Wait then close
       setTimeout(async () => {
-        toast({ title: 'Hoàn tất! 🎉', description: 'Chào mừng bạn đến với T-Nexus' });
-        await refreshProfile();
+        toast({ title: t.completedToast, description: t.completedToastDesc });
         onComplete();
       }, 2500);
     } catch (error: any) {
-      toast({ title: 'Lỗi', description: error.message, variant: 'destructive' });
+      toast({ title: appT.common.error, description: error.message, variant: 'destructive' });
       setIsSaving(false);
     }
   };
 
   const stepLabels: Record<StepId, string> = {
-    welcome: 'Chào mừng',
-    password: 'Bảo mật',
-    info: 'Thông tin',
-    finish: 'Hoàn tất',
+    language: t.stepLang,
+    welcome: t.stepWelcome,
+    password: t.stepSecurity,
+    info: t.stepInfo,
+    finish: t.stepFinish,
   };
 
   const stepDescriptions: Record<StepId, string> = {
-    welcome: 'Giới thiệu hệ thống',
-    password: 'Đổi mật khẩu mặc định',
-    info: 'Điền thông tin cá nhân',
-    finish: 'Xác nhận & bắt đầu',
+    language: t.stepLangDesc,
+    welcome: t.stepWelcomeDesc,
+    password: t.stepSecurityDesc,
+    info: t.stepInfoDesc,
+    finish: t.stepFinishDesc,
   };
 
-  // Password strength
   const getPasswordStrength = () => {
     if (!newPassword) return { level: 0, label: '', color: '' };
     let score = 0;
@@ -287,9 +259,9 @@ export default function FirstTimeOnboarding({
     if (/[A-Z]/.test(newPassword)) score++;
     if (/[0-9]/.test(newPassword)) score++;
     if (/[^A-Za-z0-9]/.test(newPassword)) score++;
-    if (score <= 2) return { level: score, label: 'Yếu', color: 'bg-destructive' };
-    if (score <= 3) return { level: score, label: 'Trung bình', color: 'bg-warning' };
-    return { level: score, label: 'Mạnh', color: 'bg-success' };
+    if (score <= 2) return { level: score, label: t.pwWeak, color: 'bg-destructive' };
+    if (score <= 3) return { level: score, label: t.pwMedium, color: 'bg-warning' };
+    return { level: score, label: t.pwStrong, color: 'bg-success' };
   };
 
   const pwStrength = getPasswordStrength();
@@ -304,9 +276,7 @@ export default function FirstTimeOnboarding({
         <div className="flex h-full">
           {/* ===== SIDEBAR ===== */}
           <div className="hidden md:flex w-[300px] shrink-0 relative overflow-hidden flex-col">
-            {/* Background gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-primary/80" />
-            {/* Decorative circles */}
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-white/5" />
             <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-white/5" />
             <div className="absolute top-1/2 right-0 w-24 h-24 rounded-full bg-white/5" />
@@ -314,13 +284,7 @@ export default function FirstTimeOnboarding({
             <div className="relative z-10 p-6 flex flex-col h-full">
               {/* Logo */}
               <div className="flex items-center gap-3 mb-10">
-                <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center p-1.5">
-                  <img src={tNexusLogo} alt="T-Nexus" className="w-full h-full object-contain brightness-0 invert" />
-                </div>
-                <div>
-                  <p className="font-bold text-lg leading-tight text-white">T-Nexus</p>
-                  <p className="text-[10px] text-white/60">Quản lý dự án nhóm</p>
-                </div>
+                <img src={tNexusTextWhite} alt="T-Nexus" className="h-7 object-contain" />
               </div>
 
               {/* Steps */}
@@ -370,7 +334,7 @@ export default function FirstTimeOnboarding({
                 })}
               </div>
 
-              {/* User card at bottom */}
+              {/* User card */}
               <div className="mt-auto pt-4 border-t border-white/15">
                 <div className="flex items-center gap-3 bg-white/10 rounded-xl p-3">
                   <Avatar className="h-9 w-9 border border-white/30">
@@ -395,8 +359,7 @@ export default function FirstTimeOnboarding({
           <div className="flex-1 flex flex-col overflow-hidden bg-background">
             {/* Mobile step indicator */}
             <div className="md:hidden flex items-center gap-2 px-5 pt-4 pb-2">
-              <img src={tNexusLogo} alt="T-Nexus" className="h-7" />
-              <span className="text-sm font-bold text-foreground">T-Nexus</span>
+              <img src={tNexusTextWhite} alt="T-Nexus" className="h-5 brightness-0 dark:brightness-100" />
               <div className="ml-auto flex items-center gap-1.5">
                 {allSteps.map((_, idx) => (
                   <div key={idx} className={cn(
@@ -409,36 +372,104 @@ export default function FirstTimeOnboarding({
             </div>
 
             <div className="flex-1 overflow-y-auto">
+              {/* ===== LANGUAGE STEP ===== */}
+              {currentStep === 'language' && (
+                <div className="h-full flex flex-col items-center justify-center px-6 md:px-10">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                    <Globe className="w-8 h-8 text-primary" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-extrabold mb-2 text-center">
+                    {t.langTitle}
+                  </h2>
+                  <p className="text-muted-foreground mb-8 text-center max-w-md">
+                    {t.langSubtitle}
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md mb-8">
+                    {/* English */}
+                    <button
+                      onClick={() => handleLanguageSelect('en')}
+                      className={cn(
+                        'flex-1 flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-200 text-left',
+                        selectedLang === 'en'
+                          ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20'
+                          : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                      )}
+                    >
+                      <span className="text-3xl">🇺🇸</span>
+                      <div>
+                        <p className="font-bold text-base">English</p>
+                        <p className="text-xs text-muted-foreground">Use English interface</p>
+                      </div>
+                      {selectedLang === 'en' && (
+                        <div className="ml-auto w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-4 h-4 text-primary-foreground" />
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Vietnamese */}
+                    <button
+                      onClick={() => handleLanguageSelect('vi')}
+                      className={cn(
+                        'flex-1 flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-200 text-left',
+                        selectedLang === 'vi'
+                          ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20'
+                          : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                      )}
+                    >
+                      <span className="text-3xl">🇻🇳</span>
+                      <div>
+                        <p className="font-bold text-base">Tiếng Việt</p>
+                        <p className="text-xs text-muted-foreground">Sử dụng giao diện tiếng Việt</p>
+                      </div>
+                      {selectedLang === 'vi' && (
+                        <div className="ml-auto w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-4 h-4 text-primary-foreground" />
+                        </div>
+                      )}
+                    </button>
+                  </div>
+
+                  <Button
+                    onClick={handleLanguageContinue}
+                    disabled={!selectedLang}
+                    size="lg"
+                    className="w-full max-w-xs gap-2 h-12 text-base rounded-xl shadow-lg hover:shadow-xl transition-all"
+                  >
+                    {t.continueBtn}
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </div>
+              )}
+
               {/* ===== WELCOME ===== */}
               {currentStep === 'welcome' && (
                 <div className="h-full flex flex-col">
-                  {/* Hero illustration */}
                   <div className="relative bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 px-8 pt-6 pb-2 flex justify-center">
                     <img src={welcomeImg} alt="Welcome" className="h-40 md:h-48 object-contain drop-shadow-lg" />
-                    {/* Floating decorative elements */}
                     <div className="absolute top-4 left-8 w-8 h-8 rounded-lg bg-primary/10 animate-pulse" />
                     <div className="absolute bottom-8 right-12 w-6 h-6 rounded-full bg-accent/15 animate-pulse delay-500" />
                   </div>
 
                   <div className="flex-1 px-6 md:px-10 pb-6 flex flex-col items-center text-center">
                     <h2 className="text-2xl md:text-3xl font-extrabold mt-4 mb-1 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                      Chào mừng đến T-Nexus!
+                      {t.welcomeTitle}
                     </h2>
                     <p className="text-muted-foreground mb-5 max-w-md">
-                      Xin chào <span className="font-semibold text-foreground">{userFullName}</span>! Hãy hoàn tất vài bước đơn giản để bắt đầu trải nghiệm.
+                      {t.welcomeSubtitle.replace('{name}', userFullName)}
                     </p>
 
-                    {/* User info + Role in a nice layout */}
                     <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
                       {/* Info card */}
                       <div className="bg-card border rounded-2xl p-4 text-left space-y-2.5">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Thông tin tài khoản</p>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t.accountInfo}</p>
                         <div className="flex items-center gap-2.5 text-sm">
                           <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                             <GraduationCap className="w-3.5 h-3.5 text-primary" />
                           </div>
                           <div>
-                            <p className="text-[10px] text-muted-foreground">MSSV</p>
+                            <p className="text-[10px] text-muted-foreground">{t.studentId}</p>
                             <p className="font-semibold text-sm">{userStudentId}</p>
                           </div>
                         </div>
@@ -447,37 +478,29 @@ export default function FirstTimeOnboarding({
                             <Mail className="w-3.5 h-3.5 text-primary" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[10px] text-muted-foreground">Email</p>
+                            <p className="text-[10px] text-muted-foreground">{t.email}</p>
                             <p className="font-semibold text-sm truncate">{userEmail}</p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Role card */}
-                      <div className={cn('border rounded-2xl p-4 text-left bg-gradient-to-br', roleInfo.gradient, roleInfo.borderColor)}>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Vai trò của bạn</p>
-                        <Badge className={cn('gap-1.5 px-3 py-1.5 text-sm mb-2', roleInfo.color)}>
-                          {roleInfo.icon}
-                          {roleInfo.label}
+                      {/* Plan card */}
+                      <div className="border rounded-2xl p-4 text-left bg-gradient-to-br from-secondary/40 to-secondary/10 border-secondary/40">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t.currentPlan}</p>
+                        <Badge className={cn('gap-1.5 px-3 py-1.5 text-sm border', getPlanColor())}>
+                          <Sparkles className="w-4 h-4" />
+                          {getPlanLabel()}
                         </Badge>
-                        <div className="space-y-1.5 mt-2">
-                          {roleInfo.features.map((f, i) => (
-                            <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Check className="w-3 h-3 text-primary shrink-0" />
-                              {f}
-                            </div>
-                          ))}
-                        </div>
                       </div>
                     </div>
 
                     {/* Feature highlights */}
                     <div className="w-full max-w-xl grid grid-cols-4 gap-2 mb-6">
                       {[
-                        { icon: <FolderKanban className="w-4 h-4" />, label: 'Quản lý dự án' },
-                        { icon: <ListChecks className="w-4 h-4" />, label: 'Theo dõi tiến độ' },
-                        { icon: <Users className="w-4 h-4" />, label: 'Làm việc nhóm' },
-                        { icon: <MessageSquare className="w-4 h-4" />, label: 'Trao đổi' },
+                        { icon: <FolderKanban className="w-4 h-4" />, label: t.projectMgmt },
+                        { icon: <ListChecks className="w-4 h-4" />, label: t.trackProgress },
+                        { icon: <Users className="w-4 h-4" />, label: t.teamwork },
+                        { icon: <MessageSquare className="w-4 h-4" />, label: t.messaging },
                       ].map((f, i) => (
                         <div key={i} className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
                           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -489,7 +512,7 @@ export default function FirstTimeOnboarding({
                     </div>
 
                     <Button onClick={goNext} size="lg" className="w-full max-w-xs gap-2 h-12 text-base rounded-xl shadow-lg hover:shadow-xl transition-all">
-                      Bắt đầu thiết lập
+                      {t.startSetup}
                       <ChevronRight className="w-5 h-5" />
                     </Button>
                   </div>
@@ -499,7 +522,6 @@ export default function FirstTimeOnboarding({
               {/* ===== PASSWORD ===== */}
               {currentStep === 'password' && (
                 <div className="h-full flex flex-col">
-                  {/* Illustration */}
                   <div className="relative bg-gradient-to-br from-warning/10 via-warning/5 to-transparent px-8 pt-6 pb-2 flex justify-center">
                     <img src={securityImg} alt="Security" className="h-32 md:h-40 object-contain drop-shadow-lg" />
                   </div>
@@ -507,33 +529,30 @@ export default function FirstTimeOnboarding({
                   <div className="flex-1 px-6 md:px-10 pb-6 flex flex-col items-center">
                     <div className="w-full max-w-md">
                       <div className="text-center mb-6">
-                        <h2 className="text-2xl font-extrabold mb-1">Bảo mật tài khoản</h2>
-                        <p className="text-muted-foreground text-sm">
-                          Tài khoản được tạo bởi quản trị viên với mật khẩu mặc định. Vui lòng đổi mật khẩu để bảo vệ tài khoản.
-                        </p>
+                        <h2 className="text-2xl font-extrabold mb-1">{t.securityTitle}</h2>
+                        <p className="text-muted-foreground text-sm">{t.securityDesc}</p>
                       </div>
 
-                      {/* Security tips */}
                       <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 mb-5">
                         <p className="text-xs font-semibold text-primary mb-1.5 flex items-center gap-1.5">
-                          <Shield className="w-3.5 h-3.5" /> Gợi ý mật khẩu an toàn
+                          <Shield className="w-3.5 h-3.5" /> {t.securityTip}
                         </p>
                         <ul className="text-[11px] text-muted-foreground space-y-0.5">
-                          <li>• Tối thiểu 8 ký tự, kết hợp chữ hoa + chữ thường</li>
-                          <li>• Thêm số và ký tự đặc biệt (!@#$...)</li>
-                          <li>• Không dùng thông tin cá nhân dễ đoán</li>
+                          <li>{t.securityTip1}</li>
+                          <li>{t.securityTip2}</li>
+                          <li>{t.securityTip3}</li>
                         </ul>
                         <p className="text-[10px] text-muted-foreground/70 mt-2 italic leading-relaxed">
-                          ⚠️ Đây chỉ là gợi ý, bạn có thể tự chọn mật khẩu theo ý mình. Tuy nhiên, T-Nexus sẽ miễn trừ trách nhiệm nếu tài khoản của bạn bị truy cập trái phép do sử dụng mật khẩu dễ đoán hoặc không đủ an toàn.
+                          {t.securityDisclaimer}
                         </p>
                       </div>
 
                       <form onSubmit={handlePasswordSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                          <Label htmlFor="newPassword" className="text-sm font-medium">Mật khẩu mới</Label>
+                          <Label htmlFor="newPassword" className="text-sm font-medium">{t.newPassword}</Label>
                           <div className="relative">
                             <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input id="newPassword" type={showPassword ? 'text' : 'password'} placeholder="Tối thiểu 6 ký tự"
+                            <Input id="newPassword" type={showPassword ? 'text' : 'password'} placeholder={t.minChars}
                               className="pl-10 pr-10 h-12 rounded-xl" value={newPassword}
                               onChange={(e) => setNewPassword(e.target.value)} required autoFocus />
                             <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -541,7 +560,6 @@ export default function FirstTimeOnboarding({
                               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                           </div>
-                          {/* Strength indicator */}
                           {newPassword && (
                             <div className="flex items-center gap-2 mt-1">
                               <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden flex gap-0.5">
@@ -556,10 +574,10 @@ export default function FirstTimeOnboarding({
                           )}
                         </div>
                         <div className="space-y-1.5">
-                          <Label htmlFor="confirmPassword" className="text-sm font-medium">Xác nhận mật khẩu</Label>
+                          <Label htmlFor="confirmPassword" className="text-sm font-medium">{t.confirmPassword}</Label>
                           <div className="relative">
                             <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input id="confirmPassword" type={showConfirm ? 'text' : 'password'} placeholder="Nhập lại mật khẩu"
+                            <Input id="confirmPassword" type={showConfirm ? 'text' : 'password'} placeholder={t.reenterPassword}
                               className="pl-10 pr-10 h-12 rounded-xl" value={confirmPassword}
                               onChange={(e) => setConfirmPassword(e.target.value)} required />
                             <button type="button" onClick={() => setShowConfirm(!showConfirm)}
@@ -568,16 +586,16 @@ export default function FirstTimeOnboarding({
                             </button>
                           </div>
                           {confirmPassword && newPassword !== confirmPassword && (
-                            <p className="text-[11px] text-destructive mt-0.5">Mật khẩu không khớp</p>
+                            <p className="text-[11px] text-destructive mt-0.5">{t.passwordMismatch}</p>
                           )}
                         </div>
                         <div className="flex gap-3">
                           <Button type="button" variant="outline" onClick={goBack} className="h-12 gap-2 rounded-xl text-base flex-1">
-                            <ChevronLeft className="w-5 h-5" /> Quay lại
+                            <ChevronLeft className="w-5 h-5" /> {t.goBack}
                           </Button>
                           <Button type="submit" disabled={isChangingPassword} className="h-12 gap-2 rounded-xl text-base shadow-lg flex-[2]">
                             {isChangingPassword && <Loader2 className="w-4 h-4 animate-spin" />}
-                            Tiếp tục <ChevronRight className="w-5 h-5" />
+                            {t.continueNext} <ChevronRight className="w-5 h-5" />
                           </Button>
                         </div>
                       </form>
@@ -589,7 +607,6 @@ export default function FirstTimeOnboarding({
               {/* ===== INFO ===== */}
               {currentStep === 'info' && (
                 <div className="h-full flex flex-col">
-                  {/* Compact illustration */}
                   <div className="relative bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 px-8 pt-4 pb-1 flex justify-center">
                     <img src={profileImg} alt="Profile" className="h-24 md:h-28 object-contain drop-shadow-lg" />
                   </div>
@@ -597,13 +614,11 @@ export default function FirstTimeOnboarding({
                   <div className="flex-1 px-6 md:px-10 pb-6 overflow-y-auto">
                     <div className="w-full max-w-lg mx-auto">
                       <div className="text-center mb-4">
-                        <h2 className="text-xl font-extrabold mb-0.5">Thông tin cá nhân</h2>
-                        <p className="text-muted-foreground text-sm">
-                          Điền đầy đủ thông tin để đồng đội dễ dàng nhận ra bạn
-                        </p>
+                        <h2 className="text-xl font-extrabold mb-0.5">{t.infoTitle}</h2>
+                        <p className="text-muted-foreground text-sm">{t.infoDesc}</p>
                       </div>
 
-                      {/* Avatar upload - prominent */}
+                      {/* Avatar */}
                       <div className="flex flex-col items-center mb-5">
                         <div className="relative group cursor-pointer mb-2" onClick={() => fileInputRef.current?.click()}>
                           <Avatar className="h-20 w-20 border-4 border-background shadow-xl ring-2 ring-primary/20">
@@ -624,19 +639,19 @@ export default function FirstTimeOnboarding({
                         </div>
                         <button type="button" onClick={() => fileInputRef.current?.click()}
                           className="text-xs text-primary font-medium hover:underline">
-                          {previewUrl ? 'Đổi ảnh đại diện' : 'Tải ảnh đại diện'}
+                          {previewUrl ? t.changeAvatar : t.uploadAvatar}
                         </button>
-                        <p className="text-[10px] text-muted-foreground">(Không bắt buộc • Tối đa 5MB)</p>
+                        <p className="text-[10px] text-muted-foreground">{t.avatarOptional}</p>
                         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
                       </div>
 
-                      {/* Fields in cards */}
+                      {/* Fields */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
-                          { id: 'yearBatch', label: 'Khóa', icon: <GraduationCap className="w-4 h-4" />, placeholder: 'VD: K47, K48...', value: yearBatch, setter: setYearBatch },
-                          { id: 'major', label: 'Ngành học', icon: <BookOpen className="w-4 h-4" />, placeholder: 'VD: QTKD, Marketing...', value: major, setter: setMajor },
-                          { id: 'phone', label: 'Số điện thoại', icon: <Phone className="w-4 h-4" />, placeholder: 'VD: 0901234567', value: phone, setter: setPhone },
-                          { id: 'skills', label: 'Kỹ năng / Thế mạnh', icon: <Award className="w-4 h-4" />, placeholder: 'VD: Thiết kế, Lập trình...', value: skills, setter: setSkills },
+                          { id: 'yearBatch', label: t.fieldBatch, icon: <GraduationCap className="w-4 h-4" />, placeholder: t.fieldBatchPlaceholder, value: yearBatch, setter: setYearBatch },
+                          { id: 'major', label: t.fieldMajor, icon: <BookOpen className="w-4 h-4" />, placeholder: t.fieldMajorPlaceholder, value: major, setter: setMajor },
+                          { id: 'phone', label: t.fieldPhone, icon: <Phone className="w-4 h-4" />, placeholder: t.fieldPhonePlaceholder, value: phone, setter: setPhone },
+                          { id: 'skills', label: t.fieldSkills, icon: <Award className="w-4 h-4" />, placeholder: t.fieldSkillsPlaceholder, value: skills, setter: setSkills },
                         ].map(field => (
                           <div key={field.id} className={cn(
                             'rounded-xl border p-3 transition-all',
@@ -657,20 +672,20 @@ export default function FirstTimeOnboarding({
                       {/* Bio */}
                       <div className="mt-3 rounded-xl border bg-card p-3">
                         <Label htmlFor="bio" className="text-xs font-semibold flex items-center gap-1.5 mb-1.5">
-                          <Sparkles className="w-4 h-4 text-primary" /> Giới thiệu ngắn
-                          <span className="text-muted-foreground font-normal">(không bắt buộc)</span>
+                          <Sparkles className="w-4 h-4 text-primary" /> {t.fieldBio}
+                          <span className="text-muted-foreground font-normal">{t.fieldBioOptional}</span>
                         </Label>
-                        <Textarea id="bio" placeholder="Viết vài dòng về bản thân, sở thích, mục tiêu..."
+                        <Textarea id="bio" placeholder={t.fieldBioPlaceholder}
                           value={bio} onChange={(e) => setBio(e.target.value)}
                           rows={2} className="resize-none border-0 bg-muted/50 rounded-lg focus-visible:ring-1" />
                       </div>
 
                       <div className="flex gap-3 mt-4">
                         <Button variant="outline" onClick={goBack} className="h-12 gap-2 rounded-xl text-base flex-1">
-                          <ChevronLeft className="w-5 h-5" /> Quay lại
+                          <ChevronLeft className="w-5 h-5" /> {t.goBack}
                         </Button>
                         <Button onClick={handleInfoNext} className="h-12 gap-2 rounded-xl text-base shadow-lg flex-[2]">
-                          Tiếp tục <ChevronRight className="w-5 h-5" />
+                          {t.continueNext} <ChevronRight className="w-5 h-5" />
                         </Button>
                       </div>
                     </div>
@@ -681,27 +696,21 @@ export default function FirstTimeOnboarding({
               {/* ===== FINISH ===== */}
               {currentStep === 'finish' && (
                 <div className="h-full flex flex-col">
-                  {/* Celebration illustration */}
                   <div className="relative bg-gradient-to-br from-primary/5 via-accent/10 to-primary/5 px-8 pt-6 pb-2 flex justify-center overflow-hidden">
                     <img src={completeImg} alt="Complete" className="h-36 md:h-44 object-contain drop-shadow-lg" />
-                    {/* Confetti-like decorations */}
                     <div className="absolute top-6 left-[20%] w-2 h-2 rounded-full bg-primary/30 animate-bounce" />
                     <div className="absolute top-10 right-[25%] w-3 h-3 rounded-full bg-accent/30 animate-bounce delay-300" />
                     <div className="absolute bottom-4 left-[30%] w-2 h-2 rounded-sm bg-warning/30 animate-bounce delay-500 rotate-45" />
-                    <div className="absolute top-14 left-[15%] w-1.5 h-1.5 rounded-full bg-success/30 animate-bounce delay-700" />
                   </div>
 
                   <div className="flex-1 px-6 md:px-10 pb-6 flex flex-col items-center">
                     <h2 className="text-2xl md:text-3xl font-extrabold mt-3 mb-1 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                      Sẵn sàng rồi! 🎉
+                      {t.finishTitle}
                     </h2>
-                    <p className="text-muted-foreground mb-5 text-center max-w-md">
-                      Bạn đã hoàn tất thiết lập. Dưới đây là tóm tắt thông tin của bạn.
-                    </p>
+                    <p className="text-muted-foreground mb-5 text-center max-w-md">{t.finishDesc}</p>
 
                     {/* Summary card */}
                     <div className="w-full max-w-lg bg-card border rounded-2xl overflow-hidden shadow-sm mb-5">
-                      {/* Header with gradient */}
                       <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-5 py-3 flex items-center gap-3 border-b">
                         <Avatar className="h-12 w-12 border-2 border-background shadow">
                           {previewUrl ? (
@@ -716,19 +725,18 @@ export default function FirstTimeOnboarding({
                           <p className="font-bold text-base">{userFullName}</p>
                           <p className="text-xs text-muted-foreground">{userStudentId} • {userEmail}</p>
                         </div>
-                        <Badge className={cn('gap-1 text-xs ml-auto shrink-0', roleInfo.color)}>
-                          {roleInfo.icon}
-                          {roleInfo.label}
+                        <Badge className={cn('gap-1 text-xs ml-auto shrink-0 border', getPlanColor())}>
+                          <Sparkles className="w-3 h-3" />
+                          {getPlanLabel()}
                         </Badge>
                       </div>
 
-                      {/* Details grid */}
                       <div className="grid grid-cols-2 gap-0 divide-x divide-y">
                         {[
-                          { icon: <GraduationCap className="w-3.5 h-3.5" />, label: 'Khóa', value: yearBatch },
-                          { icon: <BookOpen className="w-3.5 h-3.5" />, label: 'Ngành', value: major },
-                          { icon: <Phone className="w-3.5 h-3.5" />, label: 'SĐT', value: phone },
-                          { icon: <Award className="w-3.5 h-3.5" />, label: 'Kỹ năng', value: skills },
+                          { icon: <GraduationCap className="w-3.5 h-3.5" />, label: t.batchLabel, value: yearBatch },
+                          { icon: <BookOpen className="w-3.5 h-3.5" />, label: t.majorLabel, value: major },
+                          { icon: <Phone className="w-3.5 h-3.5" />, label: t.phoneLabel, value: phone },
+                          { icon: <Award className="w-3.5 h-3.5" />, label: t.skillsLabel, value: skills },
                         ].map((item, i) => (
                           <div key={i} className="px-4 py-2.5">
                             <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-0.5">
@@ -742,7 +750,7 @@ export default function FirstTimeOnboarding({
                       {bio && (
                         <div className="px-4 py-2.5 border-t">
                           <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-0.5">
-                            <Sparkles className="w-3 h-3 text-primary" /> Giới thiệu
+                            <Sparkles className="w-3 h-3 text-primary" /> {t.bioLabel}
                           </p>
                           <p className="text-sm text-muted-foreground">{bio}</p>
                         </div>
@@ -751,12 +759,12 @@ export default function FirstTimeOnboarding({
 
                     <div className="flex gap-3 w-full max-w-xs">
                       <Button variant="outline" onClick={goBack} className="h-12 gap-2 rounded-xl text-base flex-1">
-                        <ChevronLeft className="w-5 h-5" /> Quay lại
+                        <ChevronLeft className="w-5 h-5" /> {t.goBack}
                       </Button>
                       <Button onClick={handleFinish} disabled={isSaving} size="lg"
                         className="gap-2 h-12 text-base rounded-xl shadow-lg hover:shadow-xl transition-all bg-gradient-to-r from-primary to-primary/90 flex-[2]">
                         {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
-                        Vào hệ thống
+                        {t.enterSystem}
                       </Button>
                     </div>
                   </div>
@@ -776,10 +784,10 @@ export default function FirstTimeOnboarding({
                     <div className="absolute -bottom-1 -left-2 text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>✨</div>
                   </div>
                   <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent mb-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                    Chào mừng bạn! 🚀
+                    {t.celebrationTitle}
                   </h2>
                   <p className="text-muted-foreground text-center max-w-sm animate-fade-in" style={{ animationDelay: '0.5s' }}>
-                    Mọi thứ đã sẵn sàng. Đang đưa bạn vào hệ thống...
+                    {t.celebrationDesc}
                   </p>
                   <div className="mt-6 flex gap-1 animate-fade-in" style={{ animationDelay: '0.7s' }}>
                     {[0, 1, 2].map(i => (
