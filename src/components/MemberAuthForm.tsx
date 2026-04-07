@@ -537,12 +537,16 @@ export function MemberAuthForm() {
         <Card className={`w-full shadow-card-lg ${isVerifyEmail ? 'border-blue-300 dark:border-blue-700/50' : isApproved ? 'border-emerald-300 dark:border-emerald-700/50' : 'border-amber-300 dark:border-amber-700/50'}`}>
           <CardContent className={`${isVerifyEmail ? 'p-0' : 'pt-6 text-center space-y-4'}`}>
             {isVerifyEmail ? (
-              <EmailVerifyScreen
-                regStudentId={regStudentId}
-                regFullName={regFullName}
-                regEmail={regEmail}
+              <OtpVerifyScreen
+                email={regEmail}
                 userId={regUserId}
-                onRegisterAgain={() => {
+                fullName={regFullName}
+                studentId={regStudentId}
+                onVerified={() => {
+                  setRegisterSuccess(false);
+                  setActiveTab('login');
+                }}
+                onBack={() => {
                   setRegisterSuccess(false);
                   setActiveTab('register');
                 }}
