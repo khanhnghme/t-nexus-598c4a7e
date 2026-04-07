@@ -11,12 +11,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Read admin config from secrets (remix-safe)
-    const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL')
-    const ADMIN_STUDENT_ID = Deno.env.get('ADMIN_STUDENT_ID') || '00000000'
-    const ADMIN_FULL_NAME = Deno.env.get('ADMIN_FULL_NAME') || 'System Admin'
-    const ADMIN_DEFAULT_PASSWORD = Deno.env.get('ADMIN_DEFAULT_PASSWORD') || 'changeme123'
-    const ADMIN_INSTITUTION = Deno.env.get('ADMIN_INSTITUTION') || 'T-Nexus System'
+    // Read OwnerSystem config from secrets
+    const ADMIN_EMAIL = Deno.env.get('OWNER_SYSTEM_EMAIL')
+    const ADMIN_STUDENT_ID = Deno.env.get('OWNER_SYSTEM_STUDENT_ID') || '00000000'
+    const ADMIN_FULL_NAME = Deno.env.get('OWNER_SYSTEM_FULL_NAME') || 'System Owner'
+    const ADMIN_DEFAULT_PASSWORD = Deno.env.get('OWNER_SYSTEM_PASSWORD') || 'changeme123'
+    const ADMIN_INSTITUTION = Deno.env.get('OWNER_SYSTEM_INSTITUTION') || 'T-Nexus System'
 
     if (!ADMIN_EMAIL) {
       return new Response(
