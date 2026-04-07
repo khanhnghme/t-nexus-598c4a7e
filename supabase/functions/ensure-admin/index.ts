@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
     if (!ADMIN_EMAIL) {
       return new Response(
-        JSON.stringify({ success: false, error: 'ADMIN_EMAIL secret is not configured' }),
+        JSON.stringify({ success: false, error: 'OWNER_SYSTEM_EMAIL secret is not configured' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
