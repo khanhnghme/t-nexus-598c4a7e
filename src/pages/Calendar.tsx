@@ -17,6 +17,7 @@ import { parseLocalDateTime } from '@/lib/datetime';
 
 export default function CalendarPage() {
   const { user } = useAuth();
+  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -46,7 +47,7 @@ export default function CalendarPage() {
   }, [currentDate, viewMode]);
 
   const { data: taskEvents = [], refetch: refetchTasks } = useQuery({
-    queryKey: ['calendar-tasks', user?.id, dateRange.start.toISOString(), dateRange.end.toISOString()],
+    queryKey: ['calendar-tasks', user?.id, dateRange.start.toISOString(), dateRange.end.toISOString(), activeWorkspace?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data: memberships } = await supabase.from('group_members').select('group_id').eq('user_id', user.id);
