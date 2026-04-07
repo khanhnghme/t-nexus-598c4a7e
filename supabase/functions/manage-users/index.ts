@@ -372,22 +372,22 @@ serve(async (req: Request) => {
         });
       }
 
-      const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: user_id });
+      const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: user_id });
       if (targetIsAdmin) {
-        return new Response(JSON.stringify({ error: "Không thể thay đổi vai trò của Admin" }), {
+        return new Response(JSON.stringify({ error: "Không thể thay đổi vai trò của OwnerSystem" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      if (new_role === 'admin') {
-        return new Response(JSON.stringify({ error: "Không thể nâng quyền lên Admin" }), {
+      if (new_role === 'owner_system') {
+        return new Response(JSON.stringify({ error: "Không thể nâng quyền lên OwnerSystem" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      await supabaseAdmin.from("user_roles").delete().eq("user_id", user_id).neq("role", "admin");
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", user_id).neq("role", "owner_system");
       await supabaseAdmin.from("user_roles").insert({ user_id, role: new_role });
 
       console.log(`Role updated for ${user_id}: ${new_role}`);
