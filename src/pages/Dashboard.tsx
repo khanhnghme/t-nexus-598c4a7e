@@ -363,6 +363,7 @@ export default function Dashboard() {
       toast.success(accept ? 'Đã chấp nhận lời mời workspace' : 'Đã từ chối lời mời workspace');
       setPendingWsInvites(prev => prev.filter(p => p.id !== invite.id));
       if (accept) {
+        await refreshWorkspaces();
         fetchDashboardData();
       }
     } catch (error: any) {
