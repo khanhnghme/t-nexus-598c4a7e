@@ -74,12 +74,17 @@ export function useWorkspaceMembers(): UseWorkspaceMembersReturn {
         },
       });
 
-      if (fnErr) throw fnErr;
+      if (fnErr) {
+        // Try to extract readable error from response body
+        const body = data || {};
+        const msg = body.error || fnErr.message || 'Invitation failed';
+        return { success: false, error: msg };
+      }
       if (data?.error) return { success: false, error: data.error };
 
       return { success: true };
     } catch (err: any) {
-      return { success: false, error: err.message };
+      return { success: false, error: err.message || 'Invitation failed' };
     }
   }, [activeWorkspace]);
 
