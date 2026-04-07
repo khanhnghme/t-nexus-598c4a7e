@@ -286,7 +286,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                     )}
                   >
                     <ChevronRight className={cn('nav-chevron', isProjectsExpanded && 'expanded')} />
-                    <span className="nav-label">Dự án</span>
+                    <span className="nav-label font-semibold text-foreground">Dự án</span>
                     <span className="text-[10px] opacity-40">{projects.length}</span>
                   </button>
 
