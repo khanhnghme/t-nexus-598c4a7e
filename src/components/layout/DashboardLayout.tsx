@@ -47,6 +47,7 @@ import {
   Wrench,
   Search,
 } from 'lucide-react';
+import SidebarTreeNav from '@/components/SidebarTreeNav';
 import {
   CommandDialog,
   CommandEmpty,
@@ -67,8 +68,7 @@ import MusicPlayer from '@/components/MusicPlayer';
 import NetworkDiagnostic from '@/components/NetworkDiagnostic';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useLoginStreak } from '@/hooks/useLoginStreak';
-import WorkspaceSwitcher from '@/components/WorkspaceSwitcher';
-import SidebarProjects from '@/components/SidebarProjects';
+// WorkspaceSwitcher and SidebarProjects replaced by SidebarTreeNav
 
 /* ------------------------------------------------------------------ */
 /*  Theme toggle (sidebar-friendly)                                    */
@@ -371,32 +371,9 @@ export default function DashboardLayout({
             </Tooltip>
           </div>
 
-          {/* Scrollable navigation */}
+          {/* Scrollable navigation — Tree Nav */}
           <div className="sidebar-nav-scroll">
-            {/* Workspace Switcher */}
-            <WorkspaceSwitcher collapsed={sidebarCollapsed} />
-
-            {/* Workspace Projects */}
-            <SidebarProjects collapsed={sidebarCollapsed} />
-
-            <div className="sidebar-section-label">MAIN</div>
-            {visibleMain.map(renderNavItem)}
-
-            {visiblePersonal.length > 0 && (
-              <>
-                <div className="sidebar-nav-separator" />
-                <div className="sidebar-section-label">PERSONAL</div>
-                {visiblePersonal.map(renderNavItem)}
-              </>
-            )}
-
-            {visibleAdmin.length > 0 && (
-              <>
-                <div className="sidebar-nav-separator" />
-                <div className="sidebar-section-label">MANAGE</div>
-                {visibleAdmin.map(renderNavItem)}
-              </>
-            )}
+            <SidebarTreeNav collapsed={sidebarCollapsed} />
           </div>
 
           {/* Bottom section */}
