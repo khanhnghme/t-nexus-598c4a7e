@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import type { Locale } from '@/lib/i18n';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +22,8 @@ import {
   Camera, Loader2, Save, Shield, Crown, UserCheck, Calendar, Star,
   CheckCircle2, AlertCircle, Edit3, X, FolderKanban, HardDrive,
   Lock, Unlock, Zap, ArrowRight, Plus, Bell, CalendarDays, MessageSquare,
-  Lightbulb, Users, FolderArchive, Wrench, Eye, EyeOff, Navigation
+  Lightbulb, Users, FolderArchive, Wrench, Eye, EyeOff, Navigation,
+  Globe, Check
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
