@@ -3,37 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Workspace, WorkspaceRole } from '@/types/database';
 
-/* ═══════════════════════════════════════════════════════════════ */
-/*  Types                                                         */
-/* ═══════════════════════════════════════════════════════════════ */
-
 interface WorkspaceContextType {
-  /** List of workspaces the current user belongs to */
   workspaces: Workspace[];
-  /** Currently active workspace */
   activeWorkspace: Workspace | null;
-  /** User's role in the active workspace */
   workspaceRole: WorkspaceRole | null;
-  /** Whether workspace data is being loaded */
   isLoading: boolean;
-  /** Whether workspace feature is available (tables exist) */
   isAvailable: boolean;
-  /** Switch to a different workspace */
   switchWorkspace: (workspaceId: string) => void;
-  /** Refresh workspace list */
   refreshWorkspaces: () => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
-/* ═══════════════════════════════════════════════════════════════ */
-/*  Storage key for persisting active workspace                   */
-/* ═══════════════════════════════════════════════════════════════ */
 const ACTIVE_WS_KEY = 'tnexus_active_workspace';
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  Provider                                                      */
-/* ═══════════════════════════════════════════════════════════════ */
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -43,7 +25,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAvailable, setIsAvailable] = useState(false);
 
-  /* ── Fetch all workspaces for the current user ── */
   const fetchWorkspaces = useCallback(async () => {
     if (!user) {
       setWorkspaces([]);
@@ -54,15 +35,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Try to fetch workspaces — if table doesn't exist, gracefully fail
       const { data: ownedWs, error: ownedErr } = await (supabase as any)
         .from('workspaces')
         .select('*')
         .eq('owner_id', user.id);
 
       if (ownedErr) {
-        // Table likely doesn't exist yet — workspace feature not available
-        console.info('[WorkspaceContext] Workspaces table not available yet. Running in legacy mode.');
+        console.info('[WorkspaceContext] Workspaces table not available yet.');
         setIsAvailable(false);
         setIsLoading(false);
         return;
@@ -70,14 +49,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
       setIsAvailable(true);
 
-      // Get workspaces where user is a member (not owner)
       const { data: memberWs } = await (supabase as any)
         .from('workspace_members')
         .select('role, workspaces(*)')
         .eq('user_id', user.id);
 
       const allWorkspaces: Workspace[] = [
-        ...(ownedWs || []).map((w: any) => ({ ...w, my_role: 'owner' as WorkspaceRole })),
+        ...(ownedWs || []).map((w: any) => ({ ...w, my_role: 'workspace_owner' as WorkspaceRole })),
         ...(memberWs || []).map((m: any) => ({
           ...m.workspaces,
           my_role: m.role as WorkspaceRole,
@@ -86,7 +64,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
       setWorkspaces(allWorkspaces);
 
-      // Restore last active workspace from localStorage
       const savedWsId = localStorage.getItem(ACTIVE_WS_KEY);
       const savedWs = allWorkspaces.find(w => w.id === savedWsId);
 
@@ -94,7 +71,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         setActiveWorkspace(savedWs);
         setWorkspaceRole(savedWs.my_role || null);
       } else if (allWorkspaces.length > 0) {
-        // Default to first workspace (usually the owned one)
         const defaultWs = allWorkspaces[0];
         setActiveWorkspace(defaultWs);
         setWorkspaceRole(defaultWs.my_role || null);
@@ -108,7 +84,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  /* ── Switch workspace ── */
   const switchWorkspace = useCallback((workspaceId: string) => {
     const ws = workspaces.find(w => w.id === workspaceId);
     if (ws) {
@@ -118,17 +93,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   }, [workspaces]);
 
-  /* ── Refresh ── */
   const refreshWorkspaces = useCallback(async () => {
     await fetchWorkspaces();
   }, [fetchWorkspaces]);
 
-  /* ── Effect: fetch on user change ── */
   useEffect(() => {
     fetchWorkspaces();
   }, [fetchWorkspaces]);
 
-  /* ── Clear on logout ── */
   useEffect(() => {
     if (!user) {
       setWorkspaces([]);
@@ -154,10 +126,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     </WorkspaceContext.Provider>
   );
 }
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  Hook                                                          */
-/* ═══════════════════════════════════════════════════════════════ */
 
 export function useWorkspace() {
   const context = useContext(WorkspaceContext);

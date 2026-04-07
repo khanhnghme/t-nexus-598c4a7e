@@ -2,11 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
-import type { Profile } from '@/types/database';
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  Types                                                         */
-/* ═══════════════════════════════════════════════════════════════ */
+import type { WorkspaceRole } from '@/types/database';
 
 export interface WorkspaceMemberInfo {
   id: string;
@@ -14,7 +10,7 @@ export interface WorkspaceMemberInfo {
   email: string;
   avatar_url: string | null;
   student_id: string;
-  role: 'owner' | 'admin' | 'member';
+  role: WorkspaceRole;
   joined_at: string | null;
 }
 
@@ -23,15 +19,11 @@ interface UseWorkspaceMembersReturn {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  inviteMember: (email: string, role: 'admin' | 'member') => Promise<{ success: boolean; error?: string }>;
+  inviteMember: (email: string, role: 'workspace_admin' | 'workspace_member') => Promise<{ success: boolean; error?: string }>;
   inviteGuest: (email: string, groupId: string, role: string) => Promise<{ success: boolean; error?: string }>;
   removeMember: (userId: string) => Promise<{ success: boolean; error?: string }>;
-  changeRole: (userId: string, newRole: 'admin' | 'member') => Promise<{ success: boolean; error?: string }>;
+  changeRole: (userId: string, newRole: 'workspace_admin' | 'workspace_member') => Promise<{ success: boolean; error?: string }>;
 }
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  Hook                                                          */
-/* ═══════════════════════════════════════════════════════════════ */
 
 export function useWorkspaceMembers(): UseWorkspaceMembersReturn {
   const { user } = useAuth();
@@ -69,7 +61,7 @@ export function useWorkspaceMembers(): UseWorkspaceMembersReturn {
     fetchMembers();
   }, [fetchMembers]);
 
-  const inviteMember = useCallback(async (email: string, role: 'admin' | 'member') => {
+  const inviteMember = useCallback(async (email: string, role: 'workspace_admin' | 'workspace_member') => {
     if (!activeWorkspace) return { success: false, error: 'No active workspace' };
 
     try {
@@ -136,7 +128,7 @@ export function useWorkspaceMembers(): UseWorkspaceMembersReturn {
     }
   }, [activeWorkspace, fetchMembers]);
 
-  const changeRole = useCallback(async (userId: string, newRole: 'admin' | 'member') => {
+  const changeRole = useCallback(async (userId: string, newRole: 'workspace_admin' | 'workspace_member') => {
     if (!activeWorkspace) return { success: false, error: 'No active workspace' };
 
     try {

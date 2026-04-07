@@ -1,18 +1,24 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import type { Profile, UserRole, AppRole } from '@/types/database';
+import type { Profile, UserRole, SystemRole } from '@/types/database';
 import { initR2Storage } from '@/lib/r2Storage';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
-  roles: AppRole[];
+  roles: SystemRole[];
   isLoading: boolean;
+  /** Has system_owner role */
+  isSystemOwner: boolean;
+  /** Has system_owner or system_admin role */
+  isSystemAdmin: boolean;
+  /** @deprecated Use isSystemOwner */
   isOwnerSystem: boolean;
-  /** @deprecated Use isOwnerSystem */
+  /** @deprecated Use isSystemAdmin */
   isAdmin: boolean;
+  /** @deprecated Use workspace/project role checks instead */
   isLeader: boolean;
   isApproved: boolean;
   mustChangePassword: boolean;
@@ -29,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [roles, setRoles] = useState<AppRole[]>([]);
+  const [roles, setRoles] = useState<SystemRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
@@ -52,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq('user_id', userId);
     
     if (rolesData) {
-      setRoles(rolesData.map(r => r.role as AppRole));
+      setRoles(rolesData.map(r => r.role as SystemRole));
     }
   };
 
@@ -80,12 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let isActive = val.enabled ?? false;
         const endAt = val.end_at ?? null;
         
-        // Auto-disable if end_at has passed
         if (isActive && endAt) {
           const endTime = new Date(endAt).getTime();
           if (endTime <= Date.now()) {
             isActive = false;
-            // Auto-disable in DB
             await supabase
               .from('system_settings')
               .update({
@@ -170,7 +174,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initSession();
     fetchMaintenanceMode();
 
-    // Poll maintenance mode every 30 seconds
     const interval = setInterval(fetchMaintenanceMode, 30000);
 
     return () => {
@@ -222,15 +225,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isOwnerSystem = roles.includes('owner_system');
-  const isAdmin = isOwnerSystem; // backward compat alias
-  const isLeader = roles.includes('leader') || isOwnerSystem;
+  const isSystemOwner = roles.includes('system_owner');
+  const isSystemAdmin = isSystemOwner || roles.includes('system_admin');
+  // Backward-compat aliases
+  const isOwnerSystem = isSystemOwner;
+  const isAdmin = isSystemAdmin;
+  const isLeader = isSystemAdmin; // deprecated
   const isApproved = profile?.is_approved ?? false;
   const mustChangePassword = profile?.must_change_password ?? false;
 
   const contextValue = {
     user, session, profile, roles, isLoading,
-    isOwnerSystem, isAdmin, isLeader, isApproved, mustChangePassword,
+    isSystemOwner, isSystemAdmin,
+    isOwnerSystem, isAdmin, isLeader,
+    isApproved, mustChangePassword,
     maintenanceMode,
     signIn, signUp, signOut, refreshProfile,
   };

@@ -8,15 +8,15 @@ const corsHeaders = {
 
 const DEFAULT_PASSWORD = "123456";
 
-interface CreateMemberRequest {
-  action: "create_member" | "setup_system_accounts" | "update_password" | "clear_must_change_password" | "delete_user" | "update_email" | "update_role" | "restore_members";
+interface RequestBody {
+  action: string;
   email?: string;
   password?: string;
   student_id?: string;
   full_name?: string;
   institution?: string;
-  role?: "member" | "leader" | "admin";
-  new_role?: "member" | "leader" | "admin";
+  role?: string;
+  new_role?: string;
   user_id?: string;
   requester_id?: string;
   profiles?: any[];
@@ -34,19 +34,21 @@ serve(async (req: Request) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const body: CreateMemberRequest = await req.json();
+    const body: RequestBody = await req.json();
     console.log("Action:", body.action);
 
+    // ═══════════════════════════════════════════════
+    // SETUP SYSTEM ACCOUNTS (using OWNER_SYSTEM_* secrets)
+    // ═══════════════════════════════════════════════
     if (body.action === "setup_system_accounts") {
-      // Read admin config from secrets (remix-safe)
-      const adminEmail = Deno.env.get("ADMIN_EMAIL");
-      const adminPassword = Deno.env.get("ADMIN_DEFAULT_PASSWORD") || "changeme123";
-      const adminStudentId = Deno.env.get("ADMIN_STUDENT_ID") || "00000000";
-      const adminFullName = Deno.env.get("ADMIN_FULL_NAME") || "System Admin";
-      const adminInstitution = "T-Nexus System";
+      const adminEmail = Deno.env.get("OWNER_SYSTEM_EMAIL");
+      const adminPassword = Deno.env.get("OWNER_SYSTEM_PASSWORD") || "changeme123";
+      const adminStudentId = Deno.env.get("OWNER_SYSTEM_STUDENT_ID") || "00000000";
+      const adminFullName = Deno.env.get("OWNER_SYSTEM_FULL_NAME") || "System Owner";
+      const adminInstitution = Deno.env.get("OWNER_SYSTEM_INSTITUTION") || "T-Nexus System";
 
       if (!adminEmail) {
-        return new Response(JSON.stringify({ error: "ADMIN_EMAIL secret is not configured" }), {
+        return new Response(JSON.stringify({ error: "OWNER_SYSTEM_EMAIL secret is not configured" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -73,17 +75,16 @@ serve(async (req: Request) => {
 
         await supabaseAdmin.from("user_roles").upsert({
           user_id: existingAdmin.id,
-          role: "admin",
+          role: "system_owner",
         }, { onConflict: "user_id,role" });
 
-        // Save admin password for demo
         await supabaseAdmin.from("demo_passwords").upsert({
           user_id: existingAdmin.id,
           plain_password: adminPassword,
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
 
-        console.log("Admin account updated");
+        console.log("System owner account updated");
       } else {
         const { data: newAdmin, error: adminError } = await supabaseAdmin.auth.admin.createUser({
           email: adminEmail,
@@ -93,7 +94,7 @@ serve(async (req: Request) => {
         });
 
         if (adminError) {
-          console.error("Admin creation error:", adminError);
+          console.error("System owner creation error:", adminError);
         } else if (newAdmin.user) {
           await supabaseAdmin.from("profiles").upsert({
             id: newAdmin.user.id,
@@ -107,21 +108,19 @@ serve(async (req: Request) => {
 
           await supabaseAdmin.from("user_roles").insert({
             user_id: newAdmin.user.id,
-            role: "admin",
+            role: "system_owner",
           });
 
-          // Save admin password for demo
           await supabaseAdmin.from("demo_passwords").upsert({
             user_id: newAdmin.user.id,
             plain_password: adminPassword,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
 
-          console.log("Admin created successfully");
+          console.log("System owner created successfully");
         }
       }
 
-      // Store admin contact for frontend
       await supabaseAdmin.from("system_settings").upsert({
         key: "admin_contact",
         value: { email: adminEmail },
@@ -133,6 +132,9 @@ serve(async (req: Request) => {
       });
     }
 
+    // ═══════════════════════════════════════════════
+    // CREATE MEMBER (no system role assigned - just profile)
+    // ═══════════════════════════════════════════════
     if (body.action === "create_member") {
       const { email, student_id, full_name, institution } = body;
       
@@ -143,7 +145,6 @@ serve(async (req: Request) => {
         });
       }
 
-      // Check if email already exists - try to find by email first
       const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
       const existingUser = existingUsers?.users?.find((u: any) => u.email === email);
 
@@ -182,19 +183,15 @@ serve(async (req: Request) => {
           must_change_password: true,
         }, { onConflict: "id" });
 
-        await supabaseAdmin.from("user_roles").insert({
-          user_id: newUser.user.id,
-          role: "member",
-        });
+        // No system role assigned for regular members
 
-        // Save default password for demo
         await supabaseAdmin.from("demo_passwords").upsert({
           user_id: newUser.user.id,
           plain_password: DEFAULT_PASSWORD,
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
 
-        console.log("Member created successfully with default password:", email);
+        console.log("Member created successfully:", email);
       }
 
       return new Response(JSON.stringify({ success: true, user: newUser.user }), {
@@ -202,6 +199,9 @@ serve(async (req: Request) => {
       });
     }
 
+    // ═══════════════════════════════════════════════
+    // SAVE DEMO PASSWORD
+    // ═══════════════════════════════════════════════
     if (body.action === "save_demo_password") {
       const { user_id, password } = body;
       
@@ -223,6 +223,9 @@ serve(async (req: Request) => {
       });
     }
 
+    // ═══════════════════════════════════════════════
+    // UPDATE PASSWORD
+    // ═══════════════════════════════════════════════
     if (body.action === "update_password") {
       const { user_id, password, requester_id } = body;
       
@@ -234,11 +237,11 @@ serve(async (req: Request) => {
       }
 
       if (requester_id) {
-        const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: user_id });
-        const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: requester_id });
+        const { data: targetIsOwner } = await supabaseAdmin.rpc('is_system_owner', { _user_id: user_id });
+        const { data: requesterIsOwner } = await supabaseAdmin.rpc('is_system_owner', { _user_id: requester_id });
         
-        if (targetIsAdmin && !requesterIsAdmin) {
-          return new Response(JSON.stringify({ error: "Bạn không có quyền đổi mật khẩu của Admin" }), {
+        if (targetIsOwner && !requesterIsOwner) {
+          return new Response(JSON.stringify({ error: "Bạn không có quyền đổi mật khẩu của System Owner" }), {
             status: 403,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
@@ -256,7 +259,6 @@ serve(async (req: Request) => {
 
       await supabaseAdmin.from("profiles").update({ must_change_password: false }).eq("id", user_id);
 
-      // Save password for demo
       await supabaseAdmin.from("demo_passwords").upsert({
         user_id,
         plain_password: password,
@@ -268,6 +270,9 @@ serve(async (req: Request) => {
       });
     }
 
+    // ═══════════════════════════════════════════════
+    // CLEAR MUST CHANGE PASSWORD
+    // ═══════════════════════════════════════════════
     if (body.action === "clear_must_change_password") {
       const { user_id } = body;
       
@@ -285,6 +290,9 @@ serve(async (req: Request) => {
       });
     }
 
+    // ═══════════════════════════════════════════════
+    // DELETE USER
+    // ═══════════════════════════════════════════════
     if (body.action === "delete_user") {
       const { user_id, requester_id } = body;
       
@@ -296,11 +304,11 @@ serve(async (req: Request) => {
       }
 
       if (requester_id) {
-        const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: user_id });
-        const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: requester_id });
+        const { data: targetIsOwner } = await supabaseAdmin.rpc('is_system_owner', { _user_id: user_id });
+        const { data: requesterIsOwner } = await supabaseAdmin.rpc('is_system_owner', { _user_id: requester_id });
         
-        if (targetIsAdmin && !requesterIsAdmin) {
-          return new Response(JSON.stringify({ error: "Bạn không có quyền xóa Admin" }), {
+        if (targetIsOwner && !requesterIsOwner) {
+          return new Response(JSON.stringify({ error: "Bạn không có quyền xóa System Owner" }), {
             status: 403,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
@@ -310,19 +318,20 @@ serve(async (req: Request) => {
       const { error } = await supabaseAdmin.auth.admin.deleteUser(user_id);
 
       if (error) {
-        console.error("Delete user error:", error);
         return new Response(JSON.stringify({ error: error.message }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      console.log("User deleted successfully:", user_id);
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // ═══════════════════════════════════════════════
+    // UPDATE EMAIL
+    // ═══════════════════════════════════════════════
     if (body.action === "update_email") {
       const { user_id, email } = body;
       
@@ -339,7 +348,6 @@ serve(async (req: Request) => {
       });
 
       if (authError) {
-        console.error("Update email error:", authError);
         return new Response(JSON.stringify({ error: authError.message }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -348,12 +356,14 @@ serve(async (req: Request) => {
 
       await supabaseAdmin.from("profiles").update({ email }).eq("id", user_id);
 
-      console.log("Email updated successfully:", user_id, email);
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // ═══════════════════════════════════════════════
+    // UPDATE ROLE (system roles only: system_admin or remove)
+    // ═══════════════════════════════════════════════
     if (body.action === "update_role") {
       const { user_id, new_role, requester_id } = body;
       
@@ -364,38 +374,48 @@ serve(async (req: Request) => {
         });
       }
 
-      const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: requester_id });
-      if (!requesterIsAdmin) {
-        return new Response(JSON.stringify({ error: "Chỉ Admin mới có quyền thay đổi vai trò" }), {
+      // Only system_owner can change system roles
+      const { data: requesterIsOwner } = await supabaseAdmin.rpc('is_system_owner', { _user_id: requester_id });
+      if (!requesterIsOwner) {
+        return new Response(JSON.stringify({ error: "Chỉ System Owner mới có quyền thay đổi vai trò hệ thống" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: user_id });
-      if (targetIsAdmin) {
-        return new Response(JSON.stringify({ error: "Không thể thay đổi vai trò của OwnerSystem" }), {
+      const { data: targetIsOwner } = await supabaseAdmin.rpc('is_system_owner', { _user_id: user_id });
+      if (targetIsOwner) {
+        return new Response(JSON.stringify({ error: "Không thể thay đổi vai trò của System Owner" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      if (new_role === 'owner_system') {
-        return new Response(JSON.stringify({ error: "Không thể nâng quyền lên OwnerSystem" }), {
+      if (new_role === 'system_owner') {
+        return new Response(JSON.stringify({ error: "Không thể nâng quyền lên System Owner" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      await supabaseAdmin.from("user_roles").delete().eq("user_id", user_id).neq("role", "owner_system");
-      await supabaseAdmin.from("user_roles").insert({ user_id, role: new_role });
+      // Remove all existing system roles
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", user_id);
 
-      console.log(`Role updated for ${user_id}: ${new_role}`);
+      // Assign new role if it's a valid system role
+      if (new_role === 'system_admin') {
+        await supabaseAdmin.from("user_roles").insert({ user_id, role: 'system_admin' });
+      }
+      // If new_role is 'none' or anything else, user has no system role (regular user)
+
+      console.log(`System role updated for ${user_id}: ${new_role}`);
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // ═══════════════════════════════════════════════
+    // RESTORE MEMBERS
+    // ═══════════════════════════════════════════════
     if (body.action === "restore_members") {
       const { profiles } = body;
       
@@ -415,7 +435,6 @@ serve(async (req: Request) => {
         if (!oldId || !student_id || !email) continue;
 
         try {
-          // Check if user exists by student_id
           const { data: existingProfile } = await supabaseAdmin
             .from("profiles")
             .select("id")
@@ -425,23 +444,18 @@ serve(async (req: Request) => {
           if (existingProfile) {
             mapping[oldId] = existingProfile.id;
             existing++;
-            console.log(`Member found by student_id ${student_id}: ${existingProfile.id}`);
             continue;
           }
 
-          // Check if email already exists in auth
           const { data: userList } = await supabaseAdmin.auth.admin.listUsers();
           const existingByEmail = userList?.users?.find(u => u.email === email);
 
           if (existingByEmail) {
-            // Email exists but different student_id - map to existing user
             mapping[oldId] = existingByEmail.id;
             existing++;
-            console.log(`Member found by email ${email}: ${existingByEmail.id}`);
             continue;
           }
 
-          // Create new auth user
           const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
             email,
             password: DEFAULT_PASSWORD,
@@ -451,13 +465,11 @@ serve(async (req: Request) => {
 
           if (createError) {
             console.error(`Failed to create user ${email}:`, createError);
-            // Still try to map by keeping old ID (might work if user exists)
             mapping[oldId] = oldId;
             continue;
           }
 
           if (newUser.user) {
-            // Upsert profile with all backup data
             await supabaseAdmin.from("profiles").upsert({
               id: newUser.user.id,
               email,
@@ -476,28 +488,18 @@ serve(async (req: Request) => {
               onboarding_completed: profile.onboarding_completed || false,
             }, { onConflict: "id" });
 
-            // Add member role
-            await supabaseAdmin.from("user_roles").upsert({
-              user_id: newUser.user.id,
-              role: "member",
-            }, { onConflict: "user_id,role" });
+            // No system role assigned for restored members
 
             mapping[oldId] = newUser.user.id;
             created++;
-            console.log(`Member created: ${email} (${student_id}) -> ${newUser.user.id}`);
           }
         } catch (err) {
           console.error(`Error processing member ${student_id}:`, err);
-          mapping[oldId] = oldId; // fallback
+          mapping[oldId] = oldId;
         }
       }
 
-      return new Response(JSON.stringify({ 
-        success: true, 
-        mapping, 
-        created, 
-        existing 
-      }), {
+      return new Response(JSON.stringify({ success: true, mapping, created, existing }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

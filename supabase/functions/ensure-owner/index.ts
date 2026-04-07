@@ -11,7 +11,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Read OwnerSystem config from secrets
     const ADMIN_EMAIL = Deno.env.get('OWNER_SYSTEM_EMAIL')
     const ADMIN_STUDENT_ID = Deno.env.get('OWNER_SYSTEM_STUDENT_ID') || '00000000'
     const ADMIN_FULL_NAME = Deno.env.get('OWNER_SYSTEM_FULL_NAME') || 'System Owner'
@@ -31,7 +30,7 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    // Also store admin contact in system_settings for frontend usage
+    // Store admin contact in system_settings
     await supabaseAdmin.from('system_settings').upsert({
       key: 'admin_contact',
       value: { email: ADMIN_EMAIL },
@@ -57,16 +56,16 @@ Deno.serve(async (req) => {
 
       await supabaseAdmin.from('user_roles').upsert({
         user_id: adminId,
-        role: 'owner_system'
+        role: 'system_owner'
       }, { onConflict: 'user_id,role' })
 
       return new Response(
-        JSON.stringify({ success: true, message: 'Admin account already exists and verified', admin_id: adminId }),
+        JSON.stringify({ success: true, message: 'System owner account already exists and verified', admin_id: adminId }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Create new admin user
+    // Create new system owner user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: ADMIN_EMAIL,
       password: ADMIN_DEFAULT_PASSWORD,
@@ -90,11 +89,11 @@ Deno.serve(async (req) => {
 
     await supabaseAdmin.from('user_roles').upsert({
       user_id: adminId,
-      role: 'owner_system'
+      role: 'system_owner'
     }, { onConflict: 'user_id,role' })
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Admin account created successfully', admin_id: adminId }),
+      JSON.stringify({ success: true, message: 'System owner account created successfully', admin_id: adminId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
