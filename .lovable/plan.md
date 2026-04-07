@@ -1,83 +1,143 @@
 
 
-## Phase 1: Đổi admin → owner_system (Database + Edge Functions + RLS)
+## Redesign Toàn bộ Hệ thống Phân quyền & Phân loại Thành viên
 
-Đây là phase đầu tiên, tập trung vào nền tảng database và backend. Giữ nguyên role `leader` và `member`.
+### Hiện trạng & Vấn đề
 
-### Mô hình role mới
+| Tầng | Hiện tại | Vấn đề |
+|------|----------|--------|
+| System | `app_role` enum: `owner_system`, `leader`, `member` | `leader`/`member` lẫn với project role; thiếu `system_admin` |
+| Workspace | `workspace_members.role`: text `admin`/`member` + `owner_id` | Không có enum riêng; thiếu `guest` |
+| Project | `group_members.role`: dùng chung `app_role` | Hoàn toàn sai — project role dùng system enum |
+| Plan | Chưa tồn tại | — |
 
-| Cũ | Mới | Ghi chú |
-|----|-----|---------|
-| `admin` | `owner_system` | Chỉ 1 tài khoản duy nhất |
-| `leader` | `leader` | Giữ nguyên |
-| `member` | `member` | Giữ nguyên |
+**36 files frontend** tham chiếu `isAdmin`/`isLeader`/`isOwnerSystem`/`owner_system`/`leader` cần cập nhật.
 
-### Bước 1: Database Migration
+---
 
-**1 migration file** thực hiện:
+### 1. Thiết kế Role & Plan mới
 
-1. **Đổi enum `app_role`**: Thêm giá trị `owner_system`, migrate data từ `admin` → `owner_system`, xóa giá trị `admin` cũ
-   - Vì Postgres không cho xóa enum value trực tiếp → tạo enum mới, đổi cột, drop enum cũ
-   
-2. **Cập nhật tất cả DB functions** dùng `'admin'` → `'owner_system'`:
-   - `is_admin()` → đổi tên thành `is_owner_system()`, check role `owner_system`
-   - `is_moderator()` → check `owner_system` thay vì `admin`
-   - `is_group_leader()` → thay `admin` bằng `owner_system`
-   - `has_role()` → giữ nguyên (generic)
-   - `check_admin_user()` → đổi thành `check_owner_system_user()`
-   - `check_project_access()` → cập nhật
+#### 1.1 System Roles (`system_role` enum)
 
-3. **Cập nhật tất cả RLS policies** tham chiếu `is_admin()` → `is_owner_system()`
+| Role | Mô tả | Số lượng |
+|------|--------|----------|
+| `system_owner` | Toàn quyền hệ thống | 1 duy nhất |
+| `system_admin` | Quản trị user, workspace, config | Không giới hạn |
 
-4. **Reset tất cả user_roles**: DELETE tất cả records có role `admin` (hoặc `owner_system` sau khi migrate)
+#### 1.2 Workspace Roles (`workspace_role` enum)
 
-### Bước 2: Cập nhật Edge Functions (7 files)
+| Role | Quyền | Là WS member? |
+|------|-------|:-:|
+| `workspace_owner` | Toàn quyền WS (via `workspaces.owner_id`) | Có |
+| `workspace_admin` | Quản lý settings, members, projects | Có |
+| `workspace_member` | Tạo project, xem WS-public projects | Có |
+| `workspace_guest` | Chỉ thấy project được mời cụ thể | **Không** |
 
-| File | Thay đổi |
-|------|----------|
-| `ensure-admin/index.ts` | Đổi tên → `ensure-owner` hoặc giữ tên, đổi role insert thành `owner_system` |
-| `manage-users/index.ts` | Thay `'admin'` → `'owner_system'` trong tất cả action handlers |
-| `workspace-management/index.ts` | Thay references `admin` → `owner_system` |
-| `auth-email-hook/index.ts` | Kiểm tra & đổi nếu có |
-| `signup-email-otp/index.ts` | Kiểm tra & đổi nếu có |
-| Các functions khác | Scan & fix |
+#### 1.3 Project Roles (`project_role` enum)
 
-### Bước 3: Frontend — AuthContext + Types
+| Role | View | Edit task | Manage members | Manage settings | Invite |
+|------|:---:|:---:|:---:|:---:|:---:|
+| `project_owner` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `project_admin` | ✅ | ✅ | ✅ | Hạn chế | ✅ |
+| `project_member` | ✅ | ✅ (assigned) | ❌ | ❌ | ❌ |
+| `project_guest` | ✅ (read-only) | ❌ | ❌ | ❌ | ❌ |
 
-1. **`src/types/database.ts`**: `AppRole = 'owner_system' | 'leader' | 'member'`
-2. **`src/contexts/AuthContext.tsx`**: 
-   - `isAdmin` → `isOwnerSystem` (check `roles.includes('owner_system')`)
-   - Giữ `isLeader` = `roles.includes('leader') || isOwnerSystem`
-3. **`src/lib/roleLabels.ts`**: `admin` → `owner_system`, label "OwnerSystem"
+#### 1.4 User Plan (`user_plan` enum)
 
-### Bước 4: Frontend — UI Labels + Access Control (27+ files)
+| Plan | Ghi chú |
+|------|---------|
+| `plan_free` | Mặc định |
+| `plan_plus` | Nâng cấp cá nhân |
+| `plan_pro` | Premium |
+| `plan_business` | Doanh nghiệp |
+| `plan_custom` | Tùy chỉnh đặc biệt |
 
-Tất cả file dùng `isAdmin`:
-- Thay `isAdmin` → `isOwnerSystem` 
-- Thay text "Admin" / "Quản trị viên" → "OwnerSystem"
-- Thay "Dành cho Admin / Leader" → "Dành cho OwnerSystem"
+**Áp dụng theo user** (`profiles.user_plan`, default `plan_free`). Giới hạn cụ thể tra từ bảng `plan_limits` (tạo structure, chưa enforce).
 
-### Bước 5: Xóa trang AdminAuthForm + route /admin-auth
+---
 
-- Xóa `src/components/AdminAuthForm.tsx`
-- Xóa route `/admin-auth` trong `App.tsx`
-- OwnerSystem đăng nhập chung qua `/auth`
+### 2. Inheritance & Multi-role
 
-### Bước 6: Setup Owner mới
+```text
+system_owner  → tương đương workspace_owner ở MỌI workspace
+system_admin  → tương đương workspace_admin ở MỌI workspace
+workspace_owner → tương đương project_owner ở MỌI project trong WS
+workspace_admin → tương đương project_admin ở MỌI project trong WS
+```
 
-Sau khi reset xong (tất cả admin role bị xóa):
-- Khi vào app lần đầu, nếu DB không có bất kỳ `owner_system` nào → hiển thị "Setup OwnerSystem" flow
-- Flow này gọi edge function `ensure-admin` (đã đổi logic) để tạo owner_system từ ADMIN_EMAIL secret
-- Hoặc: hiển thị form setup trên Landing page (đã có nút "Initialize Admin" → đổi thành "Setup OwnerSystem")
+Không kế thừa ngược. Multi-role → lấy quyền cao nhất.
 
-### Kết quả Phase 1
-- DB chỉ còn 3 role: `owner_system`, `leader`, `member`
-- Tất cả tài khoản admin cũ bị reset về không có role
-- Hệ thống yêu cầu setup lại OwnerSystem mới
-- UI + logic hoàn toàn đồng bộ
+---
 
-### Lưu ý quan trọng
-- Phase này rất lớn (~50+ files), sẽ chia thành nhiều lần commit
-- Bắt đầu từ migration → edge functions → frontend context → UI files
-- Không thay đổi logic Workspace, project, hoặc các tính năng khác
+### 3. Data Migration Mapping
+
+```text
+user_roles:
+  owner_system → system_owner
+  leader       → XÓA (sẽ giữ quyền qua workspace_member)
+  member       → XÓA
+
+workspace_members.role (text):
+  admin  → workspace_admin
+  member → workspace_member
+
+group_members.role (app_role):
+  owner_system → project_owner (hoặc map theo groups.created_by)
+  leader       → project_admin
+  member       → project_member
+```
+
+---
+
+### 4. Kế hoạch triển khai (4 phases)
+
+#### Phase 1: Database Migration
+1. Tạo 3 enum mới: `system_role`, `workspace_role`, `project_role`, `user_plan`
+2. Migrate data trong `user_roles`, `workspace_members`, `group_members`
+3. Thêm `user_plan` column vào `profiles` (default `plan_free`)
+4. Tạo bảng `plan_limits` (structure only, chưa enforce)
+5. Cập nhật tất cả DB functions: `has_role` → `has_system_role`, `is_admin` → `is_system_admin`, `is_owner_system` → `is_system_owner`, `is_group_leader` → `is_project_admin`, `is_moderator`, `is_leader`, `check_project_access`, `get_workspace_role`, `check_admin_user`
+6. Cập nhật tất cả RLS policies dùng function mới
+
+#### Phase 2: Edge Functions
+1. `workspace-management` — đổi role strings (`admin`→`workspace_admin`, etc.)
+2. `manage-users` — đổi sang `system_role`, xóa `leader`/`admin` role options
+3. `ensure-owner` — dùng `system_owner`
+
+#### Phase 3: Frontend Types & Context
+1. `src/types/database.ts` — đổi `AppRole` → 3 types riêng + `UserPlan`
+2. `src/contexts/AuthContext.tsx` — `isSystemOwner`, `isSystemAdmin`, bỏ `isLeader`
+3. `src/contexts/WorkspaceContext.tsx` — dùng `workspace_role` enum
+4. `src/lib/roleLabels.ts` — labels mới cho 3 tầng + plan
+5. `src/hooks/useWorkspaceMembers.ts` — role types mới
+
+#### Phase 4: UI Components (~30+ files)
+Tất cả files reference roles cũ → đổi sang enum mới:
+- `AdminUsers.tsx`, `Auth.tsx`, `GroupDetail.tsx`, `TaskDetail.tsx`
+- `MemberManagementCard.tsx`, `ProfileViewDialog.tsx`, `ProjectTransferDialog.tsx`
+- `SidebarTreeNav.tsx`, `FirstTimeOnboarding.tsx`, `CalendarTaskDetailDialog.tsx`
+- `TaskSubmissionDialog.tsx`, `Feedback.tsx`, `Dashboard.tsx`
+- Và ~17 files khác
+
+---
+
+### 5. Files cần thay đổi
+
+| File | Action |
+|------|--------|
+| Migration SQL (1 file lớn) | Tạo mới — enums, data migrate, functions, RLS |
+| `supabase/functions/workspace-management/index.ts` | Sửa |
+| `supabase/functions/manage-users/index.ts` | Sửa |
+| `supabase/functions/ensure-owner/index.ts` | Sửa |
+| `src/types/database.ts` | Sửa |
+| `src/contexts/AuthContext.tsx` | Sửa |
+| `src/contexts/WorkspaceContext.tsx` | Sửa |
+| `src/lib/roleLabels.ts` | Sửa |
+| `src/hooks/useWorkspaceMembers.ts` | Sửa |
+| ~30 component/page files | Sửa — role references |
+
+### Không thay đổi
+- Routes, WorkspaceContext structure, Supabase client
+- Notification/email/storage logic (chỉ đổi role check)
+- Plan enforcement (chỉ tạo structure, chưa enforce)
 
