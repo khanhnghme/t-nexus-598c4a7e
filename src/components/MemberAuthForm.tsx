@@ -488,30 +488,29 @@ export function MemberAuthForm() {
   // Show verified success screen when redirected from email confirmation link
   if (isEmailVerified) {
     return (
-      <div className="w-full max-w-md">
-        <div className="mb-6 flex flex-col items-center gap-2">
-          <TNexusLogo variant="text" width={120} />
-          <span className="font-heading font-semibold text-primary flex items-center gap-1">
-            <Users className="w-4 h-4" /> T-Nexus
+      <div className="w-full max-w-sm mx-auto">
+        <div className="mb-4 flex flex-col items-center gap-1">
+          <TNexusLogo variant="text" width={100} />
+          <span className="font-heading text-sm font-semibold text-primary flex items-center gap-1">
+            <Users className="w-3.5 h-3.5" /> T-Nexus
           </span>
         </div>
         <Card className="w-full shadow-card-lg border-emerald-300 dark:border-emerald-700/50">
-          <CardContent className="pt-6 text-center space-y-4">
-            <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto ring-4 ring-emerald-200 dark:ring-emerald-800/40">
-              <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-xl font-heading font-bold text-emerald-700 dark:text-emerald-400">🎉 Xác thực email thành công!</h2>
-              <p className="text-sm text-muted-foreground">Tài khoản của bạn đã được xác thực. Bạn có thể đăng nhập ngay bây giờ.</p>
+          <CardContent className="py-5 px-4 text-center space-y-3">
+            <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
+            <div>
+              <h2 className="text-base font-heading font-bold text-emerald-600 dark:text-emerald-400">Xác thực email thành công!</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Bạn có thể đăng nhập ngay bây giờ.</p>
             </div>
             <Button
-              className="w-full bg-foreground text-background hover:bg-foreground/90"
+              size="sm"
+              className="w-full"
               onClick={() => {
                 searchParams.delete('verified');
                 setSearchParams(searchParams, { replace: true });
               }}
             >
-              → Đăng nhập ngay
+              Đăng nhập ngay
             </Button>
           </CardContent>
         </Card>
