@@ -182,16 +182,17 @@ export default function MemberDetailDialog({
 
   // System role labels (for user_roles)
   const systemRoleLabel: Record<string, string> = {
-    'admin': 'OwnerSystem', 'project_admin': 'Thành viên Nâng cao', 'project_member': 'Thành viên'
+    'system_owner': 'System Owner', 'system_admin': 'System Admin', 'project_admin': 'Thành viên Nâng cao', 'project_member': 'Thành viên'
   };
 
   // Use centralized role label utility
   const getGroupRoleLabel = (role: string, isCreator: boolean) => {
     if (isCreator) return 'Trưởng nhóm';
     switch (role) {
-      case 'owner_system': return 'OwnerSystem';
+      case 'project_owner': return 'Trưởng nhóm';
       case 'project_admin': return 'Phó nhóm';
       case 'project_member': return 'Thành viên';
+      case 'project_guest': return 'Khách';
       default: return role;
     }
   };
@@ -228,8 +229,8 @@ export default function MemberDetailDialog({
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {systemRoles.map(r => (
-                  <Badge key={r} variant={r === 'owner_system' ? 'destructive' : 'secondary'} className="text-xs gap-1">
-                    {r === 'owner_system' ? <Shield className="w-3 h-3" /> : <UserCheck className="w-3 h-3" />}
+                  <Badge key={r} variant={r === 'system_owner' ? 'destructive' : 'secondary'} className="text-xs gap-1">
+                    {r === 'system_owner' ? <Shield className="w-3 h-3" /> : <UserCheck className="w-3 h-3" />}
                     {systemRoleLabel[r] || r}
                   </Badge>
                 ))}

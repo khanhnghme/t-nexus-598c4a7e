@@ -86,9 +86,10 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
 
   const getRoleBadge = (role?: string | null) => {
     switch (role) {
-      case 'owner': return '👑';
-      case 'owner_system': return '🛡️';
-      case 'project_member': return '🎫';
+      case 'workspace_owner': return '👑';
+      case 'workspace_admin': return '🛡️';
+      case 'workspace_member': return '🎫';
+      case 'workspace_guest': return '👽';
       default: return '👽';
     }
   };

@@ -373,12 +373,14 @@ export default function Groups() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case 'admin':
-        return <Badge className="bg-destructive/10 text-destructive">Admin</Badge>;
+      case 'project_owner':
+        return <Badge className="bg-destructive/10 text-destructive">Owner</Badge>;
       case 'project_admin':
-        return <Badge className="bg-warning/10 text-warning">Leader</Badge>;
-      default:
+        return <Badge className="bg-warning/10 text-warning">Admin</Badge>;
+      case 'project_member':
         return <Badge variant="secondary">Member</Badge>;
+      default:
+        return <Badge variant="outline">Guest</Badge>;
     }
   };
 

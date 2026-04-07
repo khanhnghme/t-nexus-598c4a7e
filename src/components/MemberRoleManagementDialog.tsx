@@ -66,8 +66,8 @@ export default function MemberRoleManagementDialog({
   const [editingLimits, setEditingLimits] = useState(false);
   const [projectLimit, setProjectLimit] = useState<number>(DEFAULT_PROJECT_LIMIT);
 
-  const isLeaderRole = systemRoles.includes('project_admin');
-  const isAdminRole = systemRoles.includes('admin');
+  const isLeaderRole = systemRoles.includes('system_admin');
+  const isAdminRole = systemRoles.includes('system_owner');
   const isMemberRole = !isLeaderRole && !isAdminRole;
 
   const currentRoleLabel = isAdminRole ? 'OwnerSystem' : isLeaderRole ? 'Leader' : 'Thành viên';

@@ -314,7 +314,7 @@ ${context.stages.map((s, i) => {
 
 --- THÀNH VIÊN (${context.members.length} người) ---
 ${context.members.map((m, i) => {
-  const role = m.role === 'leader' ? 'Trưởng nhóm' : 'Thành viên';
+  const role = (m.role === 'project_owner' || m.role === 'project_admin') ? 'Trưởng nhóm' : 'Thành viên';
   const details = [m.studentId ? `MSSV: ${m.studentId}` : '', m.major ? `Ngành: ${m.major}` : ''].filter(Boolean).join(' | ');
   return `${i + 1}. ${m.name} - ${role}${details ? ` (${details})` : ''}`;
 }).join('\n')}
@@ -348,7 +348,7 @@ ${upcomingMeetings.length > 0
 
 --- THÔNG TIN CỦA BẠN ---
 Tên: ${context.currentUser.name}
-Vai trò: ${context.currentUser.role === 'leader' ? 'Trưởng nhóm' : 'Thành viên'}
+Vai trò: ${(context.currentUser.role === 'project_owner' || context.currentUser.role === 'project_admin') ? 'Trưởng nhóm' : 'Thành viên'}
 Công việc được giao: ${context.currentUser.assignedTasks.length > 0 ? '\n' + context.currentUser.assignedTasks.join('\n') : 'Chưa có'}
 
 --- ĐIỂM QUÁ TRÌNH CỦA BẠN (CHỈ RIÊNG BẠN) ---
@@ -884,7 +884,7 @@ async function fetchProjectContext(
     meetings: meetingsData,
     currentUser: {
       name: (profilesMap.get(userId) as any)?.full_name || 'Người dùng',
-      role: members?.find((m: any) => m.user_id === userId)?.role || 'member',
+      role: members?.find((m: any) => m.user_id === userId)?.role || 'project_member',
       assignedTasks: (tasks || [])
         .filter((t: any) => assignments?.some((a: any) => a.task_id === t.id && a.user_id === userId))
         .map((t: any) => {

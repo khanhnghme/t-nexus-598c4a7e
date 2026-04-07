@@ -131,7 +131,7 @@ export default function MemberManagement() {
 
   const isMemberAdmin = (memberId: string): boolean => {
     const roles = memberRoles[memberId] || [];
-    return roles.includes('admin');
+    return roles.includes('system_owner') || roles.includes('system_admin');
   };
 
   const canManageMember = (memberId: string): boolean => {
@@ -169,9 +169,9 @@ export default function MemberManagement() {
     return currentList.filter(m => {
       const roles = memberRoles[m.id] || [];
       switch (roleFilter) {
-        case 'project_member': return !roles.includes('admin') && !roles.includes('system_admin');
-        case 'project_admin': return roles.includes('system_admin') && !roles.includes('admin');
-        case 'admin': return roles.includes('admin');
+        case 'project_member': return !roles.includes('system_owner') && !roles.includes('system_admin');
+        case 'project_admin': return roles.includes('system_admin') && !roles.includes('system_owner');
+        case 'admin': return roles.includes('system_owner');
         default: return true;
       }
     });
