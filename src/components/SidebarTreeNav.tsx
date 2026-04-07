@@ -5,7 +5,7 @@ import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useWorkspaceProjects } from '@/hooks/useWorkspaceProjects';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard,
+  Home,
   Building2,
   Users,
   FolderKanban,
@@ -172,7 +172,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
         )}
 
         {/* Dashboard */}
-        <TreeItemCollapsed icon={LayoutDashboard} label="Dashboard" href="/dashboard" active={isPathActive('/dashboard')} />
+        <TreeItemCollapsed icon={Home} label="Trang chủ" href="/dashboard" active={isPathActive('/dashboard')} />
 
         {/* All Projects */}
         <TreeItemCollapsed icon={FolderKanban} label="Dự án" href="/groups" active={isPathActive('/groups')} />
@@ -260,8 +260,8 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
         <div className="ws-nav-section">
           {/* Dashboard */}
           <Link to="/dashboard" className={cn('sidebar-nav-item', isPathActive('/dashboard') && 'active')}>
-            <LayoutDashboard className="nav-icon" strokeWidth={1.8} />
-            <span className="nav-label">Dashboard</span>
+            <Home className="nav-icon" strokeWidth={1.8} />
+            <span className="nav-label">Trang chủ</span>
           </Link>
 
           {/* Workspace management - only for non-guest */}
