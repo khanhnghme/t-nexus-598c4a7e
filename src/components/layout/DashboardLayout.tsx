@@ -45,7 +45,6 @@ import {
   Moon,
   Sun,
   Wrench,
-  Search,
 } from 'lucide-react';
 import SidebarTreeNav from '@/components/SidebarTreeNav';
 import {
