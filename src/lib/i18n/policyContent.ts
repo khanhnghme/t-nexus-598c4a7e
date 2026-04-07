@@ -12,7 +12,7 @@ export const POLICY_CONTENT_VI = `# 📜 Điều khoản dịch vụ T-Nexus
 - **Nền tảng / Hệ thống**: Ứng dụng web T-Nexus và toàn bộ dịch vụ liên quan (cơ sở dữ liệu, lưu trữ tệp, edge function, email).
 - **Người dùng**: Bất kỳ cá nhân nào tương tác với Hệ thống, bao gồm khách truy cập, thành viên đã đăng ký, và quản trị viên.
 - **Tài khoản**: Hồ sơ xác thực gắn với một email và MSSV duy nhất trong Hệ thống.
-- **Admin (Quản trị viên)**: Người dùng có vai trò \`admin\`, sở hữu quyền hạn cao nhất trong Hệ thống.
+- **OwnerSystem**: Người dùng có vai trò \`admin\`, sở hữu quyền hạn cao nhất trong Hệ thống.
 - **Leader (Trưởng nhóm)**: Người dùng có vai trò \`leader\` hoặc được chỉ định làm trưởng nhóm trong một project cụ thể.
 - **Member (Thành viên)**: Người dùng có vai trò \`member\`, là cấp quyền cơ bản nhất.
 - **Project / Nhóm**: Một không gian làm việc chung, chứa task, stage, tài nguyên và thành viên.
