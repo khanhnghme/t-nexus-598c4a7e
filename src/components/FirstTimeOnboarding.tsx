@@ -515,6 +515,14 @@ export default function FirstTimeOnboarding({
                       {t.startSetup}
                       <ChevronRight className="w-5 h-5" />
                     </Button>
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      className="mt-3 text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+                    >
+                      <ChevronLeft className="w-3 h-3" />
+                      {t.changeLang}
+                    </button>
                   </div>
                 </div>
               )}
