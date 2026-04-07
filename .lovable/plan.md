@@ -1,39 +1,73 @@
 
 
-## Fix build errors + Triển khai Phase 4 & 5 còn lại (Workspace ↔ Project integration)
+## Kiểm tra & Hoàn thiện Workspace Module — Phần còn thiếu
 
-### Vấn đề hiện tại
+### Trạng thái hiện tại (sau khi đối chiếu 2 file plan với code)
 
-Build bị lỗi TS2589/TS2769 tại `WorkspaceContext.tsx` vì bảng `workspaces` và `workspace_members` chưa có trong file `types.ts` auto-generated. Supabase types chưa được regenerate sau khi migration chạy.
+**Đã hoàn thành:**
+- Phase 1: Database migration (workspaces, workspace_members, workspace_invites, ALTER groups & group_members) 
+- Phase 2: Edge Function `workspace-management` (13 actions) — đã deploy 
+- Phase 3: WorkspaceContext, useWorkspaceMembers, types/database.ts
+- Phase 4 partial: WorkspaceSettings, WorkspaceMembers, WorkspaceSwitcher, SidebarProjects
+- Groups.tsx: filter theo workspace_id, gán workspace_id khi tạo project, visibility badge
+
+### Các vấn đề cần fix
+
+**1. SidebarProjects — Thiếu logic visibility cho WS members**
+
+Hiện tại `SidebarProjects` chỉ hiện projects mà user đã là `group_member`. Theo architecture, WS members phải **tự động thấy** tất cả `workspace_public` và `public_link` projects, kể cả khi chưa join.
+
+Cần sửa: Query thêm groups có `visibility IN ('workspace_public', 'public_link')` thuộc workspace, merge với danh sách projects user đã join, loại trùng.
+
+**2. SidebarProjects — Thiếu Guest mode**
+
+Theo plan Phase 5, khi user là Guest (không có trong `workspace_members`, chỉ có trong `group_members` với `is_guest = true`), sidebar cần:
+- Ẩn WorkspaceSwitcher dropdown
+- Hiện badge "👽 Guest Access"
+- Chỉ hiện project được assign
+- Hiện hint banner "You are a guest..."
+
+Cần sửa: Thêm logic kiểm tra `workspaceRole === null` (Guest) trong cả `WorkspaceSwitcher` và `SidebarProjects`.
+
+**3. Groups.tsx — Thiếu hiển thị WS Public projects cho WS members chưa join**
+
+Tương tự sidebar, trang Groups chỉ query projects mà user đã là member. WS members cần thấy tất cả `workspace_public` projects trong workspace (dù chưa join), với badge "Chưa tham gia" và nút tham gia.
+
+**4. WorkspaceMembers — Thiếu tab Guest**
+
+Theo plan Phase 4, trang `WorkspaceMembers` cần có tab "Guests" liệt kê các guest (users trong `group_members` với `is_guest = true`). Hiện tại chỉ có danh sách WS members.
+
+**5. Guest invite UI chưa có trong Project settings**
+
+Theo plan Phase 5, cần dialog "Add People" với 2 tab (Workspace Members / Invite Guest) bên trong project. Hiện chưa được triển khai.
 
 ### Kế hoạch thực hiện
 
-**Bước 1: Fix build errors — WorkspaceContext.tsx**
-- Thay thế `supabase.from('workspaces')` và `supabase.from('workspace_members')` bằng cách ép kiểu (type cast) hoặc dùng `.from('workspaces' as any)` để bypass lỗi TypeScript cho đến khi types được regenerate.
-- Cách tiếp cận: cast kết quả query thủ công vì ta không thể sửa `types.ts`.
+**Bước 1: Fix SidebarProjects — Visibility rules**
+- Nếu user là WS member/admin/owner: query tất cả groups có `workspace_id = activeWorkspace.id` AND (`visibility IN ('workspace_public', 'public_link')` OR user là `group_member`)
+- Nếu user là Guest (`workspaceRole === null`): chỉ query groups user đã join với `is_guest = true`
+- Merge & dedup kết quả
 
-**Bước 2: Fix tương tự cho các file khác dùng Supabase client query workspace tables**
-- `src/pages/WorkspaceSettings.tsx` — kiểm tra và fix nếu cần
-- `src/hooks/useWorkspaceMembers.ts` — kiểm tra và fix nếu cần
+**Bước 2: Fix WorkspaceSwitcher — Guest mode**
+- Khi `workspaceRole === null` nhưng user vẫn có projects trong workspace (Guest): hiện tên workspace nhưng ẩn dropdown switcher, thêm "👽 Guest" badge
 
-**Bước 3: Sửa `src/pages/Groups.tsx` — Filter projects theo active workspace**
-- Import `useWorkspace` context
-- Khi `activeWorkspace` tồn tại, filter query `.eq('workspace_id', activeWorkspace.id)`
-- Khi tạo project mới, tự động gán `workspace_id = activeWorkspace.id`
-- Thêm visibility badge (🔒 Private, 🌐 WS Public, 🌍 Public) trên card
+**Bước 3: Fix Groups.tsx — Hiện WS Public projects**
+- Thêm query riêng: groups có `workspace_id = activeWorkspace.id` AND `visibility = 'workspace_public'`, merge với danh sách hiện tại
+- Projects mà user chưa join: hiện badge "Chưa tham gia", disable click hoặc cho phép xem read-only
 
-**Bước 4: Sửa Sidebar (`DashboardLayout.tsx`) — Hiển thị project list theo workspace**
-- Dưới WorkspaceSwitcher, thêm section liệt kê projects thuộc active workspace
-- Phân loại theo visibility: WS Public hiện cho tất cả WS members, Private chỉ hiện cho project members
-- Guest mode: chỉ hiện project được gán
+**Bước 4: Thêm Guest tab vào WorkspaceMembers**
+- Thêm Tabs component (Members / Guests)
+- Tab Guests: query `group_members` WHERE `is_guest = true` AND group thuộc workspace, join với profiles để hiện info
 
-**Bước 5: Guest invite flow**
-- Đảm bảo `useWorkspaceMembers.inviteGuest()` hoạt động đúng với edge function `workspace-management`
-- Thêm UI invite guest vào trang quản lý thành viên project (nếu chưa có)
+**Bước 5: Tạo Project Guest Invite Dialog**
+- Component mới với 2 tab: "Thêm từ Workspace" (pick existing WS members) / "Mời Guest" (nhập email)
+- Gọi `inviteGuest()` từ `useWorkspaceMembers` hook
+- Tích hợp vào trang quản lý thành viên project hiện tại
 
 ### Chi tiết kỹ thuật
 
-- **Type bypass pattern**: Dùng `(supabase as any).from('workspaces')` hoặc tạo helper function wrapper để tránh lỗi TS cho đến khi types tự regenerate.
-- **Sidebar project list**: Query `groups` WHERE `workspace_id = activeWorkspace.id`, áp dụng visibility rules ở client side dựa trên `workspaceRole` và `group_members` membership.
-- **Groups.tsx filter**: Thêm điều kiện `.eq('workspace_id', activeWorkspace.id)` vào query fetch groups hiện tại, fallback về query cũ nếu workspace chưa available (`isAvailable = false`).
+- **SidebarProjects query**: Dùng 2 query song song (1 cho group_members, 1 cho visibility-based), merge và dedup ở client
+- **Guest detection**: `workspaceRole === null` trong WorkspaceContext (user không phải owner, không có record trong workspace_members)
+- **WS Public auto-access**: Chỉ ở UI level (hiển thị). Khi user bấm vào WS Public project chưa join, có thể tự động thêm vào group_members hoặc cho phép xem read-only
+- **Edge function**: `invite_project_guest` action đã sẵn sàng, chỉ cần build UI gọi nó
 
