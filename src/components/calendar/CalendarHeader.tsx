@@ -1,8 +1,20 @@
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Building2 } from 'lucide-react';
 import { CalendarViewMode } from '@/types/calendar';
 import { format, isSameMonth } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface WorkspaceOption {
+  id: string;
+  name: string;
+}
 
 interface CalendarHeaderProps {
   currentDate: Date;
@@ -12,6 +24,9 @@ interface CalendarHeaderProps {
   onNext: () => void;
   onToday: () => void;
   onAddEvent: () => void;
+  workspaces?: WorkspaceOption[];
+  wsFilter?: string;
+  onWsFilterChange?: (value: string) => void;
 }
 
 export default function CalendarHeader({
@@ -22,6 +37,9 @@ export default function CalendarHeader({
   onNext,
   onToday,
   onAddEvent,
+  workspaces = [],
+  wsFilter = 'all',
+  onWsFilterChange,
 }: CalendarHeaderProps) {
   const isCurrentMonth = isSameMonth(currentDate, new Date());
 
@@ -58,6 +76,20 @@ export default function CalendarHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {workspaces.length > 0 && onWsFilterChange && (
+          <Select value={wsFilter} onValueChange={onWsFilterChange}>
+            <SelectTrigger className="h-7 w-[160px] text-xs">
+              <Building2 className="h-3 w-3 mr-1 shrink-0" />
+              <SelectValue placeholder="Workspace" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả Workspace</SelectItem>
+              {workspaces.map(ws => (
+                <SelectItem key={ws.id} value={ws.id}>{ws.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Button size="sm" onClick={onAddEvent} className="h-7 gap-1.5 text-xs bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm">
           <Plus className="h-3.5 w-3.5" />
           Tạo sự kiện
