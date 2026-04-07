@@ -116,6 +116,8 @@ export default function Dashboard() {
   const [showInvitationDialog, setShowInvitationDialog] = useState(false);
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
   const [processingInvitation, setProcessingInvitation] = useState<string | null>(null);
+  const [pendingWsInvites, setPendingWsInvites] = useState<PendingWorkspaceInvite[]>([]);
+  const [inviteTab, setInviteTab] = useState<'all' | 'project' | 'workspace'>('all');
   const [videoOpacity, setVideoOpacity] = useState(0);
   const [videoUrl, setVideoUrl] = useState('');
   const [videoEnabled, setVideoEnabled] = useState(false);
