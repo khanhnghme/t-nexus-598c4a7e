@@ -570,7 +570,7 @@ export default function Dashboard() {
                 {profile?.created_at && (
                   <p className="text-xs mt-0.5 flex items-center gap-1 text-muted-foreground/70">
                     <Calendar className="w-3 h-3" />
-                    Tham gia từ {format(new Date(profile.created_at), 'dd/MM/yyyy', { locale: vi })}
+                    {t?.joinedFrom || 'Joined'} {format(new Date(profile.created_at), 'dd/MM/yyyy', { locale: locale === 'vi' ? viLocale : enUS })}
                   </p>
                 )}
                 <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
@@ -837,7 +837,7 @@ export default function Dashboard() {
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 Mời bởi <span className="font-medium text-foreground">{inv.inviter?.full_name || 'Leader'}</span>
                                 {' · '}
-                                {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true, locale: vi })}
+                                {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true, locale: locale === 'vi' ? viLocale : enUS })}
                               </p>
                             </div>
                           </div>
@@ -917,7 +917,7 @@ export default function Dashboard() {
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 Mời bởi <span className="font-medium text-foreground">{inv.inviter_name}</span>
                                 {' · '}
-                                {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true, locale: vi })}
+                                {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true, locale: locale === 'vi' ? viLocale : enUS })}
                               </p>
                             </div>
                           </div>
