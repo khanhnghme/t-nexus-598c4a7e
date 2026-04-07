@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
+const RESEND_API_URL = "https://api.resend.com";
 const FROM_EMAIL = "T-Nexus <noreply@t-nexus.io.vn>";
 
 function jsonResponse(data: Record<string, unknown>, status = 200) {
@@ -63,7 +63,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const body = await req.json();
@@ -94,12 +93,11 @@ Deno.serve(async (req) => {
       });
 
       // Send email via Resend gateway
-      const emailRes = await fetch(`${RESEND_GATEWAY}/emails`, {
+      const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${lovableApiKey}`,
-          "X-Connection-Api-Key": resendApiKey,
+          Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
           from: FROM_EMAIL,
@@ -112,6 +110,7 @@ Deno.serve(async (req) => {
       if (!emailRes.ok) {
         const errText = await emailRes.text();
         console.error("Resend error:", errText);
+        return jsonResponse({ error: "Không thể gửi email xác minh. Vui lòng thử lại sau." }, 500);
       }
 
       return jsonResponse({
@@ -226,12 +225,11 @@ Deno.serve(async (req) => {
       });
 
       // Send email via Resend gateway
-      await fetch(`${RESEND_GATEWAY}/emails`, {
+      const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${lovableApiKey}`,
-          "X-Connection-Api-Key": resendApiKey,
+          Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
           from: FROM_EMAIL,
@@ -240,6 +238,12 @@ Deno.serve(async (req) => {
           html: buildOtpEmailHtml(otpCode),
         }),
       });
+
+      if (!emailRes.ok) {
+        const errText = await emailRes.text();
+        console.error("Resend resend_code error:", errText);
+        return jsonResponse({ error: "Không thể gửi lại email xác minh." }, 500);
+      }
 
       return jsonResponse({
         success: true,
