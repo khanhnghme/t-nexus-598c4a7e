@@ -54,7 +54,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     : [];
 
   // Expanded state
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(['workspace', 'projects']));
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const toggle = useCallback((key: string) => {
     setExpanded(prev => {
@@ -65,9 +65,10 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     });
   }, []);
 
-  // Auto-expand based on current route
+  // Auto-expand based on current route (only for workspace/project pages, not create)
   useEffect(() => {
     const path = location.pathname;
+    if (path === '/workspace/new') return; // Don't auto-expand when creating
     setExpanded(prev => {
       const next = new Set(prev);
       if (path.startsWith('/workspace/') || path.startsWith('/p/')) {

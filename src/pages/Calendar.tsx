@@ -17,8 +17,9 @@ import { parseLocalDateTime } from '@/lib/datetime';
 
 export default function CalendarPage() {
   const { user } = useAuth();
-  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
+  const { workspaces, isAvailable: wsAvailable } = useWorkspace();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [calendarWsFilter, setCalendarWsFilter] = useState<string>('all'); // 'all' or workspace id
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createDialogDate, setCreateDialogDate] = useState<Date | undefined>();
@@ -47,7 +48,7 @@ export default function CalendarPage() {
   }, [currentDate, viewMode]);
 
   const { data: taskEvents = [], refetch: refetchTasks } = useQuery({
-    queryKey: ['calendar-tasks', user?.id, dateRange.start.toISOString(), dateRange.end.toISOString(), activeWorkspace?.id],
+    queryKey: ['calendar-tasks', user?.id, dateRange.start.toISOString(), dateRange.end.toISOString(), calendarWsFilter],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data: memberships } = await supabase.from('group_members').select('group_id').eq('user_id', user.id);
@@ -63,9 +64,9 @@ export default function CalendarPage() {
 
       const { data: tasks } = await tasksQuery;
       let filteredTasks = tasks || [];
-      // Filter by active workspace
-      if (wsAvailable && activeWorkspace?.id) {
-        filteredTasks = filteredTasks.filter((t: any) => t.groups?.workspace_id === activeWorkspace.id);
+      // Filter by selected workspace (default 'all' = no filter)
+      if (calendarWsFilter !== 'all') {
+        filteredTasks = filteredTasks.filter((t: any) => t.groups?.workspace_id === calendarWsFilter);
       }
       if (!filteredTasks.length) return [];
       const events: CalendarEvent[] = [];
@@ -183,6 +184,9 @@ export default function CalendarPage() {
           onNext={handleNext}
           onToday={() => setCurrentDate(new Date())}
           onAddEvent={() => handleAddEvent()}
+          workspaces={wsAvailable ? workspaces.map(w => ({ id: w.id, name: w.name })) : []}
+          wsFilter={calendarWsFilter}
+          onWsFilterChange={setCalendarWsFilter}
         />
 
         {viewMode === 'month' && (
