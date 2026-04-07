@@ -37,6 +37,65 @@ export interface UserRole {
   created_at: string;
 }
 
+// ═══════════════════════════════════════════════════════
+// Workspace Types
+// ═══════════════════════════════════════════════════════
+
+export type WorkspaceRole = 'owner' | 'admin' | 'member';
+export type ProjectVisibility = 'private' | 'workspace_public' | 'public_link';
+export type InviteScope = 'workspace' | 'project';
+
+export interface Workspace {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  owner_id: string;
+  plan: 'free' | 'plus' | 'pro' | 'business' | 'enterprise';
+  max_projects: number;
+  max_members: number;
+  max_storage_mb: number;
+  created_at: string;
+  updated_at: string;
+  // Joined data
+  my_role?: WorkspaceRole;
+  member_count?: number;
+}
+
+export interface WorkspaceMember {
+  workspace_id: string;
+  user_id: string;
+  role: 'admin' | 'member';
+  invited_by: string | null;
+  joined_at: string;
+  // Joined data
+  profiles?: Profile;
+}
+
+export interface WorkspaceInvite {
+  id: string;
+  scope: InviteScope;
+  workspace_id: string;
+  group_id: string | null;
+  invitee_email: string;
+  invitee_user_id: string | null;
+  role_granted: string;
+  is_guest: boolean;
+  invited_by: string;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  expires_at: string;
+  created_at: string;
+  // Joined data
+  workspaces?: Workspace;
+  groups?: Group;
+  inviter_profile?: Profile;
+}
+
+// ═══════════════════════════════════════════════════════
+// Group (Project) Types
+// ═══════════════════════════════════════════════════════
+
 export interface Group {
   id: string;
   short_id: string;
@@ -57,6 +116,9 @@ export interface Group {
   show_activity_public?: boolean;
   show_members_public?: boolean;
   leader_id?: string | null;
+  // Workspace fields
+  workspace_id?: string | null;
+  visibility?: ProjectVisibility;
 }
 
 export interface GroupMember {
@@ -65,6 +127,7 @@ export interface GroupMember {
   user_id: string;
   role: AppRole;
   joined_at: string;
+  is_guest?: boolean;
   profiles?: Profile;
 }
 
