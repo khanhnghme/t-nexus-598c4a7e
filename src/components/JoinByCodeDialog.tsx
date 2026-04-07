@@ -185,7 +185,7 @@ export default function JoinByCodeDialog({ open, onOpenChange, onJoined }: JoinB
       } else {
         const { error: joinError } = await supabase
           .from('group_members')
-          .insert({ group_id: groupPreview.id, user_id: user.id, role: 'member' });
+          .insert({ group_id: groupPreview.id, user_id: user.id, role: 'project_member' });
 
         if (joinError) {
           if (joinError.message?.includes('giới hạn')) {

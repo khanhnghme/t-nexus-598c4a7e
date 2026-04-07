@@ -66,10 +66,10 @@ export default function PublicMemberList({ members, groupCreatorId }: PublicMemb
                   </div>
                 </div>
                 <Badge 
-                  variant={member.user_id === groupCreatorId ? 'default' : member.role === 'leader' ? 'default' : 'secondary'} 
-                  className={`shrink-0 ${member.user_id === groupCreatorId ? 'bg-warning text-warning-foreground' : member.role === 'leader' ? 'bg-primary' : ''}`}
+                  variant={member.user_id === groupCreatorId ? 'default' : member.role === 'project_admin' ? 'default' : 'secondary'} 
+                  className={`shrink-0 ${member.user_id === groupCreatorId ? 'bg-warning text-warning-foreground' : member.role === 'project_admin' ? 'bg-primary' : ''}`}
                 >
-                  {member.user_id === groupCreatorId ? 'Trưởng nhóm' : member.role === 'leader' ? 'Phó nhóm' : 'Thành viên'}
+                  {member.user_id === groupCreatorId ? 'Trưởng nhóm' : member.role === 'project_admin' ? 'Phó nhóm' : 'Thành viên'}
                 </Badge>
               </div>
             ))}

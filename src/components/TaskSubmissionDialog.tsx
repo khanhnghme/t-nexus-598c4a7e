@@ -407,7 +407,7 @@ export default function TaskSubmissionDialog({
         .eq('group_id', task.group_id);
       
       const leaderIds = groupMembers
-        ?.filter(m => m.role === 'leader' && m.user_id !== user?.id)
+        ?.filter(m => m.role === 'project_admin' && m.user_id !== user?.id)
         .map(m => m.user_id) || [];
 
       const submitterName = profile?.full_name || user?.email || 'Thành viên';

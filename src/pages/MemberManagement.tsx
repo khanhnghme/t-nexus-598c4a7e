@@ -169,8 +169,8 @@ export default function MemberManagement() {
     return currentList.filter(m => {
       const roles = memberRoles[m.id] || [];
       switch (roleFilter) {
-        case 'member': return !roles.includes('admin') && !roles.includes('leader');
-        case 'leader': return roles.includes('leader') && !roles.includes('admin');
+        case 'member': return !roles.includes('admin') && !roles.includes('project_admin');
+        case 'leader': return roles.includes('project_admin') && !roles.includes('admin');
         case 'admin': return roles.includes('admin');
         default: return true;
       }
@@ -289,7 +289,7 @@ export default function MemberManagement() {
   const handleApprovePending = async (member: Profile) => {
     const { error } = await supabase.from('profiles').update({ is_approved: true }).eq('id', member.id);
     if (error) { toast({ title: 'Lỗi', description: error.message, variant: 'destructive' }); return; }
-    await supabase.from('user_roles').upsert({ user_id: member.id, role: 'member' }, { onConflict: 'user_id,role' } as any);
+    await supabase.from('user_roles').upsert({ user_id: member.id, role: 'project_member' }, { onConflict: 'user_id,role' } as any);
     await logActivity({
       userId: user!.id, userName: currentProfile?.full_name || user?.email || 'Unknown',
       action: 'APPROVE_MEMBER_REGISTRATION', actionType: 'member',
@@ -535,8 +535,8 @@ export default function MemberManagement() {
       const member = members.find(m => m.id === id);
       if (!member) continue;
       const roles = memberRoles[id] || [];
-      if (roles.includes('leader') || roles.includes('admin')) continue;
-      const { error } = await supabase.from('user_roles').insert({ user_id: id, role: 'leader' });
+      if (roles.includes('project_admin') || roles.includes('admin')) continue;
+      const { error } = await supabase.from('user_roles').insert({ user_id: id, role: 'project_admin' });
       if (!error) { promoted.push(member.full_name); promotedIds.push(id); }
     }
     if (promoted.length > 0) {
@@ -562,9 +562,9 @@ export default function MemberManagement() {
       const member = members.find(m => m.id === id);
       if (!member) continue;
       const roles = memberRoles[id] || [];
-      if (!roles.includes('leader')) continue;
+      if (!roles.includes('project_admin')) continue;
       if (roles.includes('admin')) continue;
-      const { error } = await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'leader');
+      const { error } = await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'project_admin');
       if (!error) { demoted.push(member.full_name); demotedIds.push(id); }
     }
     if (demoted.length > 0) {
@@ -624,7 +624,7 @@ export default function MemberManagement() {
             {isAdminMember && (
               <Badge className="bg-destructive/10 text-destructive text-xs gap-1"><Shield className="w-3 h-3" />Admin</Badge>
             )}
-            {!isAdminMember && roles.includes('leader') && (
+            {!isAdminMember && roles.includes('project_admin') && (
               <Badge className="bg-warning/20 text-warning border-warning/30 text-xs gap-1"><Star className="w-3 h-3" />Leader</Badge>
             )}
             {member.id === user?.id && <Badge variant="outline" className="text-xs">Bạn</Badge>}
@@ -914,7 +914,7 @@ export default function MemberManagement() {
                     fullName: m.full_name,
                     studentId: m.student_id,
                     email: m.email,
-                    role: isMemberAdmin(m.id) ? 'OwnerSystem' : (memberRoles[m.id]?.includes('leader') ? 'Leader' : 'Thành viên')
+                    role: isMemberAdmin(m.id) ? 'OwnerSystem' : (memberRoles[m.id]?.includes('project_admin') ? 'Leader' : 'Thành viên')
                   }));
                   exportMembersToExcel(exportData, 'danh-sach-thanh-vien-he-thong');
                 }}

@@ -42,7 +42,7 @@ interface MemberRow {
   id: string;
   userId: string;
   groupId: string;
-  role: 'owner_system' | 'leader' | 'member';
+  role: 'project_owner' | 'project_admin' | 'project_member';
   joinedAt: string;
   fullName?: string;
   studentId?: string;
@@ -285,7 +285,7 @@ export default function AdminUsers() {
   };
 
   const handleGrantLeader = async (userId: string) => {
-    const { error } = await supabase.from('user_roles').upsert({ user_id: userId, role: 'leader' });
+    const { error } = await supabase.from('user_roles').upsert({ user_id: userId, role: 'project_admin' });
     if (error) {
       toast({ title: 'Lỗi', description: error.message, variant: 'destructive' });
       return;
@@ -321,7 +321,7 @@ export default function AdminUsers() {
     const { error: gmError } = await supabase.from('group_members').insert({
       group_id: approval.groupId,
       user_id: approval.userId,
-      role: 'member',
+      role: 'project_member',
     });
 
     if (gmError) {
@@ -479,9 +479,9 @@ export default function AdminUsers() {
                                   {m.fullName || 'Không rõ tên'}
                                 </p>
                                 <Badge variant="outline" className="text-[11px]">
-                                  {m.role === 'owner_system'
+                                  {m.role === 'project_owner'
                                     ? 'OwnerSystem'
-                                    : m.role === 'leader'
+                                    : m.role === 'project_admin'
                                       ? 'Leader'
                                       : 'Member'}
                                 </Badge>

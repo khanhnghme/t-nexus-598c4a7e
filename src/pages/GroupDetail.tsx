@@ -197,7 +197,7 @@ export default function GroupDetail() {
         const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
         setMembers(membersData.map(m => ({ ...m, profiles: profilesMap.get(m.user_id) })) as GroupMember[]);
         const myMembership = membersData.find(m => m.user_id === user?.id);
-        setIsLeaderInGroup(myMembership?.role === 'leader' || myMembership?.role === 'owner_system' || isAdmin);
+        setIsLeaderInGroup(myMembership?.role === 'project_admin' || myMembership?.role === 'project_owner' || isAdmin);
       }
 
       const { data: tasksData } = await supabase.from('tasks').select('*').eq('group_id', resolvedGroupId).order('created_at', { ascending: false });
@@ -607,7 +607,7 @@ export default function GroupDetail() {
                                         </div>
                                         {m.user_id === group?.created_by ? (
                                           <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-warning/10 text-warning border-warning/30 shrink-0">TN</Badge>
-                                        ) : m.role === 'leader' ? (
+                                        ) : m.role === 'project_admin' ? (
                                           <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30 shrink-0">PN</Badge>
                                         ) : null}
                                       </div>

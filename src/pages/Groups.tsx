@@ -325,7 +325,7 @@ export default function Groups() {
       const { error: memberError } = await supabase.from('group_members').insert({
         group_id: newGroup.id,
         user_id: user!.id,
-        role: 'leader',
+        role: 'project_admin',
       });
       if (memberError) throw memberError;
 
@@ -335,7 +335,7 @@ export default function Groups() {
           group_id: newGroup.id,
           invited_user_id: m.id,
           invited_by: user!.id,
-          role: 'member' as const,
+          role: 'project_member' as const,
           status: 'pending',
         }));
         await supabase.from('project_invitations').insert(invitations);

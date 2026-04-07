@@ -124,7 +124,7 @@ export default function MemberManagementCard({
 
   // Profile view dialog
   const [profileToView, setProfileToView] = useState<Profile | null>(null);
-  const [profileViewRole, setProfileViewRole] = useState<'owner_system' | 'leader' | 'member'>('member');
+  const [profileViewRole, setProfileViewRole] = useState<'project_owner' | 'project_admin' | 'project_member'>('member');
   const [profileViewIsCreator, setProfileViewIsCreator] = useState(false);
 
   // Unified multi-select state (works across all tabs)
@@ -250,7 +250,7 @@ export default function MemberManagementCard({
       // Insert into group_members
       const { error: memberError } = await supabase
         .from('group_members')
-        .insert({ group_id: request.group_id, user_id: request.user_id, role: 'member' });
+        .insert({ group_id: request.group_id, user_id: request.user_id, role: 'project_member' });
       if (memberError) throw memberError;
 
       if (user && profile) {
@@ -322,7 +322,7 @@ export default function MemberManagementCard({
           .update({ status: 'approved', processed_by: currentUserId, processed_at: new Date().toISOString() })
           .eq('id', req.id);
         await supabase.from('group_members')
-          .insert({ group_id: req.group_id, user_id: req.user_id, role: 'member' });
+          .insert({ group_id: req.group_id, user_id: req.user_id, role: 'project_member' });
       }
       toast({ title: 'Thành công', description: `Đã duyệt ${selected.length} yêu cầu` });
       setJoinRequests(prev => prev.filter(r => !selectedJoinRequestIds.has(r.id)));
@@ -435,7 +435,7 @@ export default function MemberManagementCard({
     if (member.user_id === currentUserId) return false;
     if (isMemberGroupCreator(member.user_id)) return false;
     // Phó nhóm can only remove regular members, not other Phó nhóm
-    if (!isGroupCreator && member.role === 'leader') return false;
+    if (!isGroupCreator && member.role === 'project_admin') return false;
     return isLeaderInGroup;
   };
 
@@ -630,7 +630,7 @@ export default function MemberManagementCard({
 
   const openChangeRoleDialog = (member: GroupMember) => {
     setMemberToChangeRole(member);
-    setNewRole(member.role === 'leader' ? 'member' : 'leader');
+    setNewRole(member.role === 'project_admin' ? 'member' : 'leader');
   };
 
   // Multi-select helpers
@@ -861,7 +861,7 @@ export default function MemberManagementCard({
                       <div className="w-px h-5 bg-border mx-1" />
                       {canManageProjectRoles && (
                         <>
-                          <Select value={bulkRole} onValueChange={(v) => setBulkRole(v as 'member' | 'leader')}>
+                          <Select value={bulkRole} onValueChange={(v) => setBulkRole(v as 'project_member' | 'project_admin')}>
                             <SelectTrigger className="w-28 h-7 text-xs">
                               <SelectValue />
                             </SelectTrigger>
@@ -903,7 +903,7 @@ export default function MemberManagementCard({
                         }
                         if (member.profiles) {
                           setProfileToView(member.profiles as Profile);
-                          setProfileViewRole(member.role as 'owner_system' | 'leader' | 'member');
+                          setProfileViewRole(member.role as 'project_owner' | 'project_admin' | 'project_member');
                           setProfileViewIsCreator(isMemberGroupCreator(member.user_id));
                         }
                       }}
@@ -1064,7 +1064,7 @@ export default function MemberManagementCard({
                                 e.stopPropagation();
                                 if (member.profiles) {
                                   setProfileToView(member.profiles as Profile);
-                                  setProfileViewRole(member.role as 'owner_system' | 'leader' | 'member');
+                                  setProfileViewRole(member.role as 'project_owner' | 'project_admin' | 'project_member');
                                   setProfileViewIsCreator(isMemberGroupCreator(member.user_id));
                                 }
                               }}
@@ -1508,7 +1508,7 @@ export default function MemberManagementCard({
                 {canManageProjectRoles ? (
                   <div className="space-y-2 mb-4">
                     <Label className="text-sm font-medium">Vai trò trong Project</Label>
-                    <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as 'member' | 'leader')}>
+                    <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as 'project_member' | 'project_admin')}>
                       <SelectTrigger className="h-11">
                         <SelectValue />
                       </SelectTrigger>
@@ -1595,7 +1595,7 @@ export default function MemberManagementCard({
 
             <div className="space-y-2">
               <Label className="text-sm font-medium">Vai trò mới</Label>
-              <Select value={newRole} onValueChange={(v) => setNewRole(v as 'member' | 'leader')}>
+              <Select value={newRole} onValueChange={(v) => setNewRole(v as 'project_member' | 'project_admin')}>
                 <SelectTrigger className="h-11">
                   <SelectValue />
                 </SelectTrigger>
@@ -1777,7 +1777,7 @@ export default function MemberManagementCard({
 
                 // Create invitation instead of direct add
                 const { error: addErr } = await supabase.from('project_invitations').insert({
-                  group_id: groupId, invited_user_id: userId, invited_by: user!.id, role: 'member', status: 'pending',
+                  group_id: groupId, invited_user_id: userId, invited_by: user!.id, role: 'project_member', status: 'pending',
                 });
                 if (addErr) {
                   if (addErr.code === '23505') throw new Error('Đã có lời mời đang chờ');

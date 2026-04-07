@@ -289,7 +289,7 @@ export default function Dashboard() {
         .from('group_members')
         .select('user_id')
         .eq('group_id', invitation.group_id)
-        .in('role', ['leader', 'owner_system']);
+        .in('role', ['project_admin', 'project_owner']);
 
       if (leaders && leaders.length > 0) {
         await notifyInvitationResponse({
@@ -827,7 +827,7 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-1 shrink-0">
                                   <Badge variant="outline" className="text-[10px]">Project</Badge>
                                   <Badge variant="secondary" className="text-[10px]">
-                                    {inv.role === 'leader' ? 'Phó nhóm' : 'Thành viên'}
+                                    {inv.role === 'project_admin' ? 'Phó nhóm' : 'Thành viên'}
                                   </Badge>
                                 </div>
                               </div>

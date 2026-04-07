@@ -1599,7 +1599,7 @@ export default function AdminBackupRestore() {
           await supabase.from('group_members').upsert({
             group_id: raw.group.id,
             user_id: user!.id,
-            role: 'leader'
+            role: 'project_admin'
           }, { onConflict: 'id' } as any);
         }
 
@@ -1692,7 +1692,7 @@ export default function AdminBackupRestore() {
       await supabase.from('group_members').insert({
         group_id: newGroupId,
         user_id: user!.id,
-        role: 'leader'
+        role: 'project_admin'
       });
 
       addImportStep('Đang xử lý thành viên...', 15);
@@ -1718,7 +1718,7 @@ export default function AdminBackupRestore() {
             await supabase.from('group_members').insert({
               group_id: newGroupId,
               user_id: existingProfile.id,
-              role: member.role as 'owner_system' | 'leader' | 'member'
+              role: member.role as 'project_owner' | 'project_admin' | 'project_member'
             }).then(() => {});
           }
         }
