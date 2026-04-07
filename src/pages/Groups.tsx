@@ -272,9 +272,7 @@ export default function Groups() {
     setIsCreating(true);
 
     try {
-      const { data: newGroup, error: groupError } = await supabase
-        .from('groups')
-        .insert({
+      const insertData: any = {
           name: newGroupName.trim(),
           description: newGroupDescription.trim() || null,
           class_code: newGroupClassCode.trim() || null,
@@ -284,7 +282,16 @@ export default function Groups() {
           additional_info: newGroupAdditionalInfo.trim() || null,
           created_by: user!.id,
           slug: '',
-        })
+        };
+
+      // Auto-assign workspace_id if workspace is active
+      if (wsAvailable && activeWorkspace) {
+        insertData.workspace_id = activeWorkspace.id;
+      }
+
+      const { data: newGroup, error: groupError } = await supabase
+        .from('groups')
+        .insert(insertData)
         .select()
         .single();
 
