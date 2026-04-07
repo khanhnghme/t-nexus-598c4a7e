@@ -537,6 +537,7 @@ export default function Dashboard() {
           userFullName={profile.full_name}
           userEmail={profile.email}
           userStudentId={profile.student_id}
+          userPlan={profile.user_plan}
           mustChangePassword={mustChangePassword}
           onComplete={refreshProfile}
         />
