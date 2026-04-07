@@ -29,7 +29,7 @@ export default function ProjectGuestInviteDialog({ groupId, groupName, trigger }
 
   const [open, setOpen] = useState(false);
   const [guestEmail, setGuestEmail] = useState('');
-  const [guestRole, setGuestRole] = useState('member');
+  const [guestRole, setGuestRole] = useState('project_member');
   const [isInviting, setIsInviting] = useState(false);
 
   const handleInviteGuest = async () => {

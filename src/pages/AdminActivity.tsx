@@ -67,7 +67,7 @@ const actionTypeOptions = [
   { value: 'all', label: 'Tất cả', icon: Activity },
   { value: 'task', label: 'Task', icon: CheckSquare },
   { value: 'group', label: 'Nhóm', icon: Users },
-  { value: 'member', label: 'Thành viên', icon: User },
+  { value: 'project_member', label: 'Thành viên', icon: User },
   { value: 'score', label: 'Điểm', icon: Star },
   { value: 'auth', label: 'Đăng nhập', icon: LogIn },
 ];

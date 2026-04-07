@@ -285,7 +285,7 @@ export default function ProjectActivityLog({ groupId, groupName = 'Project', isL
 
   const getActionBadge = (actionType: string) => {
     switch (actionType) {
-      case 'member': return <Badge variant="secondary" className="text-xs">Thành viên</Badge>;
+      case 'project_member': return <Badge variant="secondary" className="text-xs">Thành viên</Badge>;
       case 'stage': return <Badge className="bg-primary/10 text-primary text-xs">Giai đoạn</Badge>;
       case 'task': return <Badge className="bg-warning/10 text-warning text-xs">Task</Badge>;
       case 'resource': return <Badge className="bg-success/10 text-success text-xs">Tài nguyên</Badge>;

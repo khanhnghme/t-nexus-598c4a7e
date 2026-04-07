@@ -74,7 +74,7 @@ export default function MessageItem({ message, isOwn, showAvatar = true, showNam
   const [isDeleting, setIsDeleting] = useState(false);
   const [profileToView, setProfileToView] = useState<Profile | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const [memberRole, setMemberRole] = useState<'project_owner' | 'project_admin' | 'project_member'>('member');
+  const [memberRole, setMemberRole] = useState<ProjectRole>('project_member';
   
   // Task submission dialog state
   const [taskToView, setTaskToView] = useState<Task | null>(null);
@@ -115,7 +115,7 @@ export default function MessageItem({ message, isOwn, showAvatar = true, showNam
           .eq('user_id', member.id)
           .eq('group_id', groupId)
           .single();
-        setMemberRole((memberData?.role as 'project_owner' | 'project_admin' | 'project_member') || 'member');
+        setMemberRole((memberData?.role as ProjectRole) || 'project_member');
       }
       
       setProfileDialogOpen(true);

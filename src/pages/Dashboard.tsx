@@ -907,7 +907,7 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-1 shrink-0">
                                   <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">Workspace</Badge>
                                   <Badge variant="secondary" className="text-[10px]">
-                                    {inv.role_granted === 'admin' ? 'Admin' : 'Thành viên'}
+                                    {inv.role_granted === 'workspace_admin' ? 'Admin' : 'Thành viên'}
                                   </Badge>
                                 </div>
                               </div>

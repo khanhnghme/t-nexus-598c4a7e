@@ -88,7 +88,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     switch (role) {
       case 'owner': return '👑';
       case 'owner_system': return '🛡️';
-      case 'member': return '🎫';
+      case 'project_member': return '🎫';
       default: return '👽';
     }
   };

@@ -83,7 +83,7 @@ export default function SuspendMemberDialog({
       userId: currentUserId,
       userName: currentUserName,
       action: 'SUSPEND_MEMBER',
-      actionType: 'member',
+      actionType: 'project_member',
       description: `Tạm khóa tài khoản ${member.full_name} (${DURATION_OPTIONS.find(d => d.value === duration)?.label})${reason ? ` - Lý do: ${reason}` : ''}`,
     });
 

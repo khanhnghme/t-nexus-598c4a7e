@@ -33,8 +33,8 @@ export default function WorkspaceSettings() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [copiedSlug, setCopiedSlug] = useState(false);
 
-  const isOwner = workspaceRole === 'owner';
-  const canEdit = isOwner || workspaceRole === 'admin';
+  const isOwner = workspaceRole === 'workspace_owner';
+  const canEdit = isOwner || workspaceRole === 'workspace_admin';
 
   useEffect(() => {
     if (activeWorkspace) {

@@ -23,7 +23,7 @@ export default function PublicActivityLog({ logs }: PublicActivityLogProps) {
     switch (actionType) {
       case 'task':
         return <FileText className="w-4 h-4" />;
-      case 'member':
+      case 'project_member':
         return <Users className="w-4 h-4" />;
       case 'stage':
         return <Layers className="w-4 h-4" />;

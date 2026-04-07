@@ -19,7 +19,7 @@ function getRoleBadgeStyle(role: AppRole) {
   switch (role) {
     case 'owner_system':
       return 'bg-red-600 text-white shadow-sm shadow-red-600/30';
-    case 'leader':
+    case 'project_admin':
       return 'bg-primary text-primary-foreground shadow-sm shadow-primary/30';
     default:
       return 'bg-muted text-muted-foreground';

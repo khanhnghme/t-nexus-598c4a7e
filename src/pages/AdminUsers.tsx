@@ -42,7 +42,7 @@ interface MemberRow {
   id: string;
   userId: string;
   groupId: string;
-  role: 'project_owner' | 'project_admin' | 'project_member';
+  role?: ProjectRole;
   joinedAt: string;
   fullName?: string;
   studentId?: string;
@@ -817,7 +817,7 @@ export default function AdminUsers() {
         open={profileDialogOpen}
         onOpenChange={setProfileDialogOpen}
         profile={selectedProfile}
-        role={selectedProfile ? (profiles.find(p => p.id === selectedProfile.id) ? 'member' : 'member') : 'member'}
+        role={selectedProfile ? (profiles.find(p => p.id === selectedProfile.id) ? 'project_member' : 'project_member') : 'project_member'}
       />
 
       {/* Password View Dialog */}
