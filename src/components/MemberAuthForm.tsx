@@ -146,7 +146,7 @@ export function MemberAuthForm() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isEmailVerified = searchParams.get('verified') === 'true';
-  const { signUp, signIn, user, profile, isLoading: authLoading } = useAuth();
+  const { signIn, user, profile, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
