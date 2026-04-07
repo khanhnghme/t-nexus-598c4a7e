@@ -769,7 +769,7 @@ export default function Dashboard() {
                   <div className="px-6 pt-3">
                     <TabsList className="w-full">
                       <TabsTrigger value="all" className="flex-1 text-xs">
-                        Tất cả
+                        {t?.all || 'All'}
                         {(pendingInvitations.length + pendingWsInvites.length) > 0 && (
                           <Badge variant="secondary" className="ml-1 text-[10px] px-1 h-4">{pendingInvitations.length + pendingWsInvites.length}</Badge>
                         )}
@@ -796,10 +796,10 @@ export default function Dashboard() {
                       (inviteTab === 'workspace' && pendingWsInvites.length === 0)) && (
                       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                         <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                          <MailOpen className="w-8 h-8 opacity-40" />
-                        </div>
-                        <p className="font-medium">Không có lời mời nào</p>
-                        <p className="text-sm mt-1">Bạn sẽ nhận được thông báo khi có lời mời mới</p>
+                         <MailOpen className="w-8 h-8 opacity-40" />
+                         </div>
+                         <p className="font-medium">{t?.noInvitations || 'No invitations'}</p>
+                         <p className="text-sm mt-1">{t?.willNotifyWhenNew || "You'll be notified when there are new invitations"}</p>
                       </div>
                     )}
 
@@ -830,12 +830,12 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-1 shrink-0">
                                   <Badge variant="outline" className="text-[10px]">Project</Badge>
                                   <Badge variant="secondary" className="text-[10px]">
-                                    {inv.role === 'project_admin' ? 'Phó nhóm' : 'Thành viên'}
+                                    {inv.role === 'project_admin' ? (t?.viceLeader || 'Vice leader') : (t?.member || 'Member')}
                                   </Badge>
                                 </div>
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Mời bởi <span className="font-medium text-foreground">{inv.inviter?.full_name || 'Leader'}</span>
+                                {t?.invitedBy || 'Invited by'} <span className="font-medium text-foreground">{inv.inviter?.full_name || 'Leader'}</span>
                                 {' · '}
                                 {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true, locale: locale === 'vi' ? viLocale : enUS })}
                               </p>
@@ -851,17 +851,17 @@ export default function Dashboard() {
                           <div className="flex flex-wrap gap-1.5 pl-[60px]">
                             {inv.groups?.class_code && (
                               <Badge variant="outline" className="text-[10px] gap-1 h-5">
-                                Lớp: {inv.groups.class_code}
+                                {t?.classLabel || 'Class:'} {inv.groups.class_code}
                               </Badge>
                             )}
                             {inv.groups?.instructor_name && (
                               <Badge variant="outline" className="text-[10px] gap-1 h-5">
-                                GV: {inv.groups.instructor_name}
+                                {t?.instructorLabel || 'Instructor:'} {inv.groups.instructor_name}
                               </Badge>
                             )}
                             <Badge variant="outline" className="text-[10px] gap-1 h-5">
                               <Users className="w-3 h-3" />
-                              {inv.memberCount ?? 0} thành viên
+                              {(t?.membersCount || '{n} members').replace('{n}', String(inv.memberCount ?? 0))}
                             </Badge>
                           </div>
 
@@ -873,7 +873,7 @@ export default function Dashboard() {
                               onClick={() => handleInvitationResponse(inv, false)}
                               disabled={processingInvitation === inv.id}
                             >
-                              Từ chối
+                              {t?.decline || 'Decline'}
                             </Button>
                             <Button
                               size="sm"
@@ -886,7 +886,7 @@ export default function Dashboard() {
                               ) : (
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                               )}
-                              Chấp nhận
+                              {t?.accept || 'Accept'}
                             </Button>
                           </div>
                         </div>
@@ -910,12 +910,12 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-1 shrink-0">
                                   <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">Workspace</Badge>
                                   <Badge variant="secondary" className="text-[10px]">
-                                    {inv.role_granted === 'workspace_admin' ? 'Admin' : 'Thành viên'}
+                                    {inv.role_granted === 'workspace_admin' ? 'Admin' : (t?.member || 'Member')}
                                   </Badge>
                                 </div>
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Mời bởi <span className="font-medium text-foreground">{inv.inviter_name}</span>
+                                {t?.invitedBy || 'Invited by'} <span className="font-medium text-foreground">{inv.inviter_name}</span>
                                 {' · '}
                                 {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true, locale: locale === 'vi' ? viLocale : enUS })}
                               </p>
@@ -924,7 +924,7 @@ export default function Dashboard() {
 
                           <div className="pl-[60px]">
                             <p className="text-xs text-muted-foreground">
-                              Bạn sẽ có quyền truy cập tất cả dự án trong workspace này sau khi chấp nhận.
+                              {t?.wsAccessAfterAccept || 'You will have access to all projects in this workspace after accepting.'}
                             </p>
                           </div>
 
@@ -936,7 +936,7 @@ export default function Dashboard() {
                               onClick={() => handleWsInviteResponse(inv, false)}
                               disabled={processingInvitation === inv.id}
                             >
-                              Từ chối
+                              {t?.decline || 'Decline'}
                             </Button>
                             <Button
                               size="sm"
@@ -949,7 +949,7 @@ export default function Dashboard() {
                               ) : (
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                               )}
-                              Chấp nhận
+                              {t?.accept || 'Accept'}
                             </Button>
                           </div>
                         </div>
@@ -967,37 +967,37 @@ export default function Dashboard() {
           <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle className="text-xl font-heading">Projects của tôi</CardTitle>
-                <CardDescription>Các dự án bạn đang tham gia</CardDescription>
+                <CardTitle className="text-xl font-heading">{t?.myProjects || 'My Projects'}</CardTitle>
+                <CardDescription>{t?.projectsYouJoined || 'Projects you are participating in'}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 <ToggleGroup type="single" value={filter} onValueChange={handleFilterChange} className="bg-transparent flex-wrap sm:flex-nowrap gap-1">
                   <ToggleGroupItem value="active" className="text-xs px-3 sm:px-3.5 py-1.5 h-8 rounded-full border border-transparent data-[state=on]:border-primary data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=off]:bg-muted/50 data-[state=off]:text-muted-foreground hover:data-[state=off]:bg-muted gap-1.5 transition-all">
                     <Layers className="w-3 h-3 hidden sm:block" />
-                    Đang dùng
+                    {t?.active || 'Active'}
                     <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 min-w-[16px] justify-center bg-muted-foreground/15 text-foreground">{activeCount}</Badge>
                   </ToggleGroupItem>
                   {pendingCount > 0 && (
                     <ToggleGroupItem value="pending" className="text-xs px-3 sm:px-3.5 py-1.5 h-8 rounded-full border border-transparent data-[state=on]:border-primary data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=off]:bg-muted/50 data-[state=off]:text-muted-foreground hover:data-[state=off]:bg-muted gap-1.5 transition-all">
                       <Clock className="w-3 h-3 hidden sm:block" />
-                      Chờ duyệt
+                      {t?.pendingApproval || 'Pending'}
                       <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 min-w-[16px] justify-center bg-warning/20 text-warning">{pendingCount}</Badge>
                     </ToggleGroupItem>
                   )}
                   <ToggleGroupItem value="hidden" className="text-xs px-3 sm:px-3.5 py-1.5 h-8 rounded-full border border-transparent data-[state=on]:border-primary data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=off]:bg-muted/50 data-[state=off]:text-muted-foreground hover:data-[state=off]:bg-muted gap-1.5 transition-all">
                     <EyeOff className="w-3 h-3 hidden sm:block" />
-                    Đã ẩn
+                    {t?.hidden || 'Hidden'}
                     <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 min-w-[16px] justify-center bg-muted-foreground/15 text-foreground">{hiddenCount}</Badge>
                   </ToggleGroupItem>
                   <ToggleGroupItem value="all" className="text-xs px-3 sm:px-3.5 py-1.5 h-8 rounded-full border border-transparent data-[state=on]:border-primary data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=off]:bg-muted/50 data-[state=off]:text-muted-foreground hover:data-[state=off]:bg-muted gap-1.5 transition-all">
-                    Tất cả
+                    {t?.all || 'All'}
                     <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 min-w-[16px] justify-center bg-muted-foreground/15 text-foreground">{groups.length}</Badge>
                   </ToggleGroupItem>
                 </ToggleGroup>
                 <Link to="/groups">
                   <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all" size="sm">
                     <FolderKanban className="w-4 h-4" />
-                    <span className="hidden md:inline">Xem & Tạo Project</span>
+                    <span className="hidden md:inline">{t?.viewAndCreate || 'View & Create Project'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
@@ -1009,8 +1009,8 @@ export default function Dashboard() {
               pendingApprovalGroups.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Clock className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                  <p className="text-lg font-medium mb-1">Không có yêu cầu nào đang chờ duyệt</p>
-                  <p className="text-sm">Sử dụng mã tham gia để xin vào project mới</p>
+                  <p className="text-lg font-medium mb-1">{t?.noPendingRequests || 'No pending approval requests'}</p>
+                  <p className="text-sm">{t?.useCodeToJoin || 'Use a join code to request access to a new project'}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -1027,10 +1027,10 @@ export default function Dashboard() {
               <div className="text-center py-12 text-muted-foreground">
                 <FolderKanban className="w-16 h-16 mx-auto mb-4 opacity-30" />
                 <p className="text-lg font-medium mb-1">
-                  {filter === 'hidden' ? 'Không có project nào bị ẩn' : filter === 'all' ? 'Bạn chưa tham gia project nào' : 'Không có project đang sử dụng'}
+                  {filter === 'hidden' ? (t?.noHiddenProjects || 'No hidden projects') : filter === 'all' ? (t?.notJoinedYet || "You haven't joined any projects yet") : (t?.noActiveProjects || 'No active projects')}
                 </p>
                 <p className="text-sm">
-                  {filter === 'hidden' ? 'Hover lên project và nhấn icon mắt để ẩn' : 'Liên hệ Leader để được thêm vào project'}
+                  {filter === 'hidden' ? (t?.hoverToHide || 'Hover over a project and click the eye icon to hide') : (t?.contactLeader || 'Contact Leader to be added to a project')}
                 </p>
               </div>
             ) : (
