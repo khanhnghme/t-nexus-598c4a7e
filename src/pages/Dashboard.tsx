@@ -167,6 +167,7 @@ export default function Dashboard() {
       fetchHiddenProjects();
       fetchPendingInvitations();
       fetchPendingApprovals();
+      fetchPendingWsInvites();
     } else {
       setIsLoading(false);
     }
