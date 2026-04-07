@@ -955,6 +955,7 @@ export const vi: Translations = {
       teamwork: 'Làm việc nhóm',
       messaging: 'Trao đổi',
       startSetup: 'Bắt đầu thiết lập',
+      changeLang: 'Đổi ngôn ngữ',
       securityTitle: 'Bảo mật tài khoản',
       securityDesc: 'Tài khoản được tạo bởi quản trị viên với mật khẩu mặc định. Vui lòng đổi mật khẩu để bảo vệ tài khoản.',
       securityTip: 'Gợi ý mật khẩu an toàn',

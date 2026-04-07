@@ -971,6 +971,7 @@ export const en = {
       teamwork: 'Teamwork',
       messaging: 'Messaging',
       startSetup: 'Start setup',
+      changeLang: 'Change language',
       securityTitle: 'Account Security',
       securityDesc: 'Your account was created by an administrator with a default password. Please change your password to protect your account.',
       securityTip: 'Secure password tips',
