@@ -268,7 +268,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
           {!isGuest && (
             <>
               <Link to="/workspace/settings" className={cn('sidebar-nav-item', isPathActive('/workspace/settings') && 'active')}>
-                <Eye className="nav-icon" strokeWidth={1.8} />
+                <LayoutGrid className="nav-icon" strokeWidth={1.8} />
                 <span className="nav-label">Tổng quan</span>
               </Link>
               <Link to="/workspace/members" className={cn('sidebar-nav-item', isPathActive('/workspace/members') && 'active')}>
