@@ -290,24 +290,7 @@ export default function DashboardLayout({
             </button>
           </div>
 
-          {/* Search bar */}
-          <div className="sidebar-search">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="sidebar-search-btn" onClick={() => setIsSearchOpen(true)}>
-                  <Search className="search-icon" strokeWidth={2} />
-                  <span className="search-text">Tìm kiếm...</span>
-                  <span className="search-kbd">⌘K</span>
-                </button>
-              </TooltipTrigger>
-              {sidebarCollapsed && (
-                <TooltipContent side="right" sideOffset={12}>
-                  <p className="font-medium">Tìm kiếm</p>
-                  <p className="text-xs opacity-70">⌘K</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </div>
+          {/* Navigation — Tree Nav (workspace switcher is inside) */}
 
           {/* Scrollable navigation — Tree Nav */}
           <div className="sidebar-nav-scroll">
