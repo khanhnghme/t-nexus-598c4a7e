@@ -184,15 +184,13 @@ export function MemberAuthForm() {
   const [policyContent, setPolicyContent] = useState('');
   const [policyUpdatedAt, setPolicyUpdatedAt] = useState<string | null>(null);
   
-  // Login animation - always enabled
-  const loginAnimEnabled = true;
-  const pendingLoginTransitionRef = useRef(false);
+  const pendingLoginRef = useRef(false);
 
   useEffect(() => {
     if (user && profile) {
       if (profile.is_approved) {
         // Don't navigate if pending login transition setup or during registration
-        if (pendingLoginTransitionRef.current || isRegisteringRef.current) return;
+        if (pendingLoginRef.current || isRegisteringRef.current) return;
         navigate('/dashboard');
       }
     }
@@ -333,15 +331,13 @@ export function MemberAuthForm() {
       }
 
       // Set ref BEFORE signIn to prevent race condition with useEffect navigation
-      if (loginAnimEnabled) {
-        pendingLoginTransitionRef.current = true;
-      }
+      pendingLoginRef.current = true;
 
       const { error } = await signIn(loginEmail, password);
       setIsLoading(false);
 
       if (error) {
-        pendingLoginTransitionRef.current = false;
+        pendingLoginRef.current = false;
         toast({
           title: 'Đăng nhập thất bại',
           description: error.message === 'Invalid login credentials' ? 'MSSV/Email hoặc mật khẩu không đúng' : error.message,
@@ -355,12 +351,6 @@ export function MemberAuthForm() {
           localStorage.removeItem('t-nexus_remember_login');
         }
         toast({ title: 'Đăng nhập thành công', description: 'Chào mừng bạn quay lại!' });
-        if (loginAnimEnabled) {
-          sessionStorage.setItem('login_transition', JSON.stringify({
-            userName: profileData?.full_name || '',
-          }));
-        }
-        pendingLoginTransitionRef.current = false;
         navigate('/dashboard');
       }
     } catch (err) {
