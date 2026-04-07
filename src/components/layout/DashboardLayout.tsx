@@ -126,7 +126,7 @@ export default function DashboardLayout({
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  
 
   const hiddenNav = Array.isArray(profile?.nav_hidden_pages)
     ? (profile.nav_hidden_pages as string[])
@@ -158,11 +158,6 @@ export default function DashboardLayout({
       if (dest) {
         e.preventDefault();
         navigate(dest);
-      }
-      // ⌘K → focus search (global)
-      if (key === 'k') {
-        e.preventDefault();
-        setIsSearchOpen((open) => !open);
       }
     };
     window.addEventListener('keydown', handler);
@@ -386,28 +381,6 @@ export default function DashboardLayout({
         </DialogContent>
       </Dialog>
 
-      {/* Global Search Dialog */}
-      <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <CommandInput placeholder="Tìm kiếm trang & tính năng..." />
-        <CommandList>
-          <CommandEmpty>Không tìm thấy kết quả.</CommandEmpty>
-          <CommandGroup heading="Tính năng">
-            {allSearchItems.map((item) => (
-              <CommandItem
-                key={item.href}
-                onSelect={() => {
-                  navigate(item.href);
-                  setIsSearchOpen(false);
-                }}
-              >
-                <item.icon className="mr-2 h-4 w-4" />
-                <span>{item.name}</span>
-                {'shortcut' in item && item.shortcut && <span className="ml-auto text-xs text-muted-foreground">{item.shortcut}</span>}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
 
       {/* AI Assistant */}
       <AIAssistantButton
