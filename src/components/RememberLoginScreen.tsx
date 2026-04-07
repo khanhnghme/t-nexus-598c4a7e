@@ -39,11 +39,8 @@ export default function RememberLoginScreen({ profile, roles, onLogout }: Rememb
     .toUpperCase() || '?';
 
   const handleContinue = useCallback(() => {
-    sessionStorage.setItem('login_transition', JSON.stringify({
-      userName: profile.full_name || '',
-    }));
     navigate('/dashboard');
-  }, [profile.full_name, navigate]);
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('t-nexus_remember_login');

@@ -355,12 +355,6 @@ export function MemberAuthForm() {
           localStorage.removeItem('t-nexus_remember_login');
         }
         toast({ title: 'Đăng nhập thành công', description: 'Chào mừng bạn quay lại!' });
-        if (loginAnimEnabled) {
-          sessionStorage.setItem('login_transition', JSON.stringify({
-            userName: profileData?.full_name || '',
-          }));
-        }
-        pendingLoginTransitionRef.current = false;
         navigate('/dashboard');
       }
     } catch (err) {

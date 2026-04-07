@@ -18,7 +18,6 @@ import { supabase } from "@/integrations/supabase/client";
 import PageTransition from "@/components/PageTransition";
 import LoadingScreen from "@/components/LoadingScreen";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
