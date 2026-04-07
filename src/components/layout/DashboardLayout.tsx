@@ -80,7 +80,7 @@ function SidebarThemeToggle() {
         </button>
       </TooltipTrigger>
       <TooltipContent side="top" sideOffset={8}>
-        <p>{isDark ? 'Chế độ sáng' : 'Chế độ tối'}</p>
+        <p>{isDark ? 'Light mode' : 'Dark mode'}</p>
       </TooltipContent>
     </Tooltip>
   );

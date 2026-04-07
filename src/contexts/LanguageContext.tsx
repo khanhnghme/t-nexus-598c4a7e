@@ -18,9 +18,9 @@ interface LanguageContextValue {
   locale: Locale;
   /** Full translations object for the current locale */
   translations: Translations;
-  /** Build a localized path for the current locale */
+  /** Build a localized path for the current locale (only adds prefix for public routes) */
   localizedPath: (path: string) => string;
-  /** Build a path for a specific locale (for language toggle) */
+  /** Build a path for a specific locale (for language toggle on public pages) */
   pathForLocale: (locale: Locale) => string;
   /** Change locale and persist to profile */
   setLocale: (locale: Locale) => Promise<void>;
@@ -30,14 +30,24 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 const SITE_URL = 'https://t-nexus.io.vn';
 
+/**
+ * Public routes use URL-based locale prefix (/vi/auth, /en/pricing).
+ * Internal routes (dashboard, workspace, etc.) use profile.preferred_locale.
+ */
+const PUBLIC_CANONICAL_PATHS = ['/', '/auth', '/pricing', '/download', '/terms'];
+
+function isPublicRoute(pathname: string): boolean {
+  const canonical = stripLocalePrefix(pathname);
+  return PUBLIC_CANONICAL_PATHS.includes(canonical);
+}
+
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, user } = useAuth();
 
-  // For internal routes (no locale prefix), prefer profile's saved locale
   const urlLocale = getLocaleFromPath(location.pathname);
-  const [profileLocale, setProfileLocale] = useState<Locale | null>(null);
+  const [profileLocale, setProfileLocale] = useState<Locale>(DEFAULT_LOCALE);
 
   // Sync profileLocale from profile
   useEffect(() => {
@@ -49,32 +59,37 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [profile?.preferred_locale]);
 
-  // Auto-apply saved locale on login for internal routes
-  useEffect(() => {
-    if (!user || !profileLocale) return;
-    // Only redirect if on an internal route (no explicit locale prefix in URL)
-    // and the saved locale differs from current URL locale
-    const isInternalRoute = !location.pathname.startsWith('/vi/') && location.pathname !== '/vi';
-    if (profileLocale !== 'en' && isInternalRoute && urlLocale === 'en') {
-      const canonical = stripLocalePrefix(location.pathname);
-      navigate(buildLocalizedPath(canonical, profileLocale), { replace: true });
-    }
-  }, [user, profileLocale]);
+  // Determine effective locale:
+  // - Public routes: use URL prefix
+  // - Internal routes: use profile setting
+  const isPublic = isPublicRoute(location.pathname);
+  const locale: Locale = isPublic ? urlLocale : profileLocale;
 
-  const locale = urlLocale;
   const t = useMemo(() => getTranslations(locale), [locale]);
 
+  // localizedPath: only add prefix for public routes
   const lp = useMemo(
-    () => (path: string) => buildLocalizedPath(path, locale),
+    () => (path: string) => {
+      // If the target path is a public route, use locale prefix
+      if (PUBLIC_CANONICAL_PATHS.includes(path)) {
+        return buildLocalizedPath(path, locale);
+      }
+      // Internal routes: no prefix
+      return path;
+    },
     [locale],
   );
 
   const pathForLocale = useMemo(
     () => (targetLocale: Locale) => {
-      const canonical = stripLocalePrefix(location.pathname);
-      return buildLocalizedPath(canonical, targetLocale);
+      if (isPublic) {
+        const canonical = stripLocalePrefix(location.pathname);
+        return buildLocalizedPath(canonical, targetLocale);
+      }
+      // Internal routes don't change URL for locale
+      return location.pathname;
     },
-    [location.pathname],
+    [location.pathname, isPublic],
   );
 
   const setLocale = useCallback(async (newLocale: Locale) => {
@@ -83,9 +98,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       await supabase.from('profiles').update({ preferred_locale: newLocale }).eq('id', user.id);
     }
     setProfileLocale(newLocale);
-    // Navigate to new locale path
-    const canonical = stripLocalePrefix(location.pathname);
-    navigate(buildLocalizedPath(canonical, newLocale), { replace: true });
+    // Only navigate for public routes
+    if (isPublicRoute(location.pathname)) {
+      const canonical = stripLocalePrefix(location.pathname);
+      navigate(buildLocalizedPath(canonical, newLocale), { replace: true });
+    }
   }, [user, location.pathname, navigate]);
 
   // Side effect: update <html lang> attribute
@@ -93,10 +110,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = locale;
   }, [locale]);
 
-  // Side effect: inject hreflang <link> tags for SEO
+  // Side effect: inject hreflang <link> tags for SEO (only on public routes)
   useEffect(() => {
     const HEAD_ID = 'i18n-hreflang';
     document.querySelectorAll(`link[data-i18n="${HEAD_ID}"]`).forEach((el) => el.remove());
+
+    if (!isPublic) return;
 
     const canonical = stripLocalePrefix(location.pathname);
 
@@ -119,7 +138,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return () => {
       document.querySelectorAll(`link[data-i18n="${HEAD_ID}"]`).forEach((el) => el.remove());
     };
-  }, [location.pathname, locale]);
+  }, [location.pathname, locale, isPublic]);
 
   const value = useMemo<LanguageContextValue>(
     () => ({ locale, translations: t, localizedPath: lp, pathForLocale, setLocale }),

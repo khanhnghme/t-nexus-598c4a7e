@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useWorkspaceProjects } from '@/hooks/useWorkspaceProjects';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import {
   Home,
@@ -50,6 +51,8 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   const { profile, isAdmin } = useAuth();
   const { activeWorkspace, workspaces, switchWorkspace, isAvailable, workspaceRole } = useWorkspace();
   const { projects, isGuest } = useWorkspaceProjects();
+  const { translations } = useLanguage();
+  const t = translations.app?.sidebar;
 
   const hiddenNav = Array.isArray(profile?.nav_hidden_pages)
     ? (profile.nav_hidden_pages as string[])
@@ -104,18 +107,18 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
 
   // Navigation items
   const personalItems = [
-    { name: 'Lịch', href: '/calendar', icon: CalendarDays },
-    { name: 'Trao đổi', href: '/communication', icon: MessageSquare },
-    { name: 'Tài khoản', href: '/personal-info', icon: UserCircle },
-    { name: 'Mẹo', href: '/tips', icon: BookOpen },
-    { name: 'Góp ý', href: '/feedback', icon: Lightbulb },
+    { name: t?.calendar || 'Calendar', href: '/calendar', icon: CalendarDays },
+    { name: t?.communication || 'Communication', href: '/communication', icon: MessageSquare },
+    { name: t?.account || 'Account', href: '/personal-info', icon: UserCircle },
+    { name: t?.tips || 'Tips', href: '/tips', icon: BookOpen },
+    { name: t?.feedback || 'Feedback', href: '/feedback', icon: Lightbulb },
   ].filter(i => !hiddenNav.includes(i.href));
 
   const adminItems = [
-    { name: 'Thành viên', href: '/members', icon: Users },
-    { name: 'Sao lưu', href: '/admin/backup', icon: FolderArchive },
-    { name: 'Quản trị', href: '/admin/system', icon: Shield },
-    { name: 'Tiện ích', href: '/utilities', icon: Wrench },
+    { name: t?.systemMembers || 'Members', href: '/members', icon: Users },
+    { name: t?.backup || 'Backup', href: '/admin/backup', icon: FolderArchive },
+    { name: t?.admin || 'Admin', href: '/admin/system', icon: Shield },
+    { name: t?.utilities || 'Utilities', href: '/utilities', icon: Wrench },
   ].filter(i => !hiddenNav.includes(i.href));
 
   const isPathActive = (href: string) => {
@@ -165,23 +168,23 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate('/workspace/new')}>
                 <Plus className="w-3.5 h-3.5 mr-2" />
-                Tạo Workspace mới
+                {t?.createWorkspace || 'Create new Workspace'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
 
         {/* Dashboard */}
-        <TreeItemCollapsed icon={Home} label="Trang chủ" href="/dashboard" active={isPathActive('/dashboard')} />
+        <TreeItemCollapsed icon={Home} label={t?.home || 'Home'} href="/dashboard" active={isPathActive('/dashboard')} />
 
         {/* All Projects */}
-        <TreeItemCollapsed icon={FolderKanban} label="Dự án" href="/groups" active={isPathActive('/groups')} />
+        <TreeItemCollapsed icon={FolderKanban} label={t?.projects || 'Projects'} href="/groups" active={isPathActive('/groups')} />
 
         {/* Workspace pages */}
         {isAvailable && activeWorkspace && !isGuest && (
           <>
-            <TreeItemCollapsed icon={LayoutGrid} label="Tổng quan WS" href="/workspace/settings" active={isPathActive('/workspace/settings')} />
-            <TreeItemCollapsed icon={Users} label="Thành viên WS" href="/workspace/members" active={isPathActive('/workspace/members')} />
+            <TreeItemCollapsed icon={LayoutGrid} label={t?.overview || 'Overview'} href="/workspace/settings" active={isPathActive('/workspace/settings')} />
+            <TreeItemCollapsed icon={Users} label={t?.members || 'Members'} href="/workspace/members" active={isPathActive('/workspace/members')} />
           </>
         )}
 
@@ -243,7 +246,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate('/workspace/new')} className="gap-2">
               <Plus className="w-3.5 h-3.5" />
-              <span>Tạo Workspace mới</span>
+              <span>{t?.createWorkspace || 'Create new Workspace'}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -251,7 +254,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
 
       {isGuest && (
         <div className="tree-guest-hint">
-          👽 Bạn đang truy cập với vai trò khách mời
+          {t?.guestHint || '👽 You are accessing as a guest'}
         </div>
       )}
 
@@ -261,7 +264,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
           {/* Dashboard */}
           <Link to="/dashboard" className={cn('sidebar-nav-item', isPathActive('/dashboard') && 'active')}>
             <Home className="nav-icon" strokeWidth={1.8} />
-            <span className="nav-label">Trang chủ</span>
+            <span className="nav-label">{t?.home || 'Home'}</span>
           </Link>
 
           {/* Workspace management - only for non-guest */}
@@ -269,11 +272,11 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
             <>
               <Link to="/workspace/settings" className={cn('sidebar-nav-item', isPathActive('/workspace/settings') && 'active')}>
                 <LayoutGrid className="nav-icon" strokeWidth={1.8} />
-                <span className="nav-label">Tổng quan</span>
+                <span className="nav-label">{t?.overview || 'Overview'}</span>
               </Link>
               <Link to="/workspace/members" className={cn('sidebar-nav-item', isPathActive('/workspace/members') && 'active')}>
                 <Users className="nav-icon" strokeWidth={1.8} />
-                <span className="nav-label">Thành viên</span>
+                <span className="nav-label">{t?.members || 'Members'}</span>
               </Link>
             </>
           )}
@@ -288,7 +291,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
           >
             <ChevronRight className={cn('nav-chevron', isProjectsExpanded && 'expanded')} />
             <FolderKanban className="nav-icon" strokeWidth={1.8} />
-            <span className="nav-label">Dự án</span>
+            <span className="nav-label">{t?.projects || 'Projects'}</span>
             <span className="text-[10px] opacity-40 tabular-nums">{projects.length}</span>
           </button>
 
@@ -299,7 +302,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                 to="/groups"
                 className={cn('sidebar-nav-item', location.pathname === '/groups' && 'active')}
               >
-                <span className="nav-label text-muted-foreground">Xem tất cả</span>
+                <span className="nav-label text-muted-foreground">{t?.viewAll || 'View all'}</span>
               </Link>
 
               {projects.map(p => {
@@ -313,7 +316,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                   >
                     <span className="nav-label truncate">{p.name}</span>
                     {!p.isMember && (
-                      <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">Mới</span>
+                      <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">{t?.newLabel || 'New'}</span>
                     )}
                   </Link>
                 );
@@ -327,7 +330,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       {personalItems.length > 0 && (
         <>
           <div className="sidebar-nav-separator" />
-          <div className="sidebar-section-label">CÁ NHÂN</div>
+          <div className="sidebar-section-label">{t?.personal || 'PERSONAL'}</div>
           {personalItems.map(item => (
             <Link key={item.href} to={item.href} className={cn('sidebar-nav-item', isPathActive(item.href) && 'active')}>
               <item.icon className="nav-icon" strokeWidth={1.8} />
@@ -341,7 +344,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       {isAdmin && adminItems.length > 0 && (
         <>
           <div className="sidebar-nav-separator" />
-          <div className="sidebar-section-label">QUẢN TRỊ</div>
+          <div className="sidebar-section-label">{t?.system || 'ADMIN'}</div>
           {adminItems.map(item => (
             <Link key={item.href} to={item.href} className={cn('sidebar-nav-item', isPathActive(item.href) && 'active')}>
               <item.icon className="nav-icon" strokeWidth={1.8} />
