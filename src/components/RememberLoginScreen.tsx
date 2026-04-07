@@ -28,7 +28,7 @@ function getRoleBadgeStyle(role: AppRole) {
 
 export default function RememberLoginScreen({ profile, roles, onLogout }: RememberLoginScreenProps) {
   const navigate = useNavigate();
-  const isAdvancedMember = roles.includes('project_admin') || roles.includes('project_owner');
+  const isAdvancedMember = roles.includes('system_admin') || roles.includes('system_owner');
   const [countdown, setCountdown] = useState(10);
 
   const initials = profile.full_name

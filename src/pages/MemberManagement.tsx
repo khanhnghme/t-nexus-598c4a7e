@@ -169,8 +169,8 @@ export default function MemberManagement() {
     return currentList.filter(m => {
       const roles = memberRoles[m.id] || [];
       switch (roleFilter) {
-        case 'member': return !roles.includes('admin') && !roles.includes('project_admin');
-        case 'leader': return roles.includes('project_admin') && !roles.includes('admin');
+        case 'member': return !roles.includes('admin') && !roles.includes('system_admin');
+        case 'leader': return roles.includes('system_admin') && !roles.includes('admin');
         case 'admin': return roles.includes('admin');
         default: return true;
       }
@@ -535,7 +535,7 @@ export default function MemberManagement() {
       const member = members.find(m => m.id === id);
       if (!member) continue;
       const roles = memberRoles[id] || [];
-      if (roles.includes('project_admin') || roles.includes('admin')) continue;
+      if (roles.includes('system_admin') || roles.includes('admin')) continue;
       const { error } = await supabase.from('user_roles').insert({ user_id: id, role: 'project_admin' });
       if (!error) { promoted.push(member.full_name); promotedIds.push(id); }
     }
@@ -562,7 +562,7 @@ export default function MemberManagement() {
       const member = members.find(m => m.id === id);
       if (!member) continue;
       const roles = memberRoles[id] || [];
-      if (!roles.includes('project_admin')) continue;
+      if (!roles.includes('system_admin')) continue;
       if (roles.includes('admin')) continue;
       const { error } = await supabase.from('user_roles').delete().eq('user_id', id).eq('role', 'project_admin');
       if (!error) { demoted.push(member.full_name); demotedIds.push(id); }
@@ -624,7 +624,7 @@ export default function MemberManagement() {
             {isAdminMember && (
               <Badge className="bg-destructive/10 text-destructive text-xs gap-1"><Shield className="w-3 h-3" />Admin</Badge>
             )}
-            {!isAdminMember && roles.includes('project_admin') && (
+            {!isAdminMember && roles.includes('system_admin') && (
               <Badge className="bg-warning/20 text-warning border-warning/30 text-xs gap-1"><Star className="w-3 h-3" />Leader</Badge>
             )}
             {member.id === user?.id && <Badge variant="outline" className="text-xs">Bạn</Badge>}

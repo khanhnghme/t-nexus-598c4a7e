@@ -330,7 +330,7 @@ export function MemberAuthForm() {
             .from('user_roles')
             .select('role')
             .eq('user_id', currentUser.id);
-          const isUserAdmin = userRoles?.some(r => r.role === 'project_owner') ?? false;
+          const isUserAdmin = userRoles?.some(r => r.role === 'system_owner') ?? false;
 
           // Fetch fresh suspension status
           const { data: freshProfile } = await supabase
