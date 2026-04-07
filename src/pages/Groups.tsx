@@ -794,9 +794,13 @@ export default function Groups() {
                         )}
                       </div>
 
-                      {/* Role badge - solid opaque bg, never blends with image */}
+                      {/* Role badge */}
                       <div className="absolute top-3 right-3 drop-shadow-md">
-                        {group.myRole === 'admin' ? (
+                        {!group.myRole ? (
+                          <Badge className="bg-muted text-muted-foreground shadow-lg font-medium text-[10px]">
+                            Chưa tham gia
+                          </Badge>
+                        ) : group.myRole === 'admin' ? (
                           <Badge className="bg-destructive text-destructive-foreground shadow-lg font-semibold">
                             <Crown className="w-3 h-3 mr-1" />
                             Admin
