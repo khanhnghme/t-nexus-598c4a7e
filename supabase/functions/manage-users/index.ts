@@ -234,8 +234,8 @@ serve(async (req: Request) => {
       }
 
       if (requester_id) {
-        const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: user_id });
-        const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: requester_id });
+        const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: user_id });
+        const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: requester_id });
         
         if (targetIsAdmin && !requesterIsAdmin) {
           return new Response(JSON.stringify({ error: "Bạn không có quyền đổi mật khẩu của Admin" }), {
@@ -296,8 +296,8 @@ serve(async (req: Request) => {
       }
 
       if (requester_id) {
-        const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: user_id });
-        const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: requester_id });
+        const { data: targetIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: user_id });
+        const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: requester_id });
         
         if (targetIsAdmin && !requesterIsAdmin) {
           return new Response(JSON.stringify({ error: "Bạn không có quyền xóa Admin" }), {
@@ -364,7 +364,7 @@ serve(async (req: Request) => {
         });
       }
 
-      const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: requester_id });
+      const { data: requesterIsAdmin } = await supabaseAdmin.rpc('is_owner_system', { _user_id: requester_id });
       if (!requesterIsAdmin) {
         return new Response(JSON.stringify({ error: "Chỉ Admin mới có quyền thay đổi vai trò" }), {
           status: 403,

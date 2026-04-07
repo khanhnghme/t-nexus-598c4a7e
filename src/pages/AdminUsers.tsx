@@ -479,7 +479,7 @@ export default function AdminUsers() {
                                   {m.fullName || 'Không rõ tên'}
                                 </p>
                                 <Badge variant="outline" className="text-[11px]">
-                                  {m.role === 'admin'
+                                  {m.role === 'owner_system'
                                     ? 'Admin'
                                     : m.role === 'leader'
                                       ? 'Leader'
