@@ -488,30 +488,29 @@ export function MemberAuthForm() {
   // Show verified success screen when redirected from email confirmation link
   if (isEmailVerified) {
     return (
-      <div className="w-full max-w-md">
-        <div className="mb-6 flex flex-col items-center gap-2">
-          <TNexusLogo variant="text" width={120} />
-          <span className="font-heading font-semibold text-primary flex items-center gap-1">
-            <Users className="w-4 h-4" /> T-Nexus
+      <div className="w-full max-w-sm mx-auto">
+        <div className="mb-4 flex flex-col items-center gap-1">
+          <TNexusLogo variant="text" width={100} />
+          <span className="font-heading text-sm font-semibold text-primary flex items-center gap-1">
+            <Users className="w-3.5 h-3.5" /> T-Nexus
           </span>
         </div>
         <Card className="w-full shadow-card-lg border-emerald-300 dark:border-emerald-700/50">
-          <CardContent className="pt-6 text-center space-y-4">
-            <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto ring-4 ring-emerald-200 dark:ring-emerald-800/40">
-              <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-xl font-heading font-bold text-emerald-700 dark:text-emerald-400">🎉 Xác thực email thành công!</h2>
-              <p className="text-sm text-muted-foreground">Tài khoản của bạn đã được xác thực. Bạn có thể đăng nhập ngay bây giờ.</p>
+          <CardContent className="py-5 px-4 text-center space-y-3">
+            <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
+            <div>
+              <h2 className="text-base font-heading font-bold text-emerald-600 dark:text-emerald-400">Xác thực email thành công!</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Bạn có thể đăng nhập ngay bây giờ.</p>
             </div>
             <Button
-              className="w-full bg-foreground text-background hover:bg-foreground/90"
+              size="sm"
+              className="w-full"
               onClick={() => {
                 searchParams.delete('verified');
                 setSearchParams(searchParams, { replace: true });
               }}
             >
-              → Đăng nhập ngay
+              Đăng nhập ngay
             </Button>
           </CardContent>
         </Card>
@@ -523,15 +522,15 @@ export function MemberAuthForm() {
     const isApproved = registerSuccess === 'approved';
     const isVerifyEmail = registerSuccess === 'verify_email';
     return (
-      <div className={`w-full ${isVerifyEmail ? 'max-w-4xl' : 'max-w-md'}`}>
-        <div className="mb-6 flex flex-col items-center gap-2">
-          <TNexusLogo variant="text" width={120} />
-          <span className="font-heading font-semibold text-primary flex items-center gap-1">
-            <Users className="w-4 h-4" /> T-Nexus
+      <div className={`w-full ${isVerifyEmail ? 'max-w-sm' : 'max-w-sm'} mx-auto`}>
+        <div className="mb-4 flex flex-col items-center gap-1">
+          <TNexusLogo variant="text" width={100} />
+          <span className="font-heading text-sm font-semibold text-primary flex items-center gap-1">
+            <Users className="w-3.5 h-3.5" /> T-Nexus
           </span>
         </div>
         <Card className={`w-full shadow-card-lg ${isVerifyEmail ? 'border-blue-300 dark:border-blue-700/50' : isApproved ? 'border-emerald-300 dark:border-emerald-700/50' : 'border-amber-300 dark:border-amber-700/50'}`}>
-          <CardContent className={`${isVerifyEmail ? 'p-0' : 'pt-6 text-center space-y-4'}`}>
+          <CardContent className={`${isVerifyEmail ? 'p-0' : 'py-5 px-4 text-center space-y-3'}`}>
             {isVerifyEmail ? (
               <OtpVerifyScreen
                 email={regEmail}
@@ -549,89 +548,39 @@ export function MemberAuthForm() {
               />
             ) : isApproved ? (
               <>
-                {/* ===== DUYỆT TỰ ĐỘNG — Đăng nhập ngay ===== */}
-                <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto ring-4 ring-emerald-200 dark:ring-emerald-800/40">
-                  <Shield className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
+                <div>
+                  <h2 className="text-base font-heading font-bold text-emerald-600 dark:text-emerald-400">Đăng ký thành công!</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Tài khoản đã được duyệt tự động.</p>
                 </div>
-
-                <div className="space-y-1">
-                  <h2 className="text-xl font-heading font-bold text-emerald-700 dark:text-emerald-400">🎉 Đăng ký thành công!</h2>
-                  <div className="inline-flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold px-3 py-1 rounded-full">
-                    <Shield className="w-3 h-3" />
-                    Tài khoản đã được duyệt tự động
-                  </div>
-                </div>
-
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Hệ thống đã <strong className="text-foreground">tự động kích hoạt</strong> tài khoản của bạn. Bạn có thể đăng nhập ngay bây giờ bằng MSSV và mật khẩu vừa tạo.
-                </p>
-
-                <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 rounded-lg p-4 text-left text-sm space-y-2">
-                  <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">Thông tin tài khoản</p>
-                  <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
-                    <span className="text-muted-foreground">MSSV:</span>
-                    <span className="font-semibold">{regStudentId}</span>
-                    <span className="text-muted-foreground">Họ tên:</span>
-                    <span className="font-semibold">{regFullName}</span>
-                    <span className="text-muted-foreground">Email:</span>
-                    <span className="font-semibold break-all">{regEmail}</span>
-                    <span className="text-muted-foreground">Trạng thái:</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Đã xác minh
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-muted/40 rounded-lg p-3 text-xs text-muted-foreground flex items-start gap-2">
-                  <KeyRound className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
-                  <span>Đăng nhập bằng <strong className="text-foreground">Mã số sinh viên (MSSV)</strong> và mật khẩu bạn vừa tạo ở bước đăng ký.</span>
+                <div className="bg-muted/50 rounded-md p-2 text-left text-xs space-y-0.5">
+                  <p><span className="text-muted-foreground">MSSV:</span> <span className="font-medium">{regStudentId}</span></p>
+                  <p><span className="text-muted-foreground">Họ tên:</span> <span className="font-medium">{regFullName}</span></p>
+                  <p><span className="text-muted-foreground">Email:</span> <span className="font-medium">{regEmail}</span></p>
                 </div>
               </>
             ) : (
               <>
-                {/* ===== CHỜ DUYỆT — Admin phải duyệt ===== */}
-                <div className="w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto ring-4 ring-amber-200 dark:ring-amber-800/40">
-                  <UserPlus className="w-10 h-10 text-amber-600 dark:text-amber-400" />
-                </div>
-
-                <div className="space-y-1">
-                  <h2 className="text-xl font-heading font-bold">Đăng ký thành công!</h2>
-                  <div className="inline-flex items-center gap-1.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-semibold px-3 py-1 rounded-full">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Đang chờ Admin xét duyệt
+                <UserPlus className="w-10 h-10 text-amber-500 mx-auto" />
+                <div>
+                  <h2 className="text-base font-heading font-bold">Đăng ký thành công!</h2>
+                  <div className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-medium mt-0.5">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Chờ Admin duyệt
                   </div>
                 </div>
-
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Tài khoản của bạn đã được tạo thành công nhưng cần <strong className="text-foreground">Admin xét duyệt</strong> trước khi sử dụng. Bạn sẽ có thể đăng nhập sau khi được duyệt.
-                </p>
-
-                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-lg p-4 text-left text-sm space-y-2">
-                  <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">Thông tin tài khoản</p>
-                  <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
-                    <span className="text-muted-foreground">MSSV:</span>
-                    <span className="font-semibold">{regStudentId}</span>
-                    <span className="text-muted-foreground">Họ tên:</span>
-                    <span className="font-semibold">{regFullName}</span>
-                    <span className="text-muted-foreground">Email:</span>
-                    <span className="font-semibold break-all">{regEmail}</span>
-                    <span className="text-muted-foreground">Trạng thái:</span>
-                    <span className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                      <Loader2 className="w-3 h-3 animate-spin" /> Chờ duyệt
-                    </span>
-                  </div>
+                <div className="bg-muted/50 rounded-md p-2 text-left text-xs space-y-0.5">
+                  <p><span className="text-muted-foreground">MSSV:</span> <span className="font-medium">{regStudentId}</span></p>
+                  <p><span className="text-muted-foreground">Họ tên:</span> <span className="font-medium">{regFullName}</span></p>
+                  <p><span className="text-muted-foreground">Email:</span> <span className="font-medium">{regEmail}</span></p>
                 </div>
-
-                <div className="bg-muted/40 rounded-lg p-3 text-xs text-muted-foreground flex items-start gap-2">
-                  <Mail className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
-                  <span>Khi tài khoản được duyệt, hãy đăng nhập bằng <strong className="text-foreground">MSSV</strong> và mật khẩu bạn đã tạo.</span>
-                </div>
+                <p className="text-xs text-muted-foreground">Đăng nhập bằng MSSV và mật khẩu sau khi được duyệt.</p>
               </>
             )}
 
             <Button
+              size="sm"
               variant={isApproved ? 'default' : 'outline'}
-              className={`w-full ${isApproved ? 'bg-foreground text-background hover:bg-foreground/90' : ''}`}
+              className="w-full"
               onClick={() => {
                 setRegisterSuccess(false);
                 setActiveTab('login');
@@ -643,7 +592,7 @@ export function MemberAuthForm() {
                 setRegConfirmPassword('');
               }}
             >
-              {isVerifyEmail ? '← Quay lại đăng nhập' : isApproved ? '→ Đăng nhập ngay' : '← Quay lại đăng nhập'}
+              {isApproved ? 'Đăng nhập ngay' : 'Quay lại đăng nhập'}
             </Button>
           </CardContent>
         </Card>

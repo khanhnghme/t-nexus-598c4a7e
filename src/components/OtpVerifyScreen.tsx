@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Mail, Clock, RotateCcw, CheckCircle2, ShieldAlert, Loader2, ArrowLeft } from 'lucide-react';
+import { Clock, RotateCcw, CheckCircle2, ShieldAlert, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,14 +27,12 @@ export function OtpVerifyScreen({ email, userId, fullName, studentId, onVerified
   const [countdown, setCountdown] = useState(OTP_EXPIRY_SECONDS);
   const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN);
 
-  // Expiry countdown
   useEffect(() => {
     if (isVerified || countdown <= 0) return;
     const t = setInterval(() => setCountdown(c => c - 1), 1000);
     return () => clearInterval(t);
   }, [isVerified, countdown]);
 
-  // Resend cooldown
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const t = setInterval(() => setResendCooldown(c => c - 1), 1000);
@@ -54,13 +52,11 @@ export function OtpVerifyScreen({ email, userId, fullName, studentId, onVerified
       if (error || !data?.success) {
         const msg = data?.error || error?.message || 'Xác minh thất bại';
         setErrorMsg(msg);
-        if (data?.max_attempts) {
-          setCountdown(0);
-        }
+        if (data?.max_attempts) setCountdown(0);
         setOtpValue('');
       } else {
         setIsVerified(true);
-        toast({ title: '🎉 Xác minh thành công!', description: 'Email của bạn đã được xác minh.' });
+        toast({ title: 'Xác minh thành công!', description: 'Email đã được xác minh.' });
       }
     } catch {
       setErrorMsg('Có lỗi xảy ra. Vui lòng thử lại.');
@@ -80,13 +76,12 @@ export function OtpVerifyScreen({ email, userId, fullName, studentId, onVerified
       });
 
       if (error || !data?.success) {
-        const msg = data?.error || 'Gửi lại mã thất bại';
-        toast({ title: 'Lỗi', description: msg, variant: 'destructive' });
+        toast({ title: 'Lỗi', description: data?.error || 'Gửi lại mã thất bại', variant: 'destructive' });
       } else {
         setResendCooldown(RESEND_COOLDOWN);
         setCountdown(OTP_EXPIRY_SECONDS);
         setOtpValue('');
-        toast({ title: 'Đã gửi lại mã', description: 'Mã OTP mới đã được gửi đến email của bạn.' });
+        toast({ title: 'Đã gửi lại mã OTP' });
       }
     } catch {
       toast({ title: 'Lỗi', description: 'Có lỗi xảy ra.', variant: 'destructive' });
@@ -95,55 +90,42 @@ export function OtpVerifyScreen({ email, userId, fullName, studentId, onVerified
     }
   }, [email, userId, resendCooldown, isResending, toast]);
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   if (isVerified) {
     return (
-      <div className="text-center space-y-4 p-6">
-        <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto ring-4 ring-emerald-200 dark:ring-emerald-800/40">
-          <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+      <div className="text-center space-y-3 py-5 px-4">
+        <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
+        <div>
+          <h2 className="text-base font-heading font-bold text-emerald-600 dark:text-emerald-400">Xác minh thành công!</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Tài khoản đã được xác minh.</p>
         </div>
-        <div className="space-y-1">
-          <h2 className="text-xl font-heading font-bold text-emerald-700 dark:text-emerald-400">
-            🎉 Xác minh email thành công!
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Tài khoản của bạn đã được xác minh. Vui lòng chờ Admin duyệt hoặc đăng nhập ngay.
-          </p>
-        </div>
-        <div className="bg-muted/50 rounded-lg p-3 text-left text-sm space-y-1">
+        <div className="bg-muted/50 rounded-md p-2 text-left text-xs space-y-0.5">
           <p><span className="text-muted-foreground">Họ tên:</span> <span className="font-medium">{fullName}</span></p>
           <p><span className="text-muted-foreground">MSSV:</span> <span className="font-medium">{studentId}</span></p>
           <p><span className="text-muted-foreground">Email:</span> <span className="font-medium">{email}</span></p>
         </div>
-        <Button className="w-full" onClick={onVerified}>
-          → Đăng nhập ngay
+        <Button size="sm" className="w-full" onClick={onVerified}>
+          Đăng nhập ngay
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 p-6">
-      <div className="text-center space-y-2">
-        <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto">
-          <Mail className="w-7 h-7 text-blue-600 dark:text-blue-400" />
-        </div>
-        <h2 className="text-lg font-heading font-semibold">Xác minh email</h2>
-        <p className="text-sm text-muted-foreground">
+    <div className="space-y-3 py-4 px-4">
+      <div className="text-center space-y-1">
+        <h2 className="text-base font-heading font-semibold">Xác minh email</h2>
+        <p className="text-xs text-muted-foreground">
           Nhập mã 6 số đã gửi đến <span className="font-medium text-foreground">{email}</span>
         </p>
       </div>
 
       {/* Timer */}
-      <div className="flex items-center justify-center gap-2 text-sm">
-        <Clock className="w-4 h-4 text-muted-foreground" />
+      <div className="flex items-center justify-center gap-1.5 text-xs">
+        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
         {countdown > 0 ? (
-          <span className="text-muted-foreground">Mã hết hạn sau <span className="font-semibold text-foreground">{formatTime(countdown)}</span></span>
+          <span className="text-muted-foreground">Hết hạn sau <span className="font-semibold text-foreground">{formatTime(countdown)}</span></span>
         ) : (
           <span className="text-destructive font-medium">Mã đã hết hạn</span>
         )}
@@ -157,66 +139,53 @@ export function OtpVerifyScreen({ email, userId, fullName, studentId, onVerified
           onChange={(val) => {
             setOtpValue(val);
             setErrorMsg('');
-            if (val.length === 6) {
-              handleVerify(val);
-            }
+            if (val.length === 6) handleVerify(val);
           }}
           disabled={isVerifying || countdown <= 0}
         >
           <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
+            {[0, 1, 2, 3, 4, 5].map(i => (
+              <InputOTPSlot key={i} index={i} />
+            ))}
           </InputOTPGroup>
         </InputOTP>
       </div>
 
       {/* Error */}
       {errorMsg && (
-        <div className="flex items-center gap-2 justify-center text-sm text-destructive">
-          <ShieldAlert className="w-4 h-4" />
+        <div className="flex items-center gap-1.5 justify-center text-xs text-destructive">
+          <ShieldAlert className="w-3.5 h-3.5" />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      {/* Verifying spinner */}
+      {/* Verifying */}
       {isVerifying && (
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />
+        <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
           <span>Đang xác minh...</span>
         </div>
       )}
 
-      {/* Resend */}
-      <div className="text-center">
+      {/* Resend + Back */}
+      <div className="flex items-center justify-between pt-1">
+        <button
+          type="button"
+          className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+          onClick={onBack}
+        >
+          <ArrowLeft className="w-3 h-3" /> Quay lại
+        </button>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleResend}
           disabled={resendCooldown > 0 || isResending}
-          className="text-sm"
+          className="text-xs h-7 px-2"
         >
-          {isResending ? (
-            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-          ) : (
-            <RotateCcw className="w-4 h-4 mr-1" />
-          )}
-          {resendCooldown > 0 ? `Gửi lại mã (${resendCooldown}s)` : 'Gửi lại mã'}
+          {isResending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RotateCcw className="w-3 h-3 mr-1" />}
+          {resendCooldown > 0 ? `Gửi lại (${resendCooldown}s)` : 'Gửi lại mã'}
         </Button>
-      </div>
-
-      {/* Back */}
-      <div className="text-center">
-        <button
-          type="button"
-          className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-          onClick={onBack}
-        >
-          <ArrowLeft className="w-3 h-3" /> Quay lại đăng ký
-        </button>
       </div>
     </div>
   );
