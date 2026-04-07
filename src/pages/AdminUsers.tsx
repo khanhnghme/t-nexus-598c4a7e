@@ -42,7 +42,7 @@ interface MemberRow {
   id: string;
   userId: string;
   groupId: string;
-  role: 'admin' | 'leader' | 'member';
+  role: 'owner_system' | 'leader' | 'member';
   joinedAt: string;
   fullName?: string;
   studentId?: string;

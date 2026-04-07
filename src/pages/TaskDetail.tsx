@@ -56,7 +56,7 @@ export default function TaskDetail() {
       }
 
       const { data: memberData } = await supabase.from('group_members').select('role').eq('group_id', groupId).eq('user_id', user?.id).maybeSingle();
-      setIsLeaderInGroup(memberData?.role === 'leader' || memberData?.role === 'admin' || isAdmin);
+      setIsLeaderInGroup(memberData?.role === 'leader' || memberData?.role === 'owner_system' || isAdmin);
     } catch (error) {
       console.error('Error:', error);
     } finally {

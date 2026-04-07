@@ -124,7 +124,7 @@ export default function MemberManagementCard({
 
   // Profile view dialog
   const [profileToView, setProfileToView] = useState<Profile | null>(null);
-  const [profileViewRole, setProfileViewRole] = useState<'admin' | 'leader' | 'member'>('member');
+  const [profileViewRole, setProfileViewRole] = useState<'owner_system' | 'leader' | 'member'>('member');
   const [profileViewIsCreator, setProfileViewIsCreator] = useState(false);
 
   // Unified multi-select state (works across all tabs)
@@ -419,7 +419,7 @@ export default function MemberManagementCard({
     }
     
     switch (role) {
-      case 'admin':
+      case 'owner_system':
         return <Badge className="bg-destructive/10 text-destructive text-xs gap-1"><Shield className="w-3 h-3" />Admin</Badge>;
       case 'leader':
         return <Badge className="bg-primary/10 text-primary text-xs gap-1"><Crown className="w-3 h-3" />Phó nhóm</Badge>;
@@ -903,7 +903,7 @@ export default function MemberManagementCard({
                         }
                         if (member.profiles) {
                           setProfileToView(member.profiles as Profile);
-                          setProfileViewRole(member.role as 'admin' | 'leader' | 'member');
+                          setProfileViewRole(member.role as 'owner_system' | 'leader' | 'member');
                           setProfileViewIsCreator(isMemberGroupCreator(member.user_id));
                         }
                       }}
@@ -1064,7 +1064,7 @@ export default function MemberManagementCard({
                                 e.stopPropagation();
                                 if (member.profiles) {
                                   setProfileToView(member.profiles as Profile);
-                                  setProfileViewRole(member.role as 'admin' | 'leader' | 'member');
+                                  setProfileViewRole(member.role as 'owner_system' | 'leader' | 'member');
                                   setProfileViewIsCreator(isMemberGroupCreator(member.user_id));
                                 }
                               }}

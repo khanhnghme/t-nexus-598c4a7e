@@ -25,7 +25,7 @@ export function AdminAuthForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const isAdminOrLeader = roles.includes('admin') || roles.includes('leader');
+  const isAdminOrLeader = roles.includes('owner_system') || roles.includes('leader');
 
 
   useEffect(() => {

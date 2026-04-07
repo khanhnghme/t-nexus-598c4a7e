@@ -197,7 +197,7 @@ export default function GroupDetail() {
         const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
         setMembers(membersData.map(m => ({ ...m, profiles: profilesMap.get(m.user_id) })) as GroupMember[]);
         const myMembership = membersData.find(m => m.user_id === user?.id);
-        setIsLeaderInGroup(myMembership?.role === 'leader' || myMembership?.role === 'admin' || isAdmin);
+        setIsLeaderInGroup(myMembership?.role === 'leader' || myMembership?.role === 'owner_system' || isAdmin);
       }
 
       const { data: tasksData } = await supabase.from('tasks').select('*').eq('group_id', resolvedGroupId).order('created_at', { ascending: false });
