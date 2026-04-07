@@ -63,6 +63,7 @@ import {
   ToggleRight,
   GraduationCap,
   ChevronsUpDown,
+  Crown,
 } from 'lucide-react';
 import type { Profile } from '@/types/database';
 import { exportMembersToExcel, getRoleDisplayName } from '@/lib/excelExport';
