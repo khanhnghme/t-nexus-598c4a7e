@@ -534,10 +534,23 @@ serve(async (req: Request) => {
         .eq("id", ws?.owner_id)
         .single();
 
-      const { data: members } = await supabaseAdmin
+      const { data: memberRows } = await supabaseAdmin
         .from("workspace_members")
-        .select("user_id, role, joined_at, profiles:user_id(id, full_name, email, avatar_url, student_id)")
+        .select("user_id, role, joined_at")
         .eq("workspace_id", body.workspace_id);
+
+      // Fetch profiles for all members
+      const memberUserIds = (memberRows || []).map((m: any) => m.user_id);
+      let memberProfiles: any[] = [];
+      if (memberUserIds.length > 0) {
+        const { data: profiles } = await supabaseAdmin
+          .from("profiles")
+          .select("id, full_name, email, avatar_url, student_id")
+          .in("id", memberUserIds);
+        memberProfiles = profiles || [];
+      }
+
+      const profileMap = new Map(memberProfiles.map((p: any) => [p.id, p]));
 
       const result = [
         {
@@ -545,9 +558,9 @@ serve(async (req: Request) => {
           role: "workspace_owner",
           joined_at: null,
         },
-        ...(members || []).map((m: any) => ({
-          ...m.profiles,
-          role: m.role, // workspace_admin or workspace_member
+        ...(memberRows || []).map((m: any) => ({
+          ...(profileMap.get(m.user_id) || {}),
+          role: m.role,
           joined_at: m.joined_at,
         })),
       ];
