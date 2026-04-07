@@ -1207,6 +1207,14 @@ export function MemberAuthForm() {
                 </>
               )}
             </div>
+            {/* Support email */}
+            <p className="text-xs text-muted-foreground text-center mb-4 flex items-center justify-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 shrink-0" />
+              Liên hệ hỗ trợ:{' '}
+              <a href="mailto:support@t-nexus.io.vn" className="text-primary hover:underline font-medium">
+                support@t-nexus.io.vn
+              </a>
+            </p>
             <div className="flex justify-center">
               <Button onClick={() => setBlockPopup(null)} className="min-w-[120px]">
                 Đã hiểu
