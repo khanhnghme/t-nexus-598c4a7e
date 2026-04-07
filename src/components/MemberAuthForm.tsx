@@ -108,7 +108,7 @@ export function MemberAuthForm() {
   const { translations, locale, localizedPath } = useLanguage();
   const ta = translations.auth;
   const dateLocale = locale === 'vi' ? viLocale : enUS;
-  const localizedPolicyPath = localizedPath('/policy');
+  const localizedPolicyPath = localizedPath('/terms');
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -154,7 +154,7 @@ export function MemberAuthForm() {
     until?: string | null;
     reason?: string | null;
   } | null>(null);
-  
+
   const pendingLoginRef = useRef(false);
 
   useEffect(() => {
@@ -191,7 +191,7 @@ export function MemberAuthForm() {
   if (user && profile && !profile.is_approved && !isRegisteringRef.current) {
     return (
       <div className="w-full max-w-md">
-      <div className="mb-6 flex flex-col items-center gap-2">
+        <div className="mb-6 flex flex-col items-center gap-2">
           <TNexusLogo variant="text" width={120} />
           <span className="font-heading font-semibold text-primary flex items-center gap-1">
             <Users className="w-4 h-4" /> T-Nexus
@@ -249,7 +249,7 @@ export function MemberAuthForm() {
     setIsLoading(true);
     const input = identifier.trim();
     const isEmail = input.includes('@');
-    
+
     try {
       let loginEmail = input;
       let profileQuery: 'email' | 'student_id' = isEmail ? 'email' : 'student_id';
@@ -602,527 +602,527 @@ export function MemberAuthForm() {
 
   return (
     <>
-    <div className="w-full max-w-md">
-      <div className="mb-6 flex flex-col items-center gap-2">
-        <TNexusLogo variant="text" width={120} />
-        <span className="font-heading font-semibold text-primary flex items-center gap-1">
-          <Users className="w-4 h-4" /> {ta.memberBrand}
-        </span>
-      </div>
-      <Card className="w-full shadow-card-lg border-border/50">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="text-lg font-heading">
-            {activeTab === 'login' ? ta.tabLogin : activeTab === 'register' ? ta.tabRegister : ta.tabForgot}
-          </CardTitle>
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex flex-col items-center gap-2">
+          <TNexusLogo variant="text" width={120} />
+          <span className="font-heading font-semibold text-primary flex items-center gap-1">
+            <Users className="w-4 h-4" /> {ta.memberBrand}
+          </span>
+        </div>
+        <Card className="w-full shadow-card-lg border-border/50">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-lg font-heading">
+              {activeTab === 'login' ? ta.tabLogin : activeTab === 'register' ? ta.tabRegister : ta.tabForgot}
+            </CardTitle>
             <CardDescription>
               {activeTab === 'login'
                 ? ta.loginDesc
                 : activeTab === 'register'
-                ? ta.registerDesc
-                : forgotStep === 'done'
-                ? ta.forgotDoneDesc
-                : forgotStep === 'newpass'
-                ? ta.forgotNewPassDesc
-                : forgotStep === 'otp'
-                ? ta.forgotOtpDesc
-                : ta.forgotDesc}
+                  ? ta.registerDesc
+                  : forgotStep === 'done'
+                    ? ta.forgotDoneDesc
+                    : forgotStep === 'newpass'
+                      ? ta.forgotNewPassDesc
+                      : forgotStep === 'otp'
+                        ? ta.forgotOtpDesc
+                        : ta.forgotDesc}
             </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {activeTab === 'login' ? (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="login-identifier">{ta.identifierLabel}</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="login-identifier"
-                    type="text"
-                    placeholder={ta.identifierPlaceholder}
-                    className="pl-10"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    disabled={isLoading}
-                    autoFocus
-                  />
+          </CardHeader>
+          <CardContent>
+            {activeTab === 'login' ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-identifier">{ta.identifierLabel}</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="login-identifier"
+                      type="text"
+                      placeholder={ta.identifierPlaceholder}
+                      className="pl-10"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      disabled={isLoading}
+                      autoFocus
+                    />
+                  </div>
+                  {errors.identifier && <p className="text-sm text-destructive">{errors.identifier}</p>}
                 </div>
-                {errors.identifier && <p className="text-sm text-destructive">{errors.identifier}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="login-password">{ta.passwordLabel}</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder={ta.passwordPlaceholder}
-                    className="pl-10"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">{ta.passwordLabel}</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="login-password"
+                      type="password"
+                      placeholder={ta.passwordPlaceholder}
+                      className="pl-10"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-foreground hover:underline"
+                      onClick={() => { setActiveTab('forgot'); setForgotStep('input'); setErrors({}); }}
+                    >
+                      {ta.forgotPasswordLink}
+                    </button>
+                  </div>
                 </div>
-                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                <div className="flex justify-end">
+
+                {/* Remember login checkbox */}
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="remember-login"
+                    checked={rememberLogin}
+                    onCheckedChange={(v) => setRememberLogin(v === true)}
+                    className="shrink-0 h-3.5 w-3.5 rounded-full border border-muted-foreground/40 data-[state=checked]:border-primary data-[state=checked]:bg-transparent transition-all duration-200 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-primary"
+                  />
+                  <label htmlFor="remember-login" className="text-xs text-muted-foreground cursor-pointer select-none">
+                    {ta.rememberLogin}
+                  </label>
+                </div>
+
+                {/* Policy checkbox - checked by default for login */}
+                <PolicyCheckbox
+                  checked={loginPolicyAgreed}
+                  onCheckedChange={setLoginPolicyAgreed}
+                  policyUpdatedAt={policyUpdatedAt}
+                  error={errors.policy}
+                  ta={ta}
+                  dateLocale={dateLocale}
+                  localizedPolicyPath={localizedPolicyPath}
+                />
+
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {ta.loginBtn}
+                </Button>
+                <p className="text-sm text-center text-muted-foreground">
+                  {ta.noAccount}{' '}
                   <button
                     type="button"
-                    className="text-xs font-medium text-foreground hover:underline"
-                    onClick={() => { setActiveTab('forgot'); setForgotStep('input'); setErrors({}); }}
+                    className="text-primary hover:underline font-medium"
+                    onClick={() => { setActiveTab('register'); setErrors({}); }}
                   >
-                    {ta.forgotPasswordLink}
+                    {ta.registerNow}
                   </button>
-                </div>
-              </div>
-
-              {/* Remember login checkbox */}
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="remember-login"
-                  checked={rememberLogin}
-                  onCheckedChange={(v) => setRememberLogin(v === true)}
-                  className="shrink-0 h-3.5 w-3.5 rounded-full border border-muted-foreground/40 data-[state=checked]:border-primary data-[state=checked]:bg-transparent transition-all duration-200 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-primary"
-                />
-                <label htmlFor="remember-login" className="text-xs text-muted-foreground cursor-pointer select-none">
-                  {ta.rememberLogin}
-                </label>
-              </div>
-
-              {/* Policy checkbox - checked by default for login */}
-              <PolicyCheckbox
-                checked={loginPolicyAgreed}
-                onCheckedChange={setLoginPolicyAgreed}
-                policyUpdatedAt={policyUpdatedAt}
-                error={errors.policy}
-                ta={ta}
-                dateLocale={dateLocale}
-                localizedPolicyPath={localizedPolicyPath}
-              />
-
-              <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
-                {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                {ta.loginBtn}
-              </Button>
-              <p className="text-sm text-center text-muted-foreground">
-                {ta.noAccount}{' '}
-                <button
-                  type="button"
-                  className="text-primary hover:underline font-medium"
-                  onClick={() => { setActiveTab('register'); setErrors({}); }}
-                >
-                  {ta.registerNow}
-                </button>
-              </p>
-            </form>
-          ) : activeTab === 'forgot' ? (
-            <div className="space-y-4">
-              {forgotStep === 'done' ? (
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <h3 className="text-lg font-heading font-semibold text-emerald-700 dark:text-emerald-400">{ta.forgotResetSuccess}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {ta.forgotResetSuccessDesc}
-                  </p>
-                  <Button
-                    className="w-full"
-                    onClick={() => {
-                      setActiveTab('login');
-                      setForgotStep('input');
-                      setForgotIdentifier('');
-                      setForgotEmailInput('');
-                      setForgotEmail('');
-                      setOtpCode('');
-                      setNewPassword('');
-                      setNewPasswordConfirm('');
-                      setErrors({});
-                    }}
-                  >
-                    {ta.forgotLoginNow}
-                  </Button>
-                </div>
-              ) : forgotStep === 'newpass' ? (
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  setErrors({});
-                  if (!newPassword || newPassword.length < 6) {
-                    setErrors({ newPass: ta.valPasswordMinForgot });
-                    return;
-                  }
-                  if (newPassword !== newPasswordConfirm) {
-                    setErrors({ newPassConfirm: ta.valPasswordMismatchForgot });
-                    return;
-                  }
-                  setForgotLoading(true);
-                  try {
-                    const { data, error } = await supabase.functions.invoke('password-reset-otp', {
-                      body: { action: 'reset_password', email: forgotEmail, code: otpCode, new_password: newPassword },
-                    });
-                    setForgotLoading(false);
-                    if (error || !data?.success) {
-                      toast({ title: ta.forgotOtpError, description: data?.error || ta.forgotResetError, variant: 'destructive' });
-                    } else {
-                      setForgotStep('done');
-                    }
-                  } catch {
-                    setForgotLoading(false);
-                    toast({ title: 'Lỗi hệ thống', description: 'Có lỗi xảy ra.', variant: 'destructive' });
-                  }
-                }} className="space-y-4">
-                  <p className="text-sm text-muted-foreground text-center">
-                    {ta.forgotNewPassForAccount} <span className="font-medium text-foreground">{forgotEmail}</span>
-                  </p>
-                  <div className="space-y-2">
-                    <Label htmlFor="new-pass">{ta.forgotNewPassword}</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input id="new-pass" type="password" placeholder={ta.forgotNewPassPlaceholder} className="pl-10" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={forgotLoading} autoFocus />
+                </p>
+              </form>
+            ) : activeTab === 'forgot' ? (
+              <div className="space-y-4">
+                {forgotStep === 'done' ? (
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    {errors.newPass && <p className="text-sm text-destructive">{errors.newPass}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="new-pass-confirm">{ta.forgotConfirmLabel}</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input id="new-pass-confirm" type="password" placeholder={ta.forgotConfirmNewPlaceholder} className="pl-10" value={newPasswordConfirm} onChange={(e) => setNewPasswordConfirm(e.target.value)} disabled={forgotLoading} />
-                    </div>
-                    {errors.newPassConfirm && <p className="text-sm text-destructive">{errors.newPassConfirm}</p>}
-                  </div>
-                  <Button type="submit" className="w-full font-semibold" disabled={forgotLoading}>
-                    {forgotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <KeyRound className="w-4 h-4 mr-2" />}
-                    {ta.forgotResetButton}
-                  </Button>
-                  <p className="text-sm text-center">
-                    <button type="button" className="text-primary hover:underline font-medium" onClick={() => { setForgotStep('otp'); setNewPassword(''); setNewPasswordConfirm(''); }}>
-                      ← {ta.forgotBackToLogin}
-                    </button>
-                  </p>
-                </form>
-              ) : forgotStep === 'otp' ? (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground text-center">
-                    {ta.forgotOtpDesc} <span className="font-medium text-foreground">{forgotEmail}</span>
-                  </p>
-                  <div className="flex justify-center">
-                    <InputOTP
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(val) => {
-                        setOtpCode(val);
+                    <h3 className="text-lg font-heading font-semibold text-emerald-700 dark:text-emerald-400">{ta.forgotResetSuccess}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {ta.forgotResetSuccessDesc}
+                    </p>
+                    <Button
+                      className="w-full"
+                      onClick={() => {
+                        setActiveTab('login');
+                        setForgotStep('input');
+                        setForgotIdentifier('');
+                        setForgotEmailInput('');
+                        setForgotEmail('');
+                        setOtpCode('');
+                        setNewPassword('');
+                        setNewPasswordConfirm('');
                         setErrors({});
                       }}
-                      disabled={forgotLoading}
                     >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                  {errors.otp && <p className="text-sm text-destructive text-center">{errors.otp}</p>}
-                  <Button
-                    className="w-full font-semibold"
-                    disabled={forgotLoading || otpCode.length !== 6}
-                    onClick={async () => {
-                      setForgotLoading(true);
-                      setErrors({});
-                      try {
-                        const { data, error } = await supabase.functions.invoke('password-reset-otp', {
-                          body: { action: 'verify_code', email: forgotEmail, code: otpCode },
-                        });
-                        setForgotLoading(false);
-                        if (error || !data?.success) {
-                          setErrors({ otp: data?.error || ta.forgotOtpIncorrect });
-                          setOtpCode('');
-                        } else {
-                          setForgotStep('newpass');
-                        }
-                      } catch {
-                        setForgotLoading(false);
-                        setErrors({ otp: ta.toastGenericError });
-                      }
-                    }}
-                  >
-                    {forgotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                    {ta.forgotVerify}
-                  </Button>
-                  <p className="text-sm text-center">
-                    <button type="button" className="text-primary hover:underline font-medium" onClick={() => { setForgotStep('input'); setOtpCode(''); setErrors({}); }}>
-                      ← {ta.forgotBackToLogin}
-                    </button>
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  setErrors({});
-                  const sid = forgotIdentifier.trim();
-                  const emailInput = forgotEmailInput.trim();
-                  if (!sid) {
-                    setErrors(prev => ({ ...prev, forgotId: ta.valStudentIdRequired }));
-                    return;
-                  }
-                  if (!emailInput) {
-                    setErrors(prev => ({ ...prev, forgotEmail: ta.forgotEmailRequiredError }));
-                    return;
-                  }
-                  setForgotLoading(true);
-                  try {
-                    const { data: registeredEmail } = await supabase.rpc('get_email_by_student_id', { _student_id: sid });
-                    if (!registeredEmail) {
-                      setForgotLoading(false);
-                      toast({ title: ta.toastIdNotExist, description: ta.forgotNoUserFound, variant: 'destructive' });
-                      return;
-                    }
-                    if (registeredEmail.toLowerCase() !== emailInput.toLowerCase()) {
-                      setForgotLoading(false);
-                      toast({ title: ta.forgotOtpError, description: ta.forgotEmailMismatch, variant: 'destructive' });
-                      return;
-                    }
-
-                    // Send OTP via edge function
-                    const { data, error } = await supabase.functions.invoke('password-reset-otp', {
-                      body: { action: 'send_code', email: registeredEmail },
-                    });
-
-                    setForgotLoading(false);
-                    if (error || !data?.success) {
-                      toast({ title: ta.forgotOtpError, description: data?.error || ta.forgotCannotSendOtp, variant: 'destructive' });
-                    } else {
-                      setForgotEmail(registeredEmail);
-                      setForgotStep('otp');
-                      toast({ title: ta.forgotOtpSentToast, description: ta.forgotOtpSentToastDesc });
-                    }
-                  } catch {
-                    setForgotLoading(false);
-                    toast({ title: 'Lỗi hệ thống', description: 'Có lỗi xảy ra.', variant: 'destructive' });
-                  }
-                }} className="space-y-4">
-                   <p className="text-sm text-muted-foreground text-center">
-                     {ta.forgotEnterDesc}
-                   </p>
-                  <div className="space-y-2">
-                    <Label htmlFor="forgot-id">{ta.forgotStudentIdLabel}</Label>
-                    <div className="relative">
-                      <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input id="forgot-id" type="text" placeholder="31241234567" className="pl-10" value={forgotIdentifier} onChange={(e) => setForgotIdentifier(e.target.value)} disabled={forgotLoading} autoFocus />
-                    </div>
-                    {errors.forgotId && <p className="text-sm text-destructive">{errors.forgotId}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="forgot-email">{ta.forgotEmailLabel}</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input id="forgot-email" type="email" placeholder="email@example.com" className="pl-10" value={forgotEmailInput} onChange={(e) => setForgotEmailInput(e.target.value)} disabled={forgotLoading} />
-                    </div>
-                    {errors.forgotEmail && <p className="text-sm text-destructive">{errors.forgotEmail}</p>}
-                  </div>
-                  <Button type="submit" className="w-full font-semibold bg-foreground text-background hover:bg-foreground/90" disabled={forgotLoading}>
-                    {forgotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
-                    {ta.forgotSendButton}
-                  </Button>
-                  <p className="text-sm text-center">
-                    <button type="button" className="text-primary hover:underline font-medium" onClick={() => { setActiveTab('login'); setErrors({}); setForgotIdentifier(''); setForgotEmailInput(''); }}>
-                      {ta.forgotBackToLogin}
-                    </button>
-                  </p>
-                </form>
-              )}
-            </div>
-          ) : (
-            <form onSubmit={handleRegister} className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="reg-full-name">{ta.fullNameLabel} <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="reg-full-name"
-                    type="text"
-                    placeholder={ta.fullNamePlaceholder}
-                    className="pl-10"
-                    value={regFullName}
-                    onChange={(e) => setRegFullName(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label>{ta.institutionLabel} <span className="text-destructive">*</span></Label>
-                <Popover open={regInstitutionOpen} onOpenChange={setRegInstitutionOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={regInstitutionOpen}
-                      className={cn(
-                        "w-full justify-between h-10 font-normal",
-                        !regInstitution && "text-muted-foreground"
-                      )}
-                      disabled={isLoading}
-                    >
-                      <div className="flex items-center gap-2 truncate">
-                        <GraduationCap className="w-4 h-4 shrink-0 text-muted-foreground" />
-                        <span className="truncate">
-                          {regInstitution
-                            ? INSTITUTIONS.find(i => i.name === regInstitution)?.name || regInstitution
-                            : ta.institutionPlaceholder}
-                        </span>
-                      </div>
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      {ta.forgotLoginNow}
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                    <Command shouldFilter={false}>
-                      <CommandInput
-                        placeholder={ta.institutionSearch}
-                        value={regInstitutionSearch}
-                        onValueChange={setRegInstitutionSearch}
-                      />
-                      <CommandList>
-                        <ScrollArea className="h-[240px]">
-                          <CommandEmpty>{ta.institutionEmpty}</CommandEmpty>
-                          {(() => {
-                            const filtered = searchInstitutions(regInstitutionSearch);
-                            const groupedByRegion = new Map<string, typeof filtered>();
-                            filtered.forEach(inst => {
-                              const arr = groupedByRegion.get(inst.region) || [];
-                              arr.push(inst);
-                              groupedByRegion.set(inst.region, arr);
-                            });
-                            return REGIONS.map(region => {
-                              const items = groupedByRegion.get(region);
-                              if (!items || items.length === 0) return null;
-                              return (
-                                <CommandGroup key={region} heading={region}>
-                                  {items.map(inst => (
-                                    <CommandItem
-                                      key={inst.code}
-                                      value={inst.name}
-                                      onSelect={() => {
-                                        setRegInstitution(inst.name);
-                                        setRegInstitutionOpen(false);
-                                        setRegInstitutionSearch('');
-                                      }}
-                                    >
-                                      <Check className={cn("mr-2 h-4 w-4", regInstitution === inst.name ? "opacity-100" : "opacity-0")} />
-                                      <span className="text-xs font-mono text-muted-foreground mr-1.5">{inst.code}</span>
-                                      <span className="truncate">{inst.name}</span>
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              );
-                            });
-                          })()}
-                        </ScrollArea>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {errors.institution && <p className="text-sm text-destructive">{errors.institution}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="reg-student-id">{ta.studentIdLabel} <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="reg-student-id"
-                    type="text"
-                    placeholder="31241234567"
-                    className="pl-10"
-                    value={regStudentId}
-                    onChange={(e) => setRegStudentId(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.studentId && <p className="text-sm text-destructive">{errors.studentId}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="reg-email">Email <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="reg-email"
-                    type="email"
-                    placeholder="email@example.com"
-                    className="pl-10"
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="reg-password">{ta.passwordLabel} <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="reg-password"
-                    type="password"
-                    placeholder={ta.passwordMinPlaceholder}
-                    className="pl-10"
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="reg-confirm-password">{ta.confirmPasswordLabel} <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="reg-confirm-password"
-                    type="password"
-                    placeholder={ta.confirmPasswordPlaceholder}
-                    className="pl-10"
-                    value={regConfirmPassword}
-                    onChange={(e) => setRegConfirmPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
-              </div>
+                  </div>
+                ) : forgotStep === 'newpass' ? (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setErrors({});
+                    if (!newPassword || newPassword.length < 6) {
+                      setErrors({ newPass: ta.valPasswordMinForgot });
+                      return;
+                    }
+                    if (newPassword !== newPasswordConfirm) {
+                      setErrors({ newPassConfirm: ta.valPasswordMismatchForgot });
+                      return;
+                    }
+                    setForgotLoading(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke('password-reset-otp', {
+                        body: { action: 'reset_password', email: forgotEmail, code: otpCode, new_password: newPassword },
+                      });
+                      setForgotLoading(false);
+                      if (error || !data?.success) {
+                        toast({ title: ta.forgotOtpError, description: data?.error || ta.forgotResetError, variant: 'destructive' });
+                      } else {
+                        setForgotStep('done');
+                      }
+                    } catch {
+                      setForgotLoading(false);
+                      toast({ title: 'Lỗi hệ thống', description: 'Có lỗi xảy ra.', variant: 'destructive' });
+                    }
+                  }} className="space-y-4">
+                    <p className="text-sm text-muted-foreground text-center">
+                      {ta.forgotNewPassForAccount} <span className="font-medium text-foreground">{forgotEmail}</span>
+                    </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-pass">{ta.forgotNewPassword}</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input id="new-pass" type="password" placeholder={ta.forgotNewPassPlaceholder} className="pl-10" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={forgotLoading} autoFocus />
+                      </div>
+                      {errors.newPass && <p className="text-sm text-destructive">{errors.newPass}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-pass-confirm">{ta.forgotConfirmLabel}</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input id="new-pass-confirm" type="password" placeholder={ta.forgotConfirmNewPlaceholder} className="pl-10" value={newPasswordConfirm} onChange={(e) => setNewPasswordConfirm(e.target.value)} disabled={forgotLoading} />
+                      </div>
+                      {errors.newPassConfirm && <p className="text-sm text-destructive">{errors.newPassConfirm}</p>}
+                    </div>
+                    <Button type="submit" className="w-full font-semibold" disabled={forgotLoading}>
+                      {forgotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <KeyRound className="w-4 h-4 mr-2" />}
+                      {ta.forgotResetButton}
+                    </Button>
+                    <p className="text-sm text-center">
+                      <button type="button" className="text-primary hover:underline font-medium" onClick={() => { setForgotStep('otp'); setNewPassword(''); setNewPasswordConfirm(''); }}>
+                        ← {ta.forgotBackToLogin}
+                      </button>
+                    </p>
+                  </form>
+                ) : forgotStep === 'otp' ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground text-center">
+                      {ta.forgotOtpDesc} <span className="font-medium text-foreground">{forgotEmail}</span>
+                    </p>
+                    <div className="flex justify-center">
+                      <InputOTP
+                        maxLength={6}
+                        value={otpCode}
+                        onChange={(val) => {
+                          setOtpCode(val);
+                          setErrors({});
+                        }}
+                        disabled={forgotLoading}
+                      >
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                          <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </div>
+                    {errors.otp && <p className="text-sm text-destructive text-center">{errors.otp}</p>}
+                    <Button
+                      className="w-full font-semibold"
+                      disabled={forgotLoading || otpCode.length !== 6}
+                      onClick={async () => {
+                        setForgotLoading(true);
+                        setErrors({});
+                        try {
+                          const { data, error } = await supabase.functions.invoke('password-reset-otp', {
+                            body: { action: 'verify_code', email: forgotEmail, code: otpCode },
+                          });
+                          setForgotLoading(false);
+                          if (error || !data?.success) {
+                            setErrors({ otp: data?.error || ta.forgotOtpIncorrect });
+                            setOtpCode('');
+                          } else {
+                            setForgotStep('newpass');
+                          }
+                        } catch {
+                          setForgotLoading(false);
+                          setErrors({ otp: ta.toastGenericError });
+                        }
+                      }}
+                    >
+                      {forgotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                      {ta.forgotVerify}
+                    </Button>
+                    <p className="text-sm text-center">
+                      <button type="button" className="text-primary hover:underline font-medium" onClick={() => { setForgotStep('input'); setOtpCode(''); setErrors({}); }}>
+                        ← {ta.forgotBackToLogin}
+                      </button>
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setErrors({});
+                    const sid = forgotIdentifier.trim();
+                    const emailInput = forgotEmailInput.trim();
+                    if (!sid) {
+                      setErrors(prev => ({ ...prev, forgotId: ta.valStudentIdRequired }));
+                      return;
+                    }
+                    if (!emailInput) {
+                      setErrors(prev => ({ ...prev, forgotEmail: ta.forgotEmailRequiredError }));
+                      return;
+                    }
+                    setForgotLoading(true);
+                    try {
+                      const { data: registeredEmail } = await supabase.rpc('get_email_by_student_id', { _student_id: sid });
+                      if (!registeredEmail) {
+                        setForgotLoading(false);
+                        toast({ title: ta.toastIdNotExist, description: ta.forgotNoUserFound, variant: 'destructive' });
+                        return;
+                      }
+                      if (registeredEmail.toLowerCase() !== emailInput.toLowerCase()) {
+                        setForgotLoading(false);
+                        toast({ title: ta.forgotOtpError, description: ta.forgotEmailMismatch, variant: 'destructive' });
+                        return;
+                      }
 
-              {/* Policy checkbox - unchecked by default for register */}
-              <PolicyCheckbox
-                checked={regPolicyAgreed}
-                onCheckedChange={setRegPolicyAgreed}
-                policyUpdatedAt={policyUpdatedAt}
-                error={errors.policy}
-                ta={ta}
-                dateLocale={dateLocale}
-                localizedPolicyPath={localizedPolicyPath}
-              />
+                      // Send OTP via edge function
+                      const { data, error } = await supabase.functions.invoke('password-reset-otp', {
+                        body: { action: 'send_code', email: registeredEmail },
+                      });
 
-              <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
-                {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                {ta.registerBtn}
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                {ta.adminApprovalNote}
-              </p>
-              <p className="text-sm text-center text-muted-foreground">
-                {ta.haveAccount}{' '}
-                <button
-                  type="button"
-                  className="text-primary hover:underline font-medium"
-                  onClick={() => { setActiveTab('login'); setErrors({}); }}
-                >
-                  {ta.loginNow}
-                </button>
-              </p>
-            </form>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                      setForgotLoading(false);
+                      if (error || !data?.success) {
+                        toast({ title: ta.forgotOtpError, description: data?.error || ta.forgotCannotSendOtp, variant: 'destructive' });
+                      } else {
+                        setForgotEmail(registeredEmail);
+                        setForgotStep('otp');
+                        toast({ title: ta.forgotOtpSentToast, description: ta.forgotOtpSentToastDesc });
+                      }
+                    } catch {
+                      setForgotLoading(false);
+                      toast({ title: 'Lỗi hệ thống', description: 'Có lỗi xảy ra.', variant: 'destructive' });
+                    }
+                  }} className="space-y-4">
+                    <p className="text-sm text-muted-foreground text-center">
+                      {ta.forgotEnterDesc}
+                    </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-id">{ta.forgotStudentIdLabel}</Label>
+                      <div className="relative">
+                        <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input id="forgot-id" type="text" placeholder="31241234567" className="pl-10" value={forgotIdentifier} onChange={(e) => setForgotIdentifier(e.target.value)} disabled={forgotLoading} autoFocus />
+                      </div>
+                      {errors.forgotId && <p className="text-sm text-destructive">{errors.forgotId}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-email">{ta.forgotEmailLabel}</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input id="forgot-email" type="email" placeholder="email@example.com" className="pl-10" value={forgotEmailInput} onChange={(e) => setForgotEmailInput(e.target.value)} disabled={forgotLoading} />
+                      </div>
+                      {errors.forgotEmail && <p className="text-sm text-destructive">{errors.forgotEmail}</p>}
+                    </div>
+                    <Button type="submit" className="w-full font-semibold bg-foreground text-background hover:bg-foreground/90" disabled={forgotLoading}>
+                      {forgotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
+                      {ta.forgotSendButton}
+                    </Button>
+                    <p className="text-sm text-center">
+                      <button type="button" className="text-primary hover:underline font-medium" onClick={() => { setActiveTab('login'); setErrors({}); setForgotIdentifier(''); setForgotEmailInput(''); }}>
+                        {ta.forgotBackToLogin}
+                      </button>
+                    </p>
+                  </form>
+                )}
+              </div>
+            ) : (
+              <form onSubmit={handleRegister} className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="reg-full-name">{ta.fullNameLabel} <span className="text-destructive">*</span></Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="reg-full-name"
+                      type="text"
+                      placeholder={ta.fullNamePlaceholder}
+                      className="pl-10"
+                      value={regFullName}
+                      onChange={(e) => setRegFullName(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label>{ta.institutionLabel} <span className="text-destructive">*</span></Label>
+                  <Popover open={regInstitutionOpen} onOpenChange={setRegInstitutionOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={regInstitutionOpen}
+                        className={cn(
+                          "w-full justify-between h-10 font-normal",
+                          !regInstitution && "text-muted-foreground"
+                        )}
+                        disabled={isLoading}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <GraduationCap className="w-4 h-4 shrink-0 text-muted-foreground" />
+                          <span className="truncate">
+                            {regInstitution
+                              ? INSTITUTIONS.find(i => i.name === regInstitution)?.name || regInstitution
+                              : ta.institutionPlaceholder}
+                          </span>
+                        </div>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder={ta.institutionSearch}
+                          value={regInstitutionSearch}
+                          onValueChange={setRegInstitutionSearch}
+                        />
+                        <CommandList>
+                          <ScrollArea className="h-[240px]">
+                            <CommandEmpty>{ta.institutionEmpty}</CommandEmpty>
+                            {(() => {
+                              const filtered = searchInstitutions(regInstitutionSearch);
+                              const groupedByRegion = new Map<string, typeof filtered>();
+                              filtered.forEach(inst => {
+                                const arr = groupedByRegion.get(inst.region) || [];
+                                arr.push(inst);
+                                groupedByRegion.set(inst.region, arr);
+                              });
+                              return REGIONS.map(region => {
+                                const items = groupedByRegion.get(region);
+                                if (!items || items.length === 0) return null;
+                                return (
+                                  <CommandGroup key={region} heading={region}>
+                                    {items.map(inst => (
+                                      <CommandItem
+                                        key={inst.code}
+                                        value={inst.name}
+                                        onSelect={() => {
+                                          setRegInstitution(inst.name);
+                                          setRegInstitutionOpen(false);
+                                          setRegInstitutionSearch('');
+                                        }}
+                                      >
+                                        <Check className={cn("mr-2 h-4 w-4", regInstitution === inst.name ? "opacity-100" : "opacity-0")} />
+                                        <span className="text-xs font-mono text-muted-foreground mr-1.5">{inst.code}</span>
+                                        <span className="truncate">{inst.name}</span>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                );
+                              });
+                            })()}
+                          </ScrollArea>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {errors.institution && <p className="text-sm text-destructive">{errors.institution}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-student-id">{ta.studentIdLabel} <span className="text-destructive">*</span></Label>
+                  <div className="relative">
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="reg-student-id"
+                      type="text"
+                      placeholder="31241234567"
+                      className="pl-10"
+                      value={regStudentId}
+                      onChange={(e) => setRegStudentId(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.studentId && <p className="text-sm text-destructive">{errors.studentId}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-email">Email <span className="text-destructive">*</span></Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="reg-email"
+                      type="email"
+                      placeholder="email@example.com"
+                      className="pl-10"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-password">{ta.passwordLabel} <span className="text-destructive">*</span></Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="reg-password"
+                      type="password"
+                      placeholder={ta.passwordMinPlaceholder}
+                      className="pl-10"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-confirm-password">{ta.confirmPasswordLabel} <span className="text-destructive">*</span></Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="reg-confirm-password"
+                      type="password"
+                      placeholder={ta.confirmPasswordPlaceholder}
+                      className="pl-10"
+                      value={regConfirmPassword}
+                      onChange={(e) => setRegConfirmPassword(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
+                </div>
+
+                {/* Policy checkbox - unchecked by default for register */}
+                <PolicyCheckbox
+                  checked={regPolicyAgreed}
+                  onCheckedChange={setRegPolicyAgreed}
+                  policyUpdatedAt={policyUpdatedAt}
+                  error={errors.policy}
+                  ta={ta}
+                  dateLocale={dateLocale}
+                  localizedPolicyPath={localizedPolicyPath}
+                />
+
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {ta.registerBtn}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  {ta.adminApprovalNote}
+                </p>
+                <p className="text-sm text-center text-muted-foreground">
+                  {ta.haveAccount}{' '}
+                  <button
+                    type="button"
+                    className="text-primary hover:underline font-medium"
+                    onClick={() => { setActiveTab('login'); setErrors({}); }}
+                  >
+                    {ta.loginNow}
+                  </button>
+                </p>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Block Popup: Maintenance / Suspended */}
       {blockPopup && (

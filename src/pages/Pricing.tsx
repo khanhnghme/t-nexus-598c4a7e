@@ -18,7 +18,7 @@ type Plan = {
   features: string[];
 };
 
-type AddOn = { emoji: string; name: string; price: string; unit: string; note: string };
+type AddOn = { emoji: string; name: string; price: string; unit: string; note?: string };
 
 type CellValue = boolean | string;
 type FeatureRow = { label: string; free: CellValue; plus: CellValue; pro: CellValue; business: CellValue; enterprise: CellValue };
@@ -47,12 +47,12 @@ export default function Pricing() {
 
   const LEFT_PLANS: Plan[] = useMemo(() => [
     { name: tp.plans.free.name, monthlyPrice: 0, description: tp.plans.free.description, cta: tp.plans.free.cta, ctaStyle: 'outline', features: tp.plans.free.features },
-    { name: tp.plans.plus.name, monthlyPrice: 1.99, description: tp.plans.plus.description, cta: tp.plans.plus.cta, ctaStyle: 'outline', features: tp.plans.plus.features },
-    { name: tp.plans.pro.name, monthlyPrice: 4.99, description: tp.plans.pro.description, cta: tp.plans.pro.cta, ctaStyle: 'primary', recommended: true, features: tp.plans.pro.features },
+    { name: tp.plans.plus.name, monthlyPrice: 4.8, description: tp.plans.plus.description, cta: tp.plans.plus.cta, ctaStyle: 'outline', features: tp.plans.plus.features },
+    { name: tp.plans.pro.name, monthlyPrice: 12.0, description: tp.plans.pro.description, cta: tp.plans.pro.cta, ctaStyle: 'primary', recommended: true, features: tp.plans.pro.features },
   ], [tp]);
 
   const RIGHT_PLANS: Plan[] = useMemo(() => [
-    { name: tp.plans.business.name, monthlyPrice: 15.0, description: tp.plans.business.description, cta: tp.plans.business.cta, ctaStyle: 'outline', features: tp.plans.business.features },
+    { name: tp.plans.business.name, monthlyPrice: 24.0, description: tp.plans.business.description, cta: tp.plans.business.cta, ctaStyle: 'outline', features: tp.plans.business.features },
     { name: tp.plans.enterprise.name, monthlyPrice: null, description: tp.plans.enterprise.description, cta: tp.plans.enterprise.cta, ctaStyle: 'outline', features: tp.plans.enterprise.features },
   ], [tp]);
 
@@ -64,9 +64,9 @@ export default function Pricing() {
 
   const PLAN_COLS = useMemo(() => [
     { key: 'free' as const, name: tp.plans.free.name, monthlyPrice: 0, cta: tp.plans.free.cta },
-    { key: 'plus' as const, name: tp.plans.plus.name, monthlyPrice: 1.99, cta: tp.plans.plus.cta },
-    { key: 'pro' as const, name: tp.plans.pro.name, monthlyPrice: 4.99, cta: tp.plans.pro.cta, primary: true },
-    { key: 'business' as const, name: tp.plans.business.name, monthlyPrice: 15.0, cta: tp.plans.business.cta },
+    { key: 'plus' as const, name: tp.plans.plus.name, monthlyPrice: 4.8, cta: tp.plans.plus.cta },
+    { key: 'pro' as const, name: tp.plans.pro.name, monthlyPrice: 12.0, cta: tp.plans.pro.cta, primary: true },
+    { key: 'business' as const, name: tp.plans.business.name, monthlyPrice: 24.0, cta: tp.plans.business.cta },
     { key: 'enterprise' as const, name: tp.plans.enterprise.name, monthlyPrice: null as number | null, cta: tp.plans.enterprise.cta },
   ], [tp]);
 
@@ -223,10 +223,17 @@ export default function Pricing() {
                   <span style={{ fontSize: 20, fontWeight: 700, color: '#37352f' }}>{addon.price}</span>
                   <span style={{ fontSize: 13, color: '#a5a29a' }}>{addon.unit}</span>
                 </div>
-                <p style={{ fontSize: 13, color: '#a5a29a', lineHeight: 1.45, margin: 0 }}>{addon.note}</p>
+                {addon.note && <p style={{ fontSize: 13, color: '#a5a29a', lineHeight: 1.45, margin: 0 }}>{addon.note}</p>}
               </div>
             ))}
           </div>
+          {tp.addOnNote && (
+            <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(35,131,226,0.05)', borderRadius: 8, border: '1px solid rgba(35,131,226,0.1)' }}>
+              <p style={{ margin: 0, fontSize: 13, color: '#2383e2', fontWeight: 500 }}>
+                {tp.addOnNote}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ── Plans and features — full comparison table ── */}

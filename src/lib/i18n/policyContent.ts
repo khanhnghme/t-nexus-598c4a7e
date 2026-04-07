@@ -1,4 +1,4 @@
-export const POLICY_CONTENT_VI = `# 📜 Chính sách Hệ thống T-Nexus
+export const POLICY_CONTENT_VI = `# 📜 Điều khoản dịch vụ T-Nexus
 
 > Phiên bản **1.0** — Cập nhật lần cuối: Tháng 4/2026
 >
@@ -390,7 +390,7 @@ Người dùng **không được**:
 
 > **📌 Lưu ý**: Bằng việc sử dụng T-Nexus, bạn xác nhận đã đọc, hiểu và đồng ý tuân thủ toàn bộ các điều khoản trong chính sách này. Mọi thắc mắc xin liên hệ Admin qua hệ thống.`;
 
-export const POLICY_CONTENT_EN = `# 📜 T-Nexus System Policy
+export const POLICY_CONTENT_EN = `# 📜 T-Nexus Terms of Service
 
 > Version **1.0** — Last updated: April 2026
 >

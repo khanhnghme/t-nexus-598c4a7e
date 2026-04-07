@@ -97,11 +97,11 @@ const POLICY_UPDATED_AT = '2026-04-07T16:00:00+07:00';
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export default function Policy() {
+export default function Terms() {
   const { translations, locale, localizedPath: lp } = useLanguage();
   const policyContent = locale === 'vi' ? POLICY_CONTENT_VI : POLICY_CONTENT_EN;
   const navigate = useNavigate();
-  const tp = translations.policy ?? {};
+  const tp = translations.terms ?? {};
   const dateLocale: DateLocale = locale === 'vi' ? viLocale : enUS;
 
   /* --- State --- */

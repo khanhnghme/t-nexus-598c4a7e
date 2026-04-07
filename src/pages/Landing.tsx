@@ -321,7 +321,7 @@ const introPageComponents = [Page1Overview, Page2Tasks, Page3Scoring, Page4Proje
 
 export default function Landing() {
   const { isLocked, isChecking, message: lockdownMessage, endAt: lockdownEndAt } = useFullLockdown();
-  const { translations: t, localizedPath: lp } = useLanguage();
+  const { translations: t, localizedPath: lp, locale } = useLanguage();
   const tl = t.landing;
   const tc = t.common;
   const tn = t.nav;
@@ -539,7 +539,7 @@ export default function Landing() {
           }}
         />
       )}
-      <MandatoryNotification mode="pre_login" />
+      <MandatoryNotification mode="pre_login" locale={locale} />
 
       {videoEnabled && videoUrl && (
         <>

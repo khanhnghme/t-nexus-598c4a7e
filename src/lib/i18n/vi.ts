@@ -274,11 +274,11 @@ export const vi: Translations = {
         description: 'Dành cho cá nhân tổ chức dự án và cuộc sống.',
         cta: 'Đăng ký',
         features: [
-          '1 dự án',
-          '100 MB lưu trữ',
-          '5 thành viên / dự án',
+          '2 dự án',
+          '250 MB lưu trữ',
+          '5 thành viên toàn workspace',
           'Họp tối đa 15 phút',
-          'Hỗ trợ tiêu chuẩn',
+          'Standard Email Support',
         ],
       },
       plus: {
@@ -286,13 +286,13 @@ export const vi: Translations = {
         description: 'Dành cho nhóm nhỏ và chuyên gia cộng tác.',
         cta: 'Bắt đầu',
         features: [
-          '5 dự án',
+          '6 dự án',
           '5 GB lưu trữ',
-          '12 thành viên / dự án',
+          '12 thành viên toàn workspace',
           'Họp tối đa 60 phút',
           'Nhật ký hoạt động (30 ngày)',
           'Xuất dữ liệu đầy đủ',
-          'Hỗ trợ ưu tiên (7 ngày)',
+          'Standard Email Support',
           'Có thể mua thêm add-on',
         ],
       },
@@ -301,13 +301,13 @@ export const vi: Translations = {
         description: 'Dành cho nhóm phát triển nhanh để tối đa năng suất.',
         cta: 'Bắt đầu',
         features: [
-          '12 dự án',
+          '15 dự án',
           '25 GB lưu trữ',
-          '50 thành viên / dự án',
+          '50 thành viên toàn workspace',
           'Họp không giới hạn',
           'Nhật ký hoạt động không giới hạn',
           'Xuất dữ liệu đầy đủ',
-          'Hỗ trợ cao cấp (72h)',
+          'Priority Support (trong vòng 24h-48h)',
           'Add-on đi kèm, giảm 10%',
         ],
       },
@@ -318,11 +318,11 @@ export const vi: Translations = {
         features: [
           '50 dự án',
           '100 GB lưu trữ',
-          '200 thành viên / dự án',
+          '200 thành viên toàn workspace',
           'Họp không giới hạn',
           'Nhật ký hoạt động không giới hạn',
           'Xuất dữ liệu đầy đủ',
-          'Hỗ trợ nhanh (24h)',
+          'Express Support (trong cùng ngày làm việc)',
           'Add-on đi kèm, giảm 20%',
         ],
       },
@@ -346,9 +346,11 @@ export const vi: Translations = {
     // Add-ons
     addOnTitle: 'Bảng giá add-on',
     addOnDescription: 'Có từ gói Plus trở lên. Thanh toán hàng tháng theo workspace.',
+    addOnNote: 'Pro: giảm 10% · Business: giảm 20% cho tất cả add-on',
     addOns: [
-      { emoji: '📦', name: 'Lưu trữ', price: '$0.99', unit: '/ 5 GB / tháng', note: 'Pro: ~$0.89 · Business: ~$0.79 mỗi khối' },
-      { emoji: '👥', name: 'Thành viên', price: '$0.99', unit: '/ 5 người / tháng', note: 'Pro: giảm 10% · Business: giảm 20%' },
+      { emoji: '📋', name: 'Dự án', price: '$1.99', unit: '/ 5 dự án / tháng' },
+      { emoji: '📦', name: 'Lưu trữ', price: '$1.99', unit: '/ 5 GB / tháng' },
+      { emoji: '👥', name: 'Thành viên', price: '$1.99', unit: '/ 5 người / tháng' },
     ],
 
     // Comparison table
@@ -357,9 +359,9 @@ export const vi: Translations = {
       {
         category: 'Dự án & Lưu trữ',
         rows: [
-          { label: 'Dự án', free: '1', plus: '5', pro: '12', business: '50', enterprise: 'Không giới hạn' },
-          { label: 'Lưu trữ', free: '100 MB', plus: '5 GB', pro: '25 GB', business: '100 GB', enterprise: 'Không giới hạn' },
-          { label: 'Thành viên / dự án', free: '5', plus: '12', pro: '50', business: '200', enterprise: 'Không giới hạn' },
+          { label: 'Dự án', free: '2', plus: '6', pro: '15', business: '50', enterprise: 'Không giới hạn' },
+          { label: 'Lưu trữ', free: '250 MB', plus: '5 GB', pro: '25 GB', business: '100 GB', enterprise: 'Không giới hạn' },
+          { label: 'Tổng thành viên Workspace', free: '5', plus: '12', pro: '50', business: '200', enterprise: 'Không giới hạn' },
         ],
       },
       {
@@ -379,7 +381,7 @@ export const vi: Translations = {
       {
         category: 'Hỗ trợ',
         rows: [
-          { label: 'Mức hỗ trợ', free: 'Tiêu chuẩn', plus: 'Ưu tiên (7 ngày)', pro: 'Cao cấp (72h)', business: 'Nhanh (24h)', enterprise: 'Chuyên dụng 24/7' },
+          { label: 'Mức hỗ trợ', free: 'Standard Email Support', plus: 'Standard Email Support', pro: 'Priority Support (trong vòng 24h-48h)', business: 'Express Support (trong cùng ngày làm việc)', enterprise: 'Chuyên dụng 24/7' },
         ],
       },
       {
@@ -454,14 +456,14 @@ export const vi: Translations = {
     haveAccount: 'Đã có tài khoản?',
     loginNow: 'Đăng nhập ngay',
     policyAgree: 'Tôi đồng ý với',
-    policyTitle: 'Chính sách hệ thống',
-    policyDialogDesc: 'Nội dung chính sách hệ thống T-Nexus.',
+    policyTitle: 'Điều khoản dịch vụ',
+    policyDialogDesc: 'Nội dung điều khoản dịch vụ T-Nexus.',
     policyReadTerms: 'T-Nexus — Vui lòng đọc kỹ các điều khoản trước khi sử dụng',
     policyUpdated: 'Cập nhật',
     policyLastUpdated: 'Cập nhật lần cuối',
-    policyNoContent: 'Chưa có nội dung chính sách.',
-    policyRequired: 'Vui lòng đồng ý với Chính sách hệ thống để tiếp tục',
-    policyRequiredRegister: 'Vui lòng đồng ý với Chính sách hệ thống để đăng ký',
+    policyNoContent: 'Chưa có nội dung điều khoản.',
+    policyRequired: 'Vui lòng đồng ý với Điều khoản dịch vụ để tiếp tục',
+    policyRequiredRegister: 'Vui lòng đồng ý với Điều khoản dịch vụ để đăng ký',
     forgotStudentId: 'MSSV',
     forgotStudentIdPlaceholder: 'Nhập MSSV của bạn',
     forgotEmail: 'Email',
@@ -587,12 +589,12 @@ export const vi: Translations = {
     footer: `© ${new Date().getFullYear()} T-Nexus · Bạn cần hỗ trợ? Liên hệ quản trị viên.`,
   },
 
-  policy: {
+  terms: {
     backHome: 'Trang chủ',
-    sidebarTitle: 'Chính sách hệ thống',
+    sidebarTitle: 'Điều khoản dịch vụ',
     lastUpdated: 'Cập nhật',
-    loading: 'Đang tải chính sách...',
-    noContent: 'Chưa có nội dung chính sách.',
+    loading: 'Đang tải điều khoản...',
+    noContent: 'Chưa có nội dung điều khoản.',
     footerNote: 'Vui lòng đọc kỹ các điều khoản trước khi sử dụng hệ thống.',
   },
 };

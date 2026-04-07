@@ -32,6 +32,7 @@ interface ViewRecord {
 interface MandatoryNotificationProps {
   mode: 'pre_login' | 'post_login';
   userId?: string;
+  locale?: string;
 }
 
 function getViewCounts(): Record<string, ViewRecord> {
@@ -62,7 +63,21 @@ function incrementViewCount(notifId: string, updatedAt: string) {
   setViewCounts(all);
 }
 
-export default function MandatoryNotification({ mode, userId }: MandatoryNotificationProps) {
+export default function MandatoryNotification({ mode, userId, locale = 'en' }: MandatoryNotificationProps) {
+  const isVi = locale === 'vi';
+  const txt = {
+    noticeLabel: isVi ? 'Thông báo' : 'Notice',
+    newNotice: isVi ? 'Bạn có thông báo mới' : 'You have a new notice',
+    notices: (n: number) => isVi ? `${n} thông báo mới` : `${n} new notice${n > 1 ? 's' : ''}`,
+    mandatorySeconds: (s: number) => isVi ? `${s}s bắt buộc` : `${s}s required`,
+    pleaseRead: isVi ? 'Vui lòng đọc hết' : 'Please read',
+    canClose: isVi ? 'Có thể đóng' : 'Ready to close',
+    markRead: isVi ? '✓ Đã đọc' : '✓ Mark as read',
+    waitSeconds: (s: number) => isVi ? `Chờ ${s}s` : `Wait ${s}s`,
+    goBack: isVi ? 'Quay lại' : 'Back',
+    admin: isVi ? 'Quản trị viên' : 'Administrator',
+    expiresOn: isVi ? 'Hết hạn' : 'Expires',
+  };
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [countdowns, setCountdowns] = useState<Record<string, number>>({});
@@ -300,7 +315,7 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
                 className="text-xs font-semibold"
                 style={{ color: isDark ? 'rgba(255,255,255,0.9)' : 'hsl(var(--foreground))' }}
               >
-                Thông báo bắt buộc
+                {txt.noticeLabel}
               </span>
               <span
                 className="text-[10px] ml-auto"
@@ -336,7 +351,7 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
                       className="text-[13px] font-medium truncate flex-1"
                       style={{ color: isDark ? 'rgba(255,255,255,0.85)' : 'hsl(var(--foreground))' }}
                     >
-                      {notif.title}
+                      {txt.newNotice}
                     </span>
                     <span
                       className="text-[10px] shrink-0"
@@ -404,7 +419,7 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
                 className="text-[11px] font-medium truncate flex-1 text-left"
                 style={{ color: isDark ? 'rgba(255,255,255,0.8)' : 'hsl(var(--foreground))' }}
               >
-                {cornerNotifications.length === 1 ? cornerNotifications[0].title : `${cornerNotifications.length} thông báo`}
+                {cornerNotifications.length === 1 ? txt.newNotice : txt.notices(cornerNotifications.length)}
               </span>
               {cornerOpen ? (
                 <ChevronUp className="w-3 h-3 shrink-0" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'hsl(var(--muted-foreground))' }} />
@@ -487,7 +502,7 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
                   <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                     <User className="w-3 h-3" />
-                    {senderNames[expandedNotif.created_by] || 'Quản trị viên'}
+                    {senderNames[expandedNotif.created_by] || txt.admin}
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                     <Calendar className="w-3 h-3" />
@@ -495,12 +510,12 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                     <Eye className="w-3 h-3" />
-                    {expandedNotif.min_view_seconds}s bắt buộc
+                    {txt.mandatorySeconds(expandedNotif.min_view_seconds)}
                   </span>
                   {expandedNotif.expires_at && (
                     <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                       <Clock className="w-3 h-3" />
-                      Hết hạn {format(new Date(expandedNotif.expires_at), "dd/MM/yyyy", { locale: vi })}
+                      {txt.expiresOn} {format(new Date(expandedNotif.expires_at), "dd/MM/yyyy", { locale: vi })}
                     </span>
                   )}
                 </div>
@@ -535,7 +550,7 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
                 <div className="flex items-center gap-2.5">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Clock className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Vui lòng đọc hết</span>
+                    <span>{txt.pleaseRead}</span>
                   </div>
                   {/* Circular countdown */}
                   <div className="relative w-7 h-7">
@@ -558,7 +573,7 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
               ) : (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <span className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center text-[10px]">✓</span>
-                  Có thể đóng
+                  {txt.canClose}
                 </p>
               )}
               <div className="flex gap-2">
@@ -569,7 +584,7 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
                     className="h-7 text-xs rounded-lg"
                     onClick={() => setExpandedId(null)}
                   >
-                    Quay lại
+                    {txt.goBack}
                   </Button>
                 )}
                 <Button
@@ -582,7 +597,7 @@ export default function MandatoryNotification({ mode, userId }: MandatoryNotific
                     color: canClose ? '#fff' : undefined,
                   }}
                 >
-                  {canClose ? '✓ Đã đọc' : `Chờ ${countdown}s`}
+                  {canClose ? txt.markRead : txt.waitSeconds(countdown)}
                 </Button>
               </div>
             </div>

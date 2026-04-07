@@ -272,11 +272,11 @@ export const en = {
         description: 'For individuals to organize personal projects and life.',
         cta: 'Sign up',
         features: [
-          '1 project',
-          '100 MB storage',
-          '5 members / project',
+          '2 projects',
+          '250 MB storage',
+          '5 total workspace members',
           'Meetings up to 15 min',
-          'Standard support',
+          'Standard Email Support',
         ],
       },
       plus: {
@@ -284,13 +284,13 @@ export const en = {
         description: 'For small teams and professionals to work together.',
         cta: 'Get started',
         features: [
-          '5 projects',
+          '6 projects',
           '5 GB storage',
-          '12 members / project',
+          '12 total workspace members',
           'Meetings up to 60 min',
           'Activity logs (30 days)',
           'Full data export',
-          'Priority support (7 days)',
+          'Standard Email Support',
           'Add-ons available',
         ],
       },
@@ -299,13 +299,13 @@ export const en = {
         description: 'For fast-growing teams to maximize productivity.',
         cta: 'Get started',
         features: [
-          '12 projects',
+          '15 projects',
           '25 GB storage',
-          '50 members / project',
+          '50 total workspace members',
           'Unlimited meeting time',
           'Unlimited activity logs',
           'Full data export',
-          'High-priority support (72h)',
+          'Priority Support (within 24h-48h)',
           'Add-ons included, 10% off',
         ],
       },
@@ -316,11 +316,11 @@ export const en = {
         features: [
           '50 projects',
           '100 GB storage',
-          '200 members / project',
+          '200 total workspace members',
           'Unlimited meeting time',
           'Unlimited activity logs',
           'Full data export',
-          'Express support (24h)',
+          'Express Support (same business day)',
           'Add-ons included, 20% off',
         ],
       },
@@ -344,9 +344,11 @@ export const en = {
     // Add-ons
     addOnTitle: 'Add-on pricing',
     addOnDescription: 'Available from Plus plan and above. Billed monthly per workspace.',
+    addOnNote: 'Pro: 10% off · Business: 20% off on all add-ons',
     addOns: [
-      { emoji: '📦', name: 'Storage', price: '$0.99', unit: '/ 5 GB / month', note: 'Pro: ~$0.89 · Business: ~$0.79 per block' },
-      { emoji: '👥', name: 'Members', price: '$0.99', unit: '/ 5 members / month', note: 'Pro: 10% off · Business: 20% off' },
+      { emoji: '📋', name: 'Projects', price: '$1.99', unit: '/ 5 projects / month' },
+      { emoji: '📦', name: 'Storage', price: '$1.99', unit: '/ 5 GB / month' },
+      { emoji: '👥', name: 'Members', price: '$1.99', unit: '/ 5 members / month' },
     ],
 
     // Comparison table
@@ -355,9 +357,9 @@ export const en = {
       {
         category: 'Projects & Storage',
         rows: [
-          { label: 'Projects', free: '1', plus: '5', pro: '12', business: '50', enterprise: 'Unlimited' },
-          { label: 'Storage', free: '100 MB', plus: '5 GB', pro: '25 GB', business: '100 GB', enterprise: 'Unlimited' },
-          { label: 'Members per project', free: '5', plus: '12', pro: '50', business: '200', enterprise: 'Unlimited' },
+          { label: 'Projects', free: '2', plus: '6', pro: '15', business: '50', enterprise: 'Unlimited' },
+          { label: 'Storage', free: '250 MB', plus: '5 GB', pro: '25 GB', business: '100 GB', enterprise: 'Unlimited' },
+          { label: 'Total Workspace Members', free: '5', plus: '12', pro: '50', business: '200', enterprise: 'Unlimited' },
         ],
       },
       {
@@ -377,7 +379,7 @@ export const en = {
       {
         category: 'Support',
         rows: [
-          { label: 'Support level', free: 'Standard', plus: 'Priority (7 days)', pro: 'High-priority (72h)', business: 'Express (24h)', enterprise: 'Dedicated 24/7' },
+          { label: 'Support level', free: 'Standard Email Support', plus: 'Standard Email Support', pro: 'Priority Support (within 24h-48h)', business: 'Express Support (same business day)', enterprise: 'Dedicated 24/7' },
         ],
       },
       {
@@ -456,14 +458,14 @@ export const en = {
     loginNow: 'Log in now',
     // Policy
     policyAgree: 'I agree with',
-    policyTitle: 'System Policy',
-    policyDialogDesc: 'T-Nexus system policy content.',
+    policyTitle: 'Terms of Service',
+    policyDialogDesc: 'T-Nexus terms of service content.',
     policyReadTerms: 'T-Nexus — Please read the terms carefully before using',
     policyUpdated: 'Updated',
     policyLastUpdated: 'Last updated',
-    policyNoContent: 'No policy content available.',
-    policyRequired: 'Please agree to the System Policy to continue',
-    policyRequiredRegister: 'Please agree to the System Policy to register',
+    policyNoContent: 'No terms of service content available.',
+    policyRequired: 'Please agree to the Terms of Service to continue',
+    policyRequiredRegister: 'Please agree to the Terms of Service to register',
     // Forgot password
     forgotStudentId: 'Student ID',
     forgotStudentIdPlaceholder: 'Enter your Student ID',
@@ -598,12 +600,12 @@ export const en = {
     footer: `© ${new Date().getFullYear()} T-Nexus · Need help? Contact your administrator.`,
   },
 
-  policy: {
+  terms: {
     backHome: 'Home',
-    sidebarTitle: 'System Policy',
+    sidebarTitle: 'Terms of Service',
     lastUpdated: 'Updated',
-    loading: 'Loading policy...',
-    noContent: 'No policy content available.',
+    loading: 'Loading terms...',
+    noContent: 'No terms of service content available.',
     footerNote: 'Please read the terms carefully before using the system.',
   },
 };
