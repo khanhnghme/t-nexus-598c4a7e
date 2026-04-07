@@ -577,23 +577,23 @@ export default function Dashboard() {
                   {profile?.is_approved && (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-accent text-muted-foreground border-border">
                       <CheckCircle2 className="w-2.5 h-2.5" strokeWidth={1.5} />
-                      Đã xác minh
+                      {t?.verified || 'Verified'}
                     </Badge>
                   )}
                   {isAdmin ? (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-accent text-muted-foreground border-border">
                       <Unlock className="w-2.5 h-2.5" strokeWidth={1.5} />
-                      Tạo dự án không giới hạn
+                      {t?.unlimitedProjects || 'Unlimited project creation'}
                     </Badge>
                   ) : canCreateProject && projectLimit > 0 ? (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-accent text-muted-foreground border-border">
                       <Unlock className="w-2.5 h-2.5" strokeWidth={1.5} />
-                      Được tạo tối đa {projectLimit} dự án
+                      {(t?.maxProjects || 'Can create up to {n} projects').replace('{n}', String(projectLimit))}
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-accent text-muted-foreground/70 border-border">
                       <Lock className="w-2.5 h-2.5" strokeWidth={1.5} />
-                      Chỉ tham gia — không có quyền tạo dự án
+                      {t?.joinOnly || 'Join only — cannot create projects'}
                     </Badge>
                   )}
                 </div>
