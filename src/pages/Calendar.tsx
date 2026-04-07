@@ -61,6 +61,7 @@ export default function CalendarPage() {
         .in('group_id', groupIds)
         .not('deadline', 'is', null);
 
+      const { data: tasks } = await tasksQuery;
       let filteredTasks = tasks || [];
       // Filter by active workspace
       if (wsAvailable && activeWorkspace?.id) {
