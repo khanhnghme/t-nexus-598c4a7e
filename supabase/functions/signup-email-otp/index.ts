@@ -225,12 +225,11 @@ Deno.serve(async (req) => {
       });
 
       // Send email via Resend gateway
-      await fetch(`${RESEND_GATEWAY}/emails`, {
+      const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${lovableApiKey}`,
-          "X-Connection-Api-Key": resendApiKey,
+          Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
           from: FROM_EMAIL,
@@ -239,6 +238,12 @@ Deno.serve(async (req) => {
           html: buildOtpEmailHtml(otpCode),
         }),
       });
+
+      if (!emailRes.ok) {
+        const errText = await emailRes.text();
+        console.error("Resend resend_code error:", errText);
+        return jsonResponse({ error: "Không thể gửi lại email xác minh." }, 500);
+      }
 
       return jsonResponse({
         success: true,
