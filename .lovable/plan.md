@@ -1,73 +1,134 @@
 
 
-## Kiểm tra & Hoàn thiện Workspace Module — Phần còn thiếu
+## Redesign Sidebar: Vertical Tree Navigation
 
-### Trạng thái hiện tại (sau khi đối chiếu 2 file plan với code)
+### Tổng quan
 
-**Đã hoàn thành:**
-- Phase 1: Database migration (workspaces, workspace_members, workspace_invites, ALTER groups & group_members) 
-- Phase 2: Edge Function `workspace-management` (13 actions) — đã deploy 
-- Phase 3: WorkspaceContext, useWorkspaceMembers, types/database.ts
-- Phase 4 partial: WorkspaceSettings, WorkspaceMembers, WorkspaceSwitcher, SidebarProjects
-- Groups.tsx: filter theo workspace_id, gán workspace_id khi tạo project, visibility badge
+Chuyển đổi sidebar từ kiểu menu phẳng (flat list với section labels) sang kiểu cây phân cấp dọc (vertical tree) với 3 cấp rõ ràng: **System → Workspace → Project**, hỗ trợ expand/collapse, active state tự động mở nhánh cha, và indent trực quan.
 
-### Các vấn đề cần fix
+### Cấu trúc cây mới
 
-**1. SidebarProjects — Thiếu logic visibility cho WS members**
+```text
+┌─────────────────────────────┐
+│ [Logo] T-Nexus    [🔍🌙🔔] │
+│ ⌘K Tìm kiếm...             │
+├─────────────────────────────┤
+│ ■ Dashboard                 │
+│                             │
+│ ▼ Workspace A         👑   │
+│   ├─ Tổng quan (ws/settings)│
+│   ├─ Thành viên (ws/members)│
+│   ├─ Cài đặt                │
+│   └─▼ Dự án                 │
+│      ├─ 🔒 Project 1        │
+│      ├─ 🌐 Project 2        │
+│      └─ 🌐 Project 3 (Mới) │
+│                             │
+│ ── PERSONAL ──              │
+│ ■ Lịch                      │
+│ ■ Trao đổi                  │
+│ ■ Tài khoản                 │
+│ ■ Mẹo                       │
+│ ■ Góp ý                     │
+│                             │
+│ ── ADMIN ──                 │
+│ ■ Thành viên                │
+│ ■ Sao lưu                   │
+│ ■ Quản trị                  │
+│ ■ Tiện ích                  │
+├─────────────────────────────┤
+│ [Avatar] Tên user     ▾    │
+└─────────────────────────────┘
+```
 
-Hiện tại `SidebarProjects` chỉ hiện projects mà user đã là `group_member`. Theo architecture, WS members phải **tự động thấy** tất cả `workspace_public` và `public_link` projects, kể cả khi chưa join.
+### Thay đổi chi tiết
 
-Cần sửa: Query thêm groups có `visibility IN ('workspace_public', 'public_link')` thuộc workspace, merge với danh sách projects user đã join, loại trùng.
+**1. Tạo component `SidebarTreeNav.tsx`** (thay thế inline nav trong DashboardLayout)
 
-**2. SidebarProjects — Thiếu Guest mode**
+Component chính chứa toàn bộ logic cây:
+- **Dashboard**: item cấp 1, link `/dashboard`
+- **Workspace node** (collapsible): hiển thị tên workspace + role badge
+  - Tổng quan → `/workspace/settings`
+  - Thành viên → `/workspace/members`
+  - **Dự án** (collapsible sub-node):
+    - Liệt kê projects từ `SidebarProjects` logic (merged joined + public)
+    - Mỗi project link tới `/p/{slug}`
+    - Icon visibility (🔒/🌐)
+    - Badge "Mới" cho WS Public chưa join
+- **Personal section**: Lịch, Trao đổi, Tài khoản, Mẹo, Góp ý
+- **Admin section** (chỉ hiện nếu isAdmin): Thành viên, Sao lưu, Quản trị, Tiện ích
 
-Theo plan Phase 5, khi user là Guest (không có trong `workspace_members`, chỉ có trong `group_members` với `is_guest = true`), sidebar cần:
-- Ẩn WorkspaceSwitcher dropdown
-- Hiện badge "👽 Guest Access"
-- Chỉ hiện project được assign
-- Hiện hint banner "You are a guest..."
+Logic expand/collapse:
+- State `expandedNodes` (Set) quản lý nodes đang mở
+- Auto-expand: khi route hiện tại match 1 node con, tự động mở nhánh cha
+  - VD: đang ở `/workspace/members` → auto expand "Workspace A"
+  - Đang ở `/p/project-slug` → auto expand "Workspace A" → "Dự án"
+- Click chevron toggle expand/collapse
+- Click tên item navigates (nếu có href)
 
-Cần sửa: Thêm logic kiểm tra `workspaceRole === null` (Guest) trong cả `WorkspaceSwitcher` và `SidebarProjects`.
+**2. Sửa `DashboardLayout.tsx`**
 
-**3. Groups.tsx — Thiếu hiển thị WS Public projects cho WS members chưa join**
+- Xóa `mainNav`, `personalNav`, `adminNav` arrays và `renderNavItem` function
+- Xóa inline `WorkspaceSwitcher` và `SidebarProjects` renders
+- Thay bằng `<SidebarTreeNav collapsed={sidebarCollapsed} />`
+- Giữ nguyên: logo, search, bottom user profile, mobile logic
 
-Tương tự sidebar, trang Groups chỉ query projects mà user đã là member. WS members cần thấy tất cả `workspace_public` projects trong workspace (dù chưa join), với badge "Chưa tham gia" và nút tham gia.
+**3. Xóa `WorkspaceSwitcher.tsx`** (logic merge vào SidebarTreeNav)
 
-**4. WorkspaceMembers — Thiếu tab Guest**
+Workspace switcher dropdown sẽ được tích hợp trực tiếp vào tree node:
+- Click vào tên workspace → expand/collapse
+- Dropdown chỉ hiện khi có > 1 workspace (small icon bên cạnh tên)
+- Guest mode: hiện tên workspace + "👽 Guest" badge, không dropdown
 
-Theo plan Phase 4, trang `WorkspaceMembers` cần có tab "Guests" liệt kê các guest (users trong `group_members` với `is_guest = true`). Hiện tại chỉ có danh sách WS members.
+**4. Refactor `SidebarProjects.tsx` → logic-only hook**
 
-**5. Guest invite UI chưa có trong Project settings**
+Chuyển fetch logic thành `useWorkspaceProjects()` hook, không render UI riêng. `SidebarTreeNav` sẽ dùng hook này để lấy danh sách projects.
 
-Theo plan Phase 5, cần dialog "Add People" với 2 tab (Workspace Members / Invite Guest) bên trong project. Hiện chưa được triển khai.
+**5. Thêm CSS cho tree navigation**
 
-### Kế hoạch thực hiện
+```text
+Indent levels:
+- Level 0: padding-left 10px (Dashboard, Personal, Admin items)
+- Level 1: padding-left 26px (WS children: Tổng quan, Thành viên, Dự án node)
+- Level 2: padding-left 42px (Project items)
 
-**Bước 1: Fix SidebarProjects — Visibility rules**
-- Nếu user là WS member/admin/owner: query tất cả groups có `workspace_id = activeWorkspace.id` AND (`visibility IN ('workspace_public', 'public_link')` OR user là `group_member`)
-- Nếu user là Guest (`workspaceRole === null`): chỉ query groups user đã join với `is_guest = true`
-- Merge & dedup kết quả
+Tree branch lines:
+- Pseudo-element ::before tạo đường dọc nhẹ (1px, opacity 20%)
+- Kết nối từ parent xuống children
 
-**Bước 2: Fix WorkspaceSwitcher — Guest mode**
-- Khi `workspaceRole === null` nhưng user vẫn có projects trong workspace (Guest): hiện tên workspace nhưng ẩn dropdown switcher, thêm "👽 Guest" badge
+Chevron:
+- Rotate 0° khi collapsed, 90° khi expanded
+- Transition 150ms
 
-**Bước 3: Fix Groups.tsx — Hiện WS Public projects**
-- Thêm query riêng: groups có `workspace_id = activeWorkspace.id` AND `visibility = 'workspace_public'`, merge với danh sách hiện tại
-- Projects mà user chưa join: hiện badge "Chưa tham gia", disable click hoặc cho phép xem read-only
+Active state:
+- Giữ nguyên active bar bên trái (::before)
+- Parent node khi có child active: text hơi sáng hơn (semi-active state)
+```
 
-**Bước 4: Thêm Guest tab vào WorkspaceMembers**
-- Thêm Tabs component (Members / Guests)
-- Tab Guests: query `group_members` WHERE `is_guest = true` AND group thuộc workspace, join với profiles để hiện info
+**6. Collapsed mode**
 
-**Bước 5: Tạo Project Guest Invite Dialog**
-- Component mới với 2 tab: "Thêm từ Workspace" (pick existing WS members) / "Mời Guest" (nhập email)
-- Gọi `inviteGuest()` từ `useWorkspaceMembers` hook
-- Tích hợp vào trang quản lý thành viên project hiện tại
+Khi sidebar collapsed:
+- Level 0 items: hiện icon only (như hiện tại)
+- Workspace node: hiện icon Building2 only, click mở dropdown với full tree
+- Projects: ẩn, chỉ hiện qua workspace dropdown
+- Tooltip hiện tên khi hover
 
-### Chi tiết kỹ thuật
+### Files affected
 
-- **SidebarProjects query**: Dùng 2 query song song (1 cho group_members, 1 cho visibility-based), merge và dedup ở client
-- **Guest detection**: `workspaceRole === null` trong WorkspaceContext (user không phải owner, không có record trong workspace_members)
-- **WS Public auto-access**: Chỉ ở UI level (hiển thị). Khi user bấm vào WS Public project chưa join, có thể tự động thêm vào group_members hoặc cho phép xem read-only
-- **Edge function**: `invite_project_guest` action đã sẵn sàng, chỉ cần build UI gọi nó
+| File | Action |
+|------|--------|
+| `src/components/SidebarTreeNav.tsx` | Tạo mới — component chính |
+| `src/hooks/useWorkspaceProjects.ts` | Tạo mới — extract logic từ SidebarProjects |
+| `src/components/layout/DashboardLayout.tsx` | Sửa — thay nav cũ bằng SidebarTreeNav |
+| `src/components/SidebarProjects.tsx` | Xóa |
+| `src/components/WorkspaceSwitcher.tsx` | Xóa |
+| `src/index.css` | Sửa — thêm tree nav styles |
+
+### Không thay đổi
+
+- Routes trong App.tsx
+- WorkspaceContext, useWorkspaceMembers
+- Logic search (⌘K), theme toggle, notification bell
+- Bottom user profile section
+- Mobile topbar
 
