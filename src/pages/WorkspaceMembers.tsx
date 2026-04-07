@@ -169,17 +169,18 @@ export default function WorkspaceMembers() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'owner': return <Crown className="w-3.5 h-3.5 text-amber-500" />;
-      case 'admin': return <Shield className="w-3.5 h-3.5 text-blue-500" />;
+      case 'workspace_owner': return <Crown className="w-3.5 h-3.5 text-amber-500" />;
+      case 'workspace_admin': return <Shield className="w-3.5 h-3.5 text-blue-500" />;
       default: return <User className="w-3.5 h-3.5 text-muted-foreground" />;
     }
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'owner': return 'Owner';
-      case 'admin': return 'OwnerSystem';
-      case 'project_member': return 'Member';
+      case 'workspace_owner': return 'Owner';
+      case 'workspace_admin': return 'Admin';
+      case 'workspace_member': return 'Member';
+      case 'workspace_guest': return 'Guest';
       default: return role;
     }
   };
