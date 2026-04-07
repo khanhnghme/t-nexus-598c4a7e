@@ -570,6 +570,107 @@ html.google-mode ::-webkit-scrollbar-thumb:hover {
 
 
 
+/* ══════════════════════════════════════════════════════════════ */
+/*  Tree Navigation                                               */
+/* ══════════════════════════════════════════════════════════════ */
+
+.tree-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chevron for collapsible nodes */
+.nav-chevron {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+.nav-chevron.expanded {
+  transform: rotate(90deg);
+}
+
+.sidebar-nav-item:hover .nav-chevron {
+  opacity: 0.8;
+}
+
+/* Semi-active parent (has active child but is collapsed) */
+.sidebar-nav-item.semi-active {
+  color: var(--_sb-active-fg);
+  opacity: 0.8;
+}
+
+/* Tree children containers */
+.tree-children {
+  position: relative;
+}
+
+/* Level 1 indent (workspace children) */
+.tree-level-1 > .sidebar-nav-item,
+.tree-level-1 > button.sidebar-nav-item {
+  padding-left: 26px;
+}
+
+/* Level 2 indent (project items) */
+.tree-level-2 > .sidebar-nav-item {
+  padding-left: 42px;
+  font-size: 12.5px;
+  min-height: 30px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/* Tree branch line */
+.tree-level-1::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 8px;
+  width: 1px;
+  background: var(--_sb-border);
+  opacity: 0.5;
+}
+
+.tree-level-2::before {
+  content: '';
+  position: absolute;
+  left: 36px;
+  top: 0;
+  bottom: 8px;
+  width: 1px;
+  background: var(--_sb-border);
+  opacity: 0.4;
+}
+
+/* Guest hint */
+.tree-guest-hint {
+  font-size: 10px;
+  color: var(--_sb-muted-dim);
+  padding: 2px 10px 4px 26px;
+  line-height: 1.4;
+}
+
+/* Collapsed sidebar: hide tree indentation */
+.dashboard-sidebar.collapsed .tree-children,
+.dashboard-sidebar.collapsed .tree-guest-hint,
+.dashboard-sidebar.collapsed .tree-level-1,
+.dashboard-sidebar.collapsed .tree-level-2 {
+  display: contents;
+}
+
+.dashboard-sidebar.collapsed .tree-level-1::before,
+.dashboard-sidebar.collapsed .tree-level-2::before {
+  display: none;
+}
+
+.dashboard-sidebar.collapsed .tree-level-1 > .sidebar-nav-item,
+.dashboard-sidebar.collapsed .tree-level-2 > .sidebar-nav-item {
+  padding-left: 8px;
+}
+
 
 /* No-animations mode — disable all transitions & animations */
 html.no-animations *,
