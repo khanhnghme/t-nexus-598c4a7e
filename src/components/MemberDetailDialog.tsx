@@ -182,14 +182,14 @@ export default function MemberDetailDialog({
 
   // System role labels (for user_roles)
   const systemRoleLabel: Record<string, string> = {
-    'admin': 'Admin', 'leader': 'Thành viên Nâng cao', 'member': 'Thành viên'
+    'admin': 'OwnerSystem', 'leader': 'Thành viên Nâng cao', 'member': 'Thành viên'
   };
 
   // Use centralized role label utility
   const getGroupRoleLabel = (role: string, isCreator: boolean) => {
     if (isCreator) return 'Trưởng nhóm';
     switch (role) {
-      case 'owner_system': return 'Admin';
+      case 'owner_system': return 'OwnerSystem';
       case 'leader': return 'Phó nhóm';
       case 'member': return 'Thành viên';
       default: return role;
