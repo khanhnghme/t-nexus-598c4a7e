@@ -611,15 +611,34 @@ html.google-mode ::-webkit-scrollbar-thumb:hover {
 .tree-level-1 > .sidebar-nav-item,
 .tree-level-1 > button.sidebar-nav-item {
   padding-left: 26px;
+  font-weight: 400;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.tree-level-1 > .sidebar-nav-item.active {
+  font-weight: 500;
+  opacity: 1;
 }
 
 /* Level 2 indent (project items) */
 .tree-level-2 > .sidebar-nav-item {
   padding-left: 42px;
-  font-size: 12.5px;
-  min-height: 30px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  font-size: 12px;
+  font-weight: 400;
+  min-height: 28px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  opacity: 0.75;
+}
+
+.tree-level-2 > .sidebar-nav-item:hover {
+  opacity: 0.95;
+}
+
+.tree-level-2 > .sidebar-nav-item.active {
+  font-weight: 500;
+  opacity: 1;
 }
 
 /* Tree branch line */
