@@ -48,6 +48,7 @@ export interface Profile {
   institution: string | null;
   nav_hidden_pages: any;
   user_plan: UserPlan;
+  preferred_locale: string;
 }
 
 export interface UserRole {

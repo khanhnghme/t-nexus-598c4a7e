@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN preferred_locale text NOT NULL DEFAULT 'vi';

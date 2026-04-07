@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import type { Locale } from '@/lib/i18n';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +22,8 @@ import {
   Camera, Loader2, Save, Shield, Crown, UserCheck, Calendar, Star,
   CheckCircle2, AlertCircle, Edit3, X, FolderKanban, HardDrive,
   Lock, Unlock, Zap, ArrowRight, Plus, Bell, CalendarDays, MessageSquare,
-  Lightbulb, Users, FolderArchive, Wrench, Eye, EyeOff, Navigation
+  Lightbulb, Users, FolderArchive, Wrench, Eye, EyeOff, Navigation,
+  Globe, Check
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -143,6 +146,66 @@ function NavCustomizationCard({ userId, isAdmin }: { userId?: string; isAdmin: b
   );
 }
 
+
+function LanguageCard() {
+  const { locale, setLocale } = useLanguage();
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+
+  const handleChange = async (newLocale: Locale) => {
+    if (newLocale === locale || saving) return;
+    setSaving(true);
+    try {
+      await setLocale(newLocale);
+      toast({ title: newLocale === 'vi' ? 'Đã chuyển sang Tiếng Việt' : 'Switched to English' });
+    } catch {
+      toast({ title: 'Lỗi', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const options: { value: Locale; label: string; flag: string }[] = [
+    { value: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
+    { value: 'en', label: 'English', flag: '🇬🇧' },
+  ];
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Globe className="w-4 h-4 text-primary" />
+          {locale === 'vi' ? 'Ngôn ngữ' : 'Language'}
+        </CardTitle>
+        <CardDescription>
+          {locale === 'vi' ? 'Chọn ngôn ngữ hiển thị cho tài khoản' : 'Choose display language for your account'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {options.map((opt) => {
+          const isActive = locale === opt.value;
+          return (
+            <button
+              key={opt.value}
+              onClick={() => handleChange(opt.value)}
+              disabled={saving}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                isActive
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                  : 'border-border hover:border-primary/30 hover:bg-muted/50'
+              }`}
+            >
+              <span className="text-2xl">{opt.flag}</span>
+              <span className="flex-1 text-sm font-medium">{opt.label}</span>
+              {isActive && <Check className="w-4 h-4 text-primary" />}
+              {saving && !isActive && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+            </button>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function PersonalInfo() {
   const { user, profile, isAdmin, isLeader, refreshProfile, roles } = useAuth();
@@ -404,8 +467,9 @@ export default function PersonalInfo() {
         {/* Two-column: Nav Customization (left) + Personal Info (right) */}
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
           {/* Left: Nav Customization */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
             <NavCustomizationCard userId={user?.id} isAdmin={isAdmin} />
+            <LanguageCard />
           </div>
 
           {/* Right: Personal Info Card */}

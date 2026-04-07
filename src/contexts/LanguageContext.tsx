@@ -1,5 +1,7 @@
-import { createContext, useContext, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { createContext, useContext, useEffect, useMemo, useCallback, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import {
   type Locale,
   type Translations,
@@ -20,6 +22,8 @@ interface LanguageContextValue {
   localizedPath: (path: string) => string;
   /** Build a path for a specific locale (for language toggle) */
   pathForLocale: (locale: Locale) => string;
+  /** Change locale and persist to profile */
+  setLocale: (locale: Locale) => Promise<void>;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -28,7 +32,36 @@ const SITE_URL = 'https://t-nexus.io.vn';
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const locale = getLocaleFromPath(location.pathname);
+  const navigate = useNavigate();
+  const { profile, user } = useAuth();
+
+  // For internal routes (no locale prefix), prefer profile's saved locale
+  const urlLocale = getLocaleFromPath(location.pathname);
+  const [profileLocale, setProfileLocale] = useState<Locale | null>(null);
+
+  // Sync profileLocale from profile
+  useEffect(() => {
+    if (profile?.preferred_locale) {
+      const pl = profile.preferred_locale as Locale;
+      if (ALL_LOCALES.includes(pl)) {
+        setProfileLocale(pl);
+      }
+    }
+  }, [profile?.preferred_locale]);
+
+  // Auto-apply saved locale on login for internal routes
+  useEffect(() => {
+    if (!user || !profileLocale) return;
+    // Only redirect if on an internal route (no explicit locale prefix in URL)
+    // and the saved locale differs from current URL locale
+    const isInternalRoute = !location.pathname.startsWith('/vi/') && location.pathname !== '/vi';
+    if (profileLocale !== 'en' && isInternalRoute && urlLocale === 'en') {
+      const canonical = stripLocalePrefix(location.pathname);
+      navigate(buildLocalizedPath(canonical, profileLocale), { replace: true });
+    }
+  }, [user, profileLocale]);
+
+  const locale = urlLocale;
   const t = useMemo(() => getTranslations(locale), [locale]);
 
   const lp = useMemo(
@@ -44,6 +77,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     [location.pathname],
   );
 
+  const setLocale = useCallback(async (newLocale: Locale) => {
+    // Save to DB
+    if (user) {
+      await supabase.from('profiles').update({ preferred_locale: newLocale }).eq('id', user.id);
+    }
+    setProfileLocale(newLocale);
+    // Navigate to new locale path
+    const canonical = stripLocalePrefix(location.pathname);
+    navigate(buildLocalizedPath(canonical, newLocale), { replace: true });
+  }, [user, location.pathname, navigate]);
+
   // Side effect: update <html lang> attribute
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -52,8 +96,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Side effect: inject hreflang <link> tags for SEO
   useEffect(() => {
     const HEAD_ID = 'i18n-hreflang';
-
-    // Remove existing hreflang tags
     document.querySelectorAll(`link[data-i18n="${HEAD_ID}"]`).forEach((el) => el.remove());
 
     const canonical = stripLocalePrefix(location.pathname);
@@ -67,7 +109,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       document.head.appendChild(link);
     });
 
-    // x-default → EN (default)
     const xDefault = document.createElement('link');
     xDefault.rel = 'alternate';
     xDefault.hreflang = 'x-default';
@@ -81,8 +122,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [location.pathname, locale]);
 
   const value = useMemo<LanguageContextValue>(
-    () => ({ locale, translations: t, localizedPath: lp, pathForLocale }),
-    [locale, t, lp, pathForLocale],
+    () => ({ locale, translations: t, localizedPath: lp, pathForLocale, setLocale }),
+    [locale, t, lp, pathForLocale, setLocale],
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
@@ -100,6 +141,7 @@ export function useLanguage(): LanguageContextValue {
       translations: getTranslations(DEFAULT_LOCALE),
       localizedPath: (p: string) => p,
       pathForLocale: (loc: Locale) => buildLocalizedPath('/', loc),
+      setLocale: async () => {},
     };
   }
   return ctx;
