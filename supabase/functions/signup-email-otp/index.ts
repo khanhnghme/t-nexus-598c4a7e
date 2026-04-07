@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { buildBrandedOtpEmail } from "../_shared/email-html-builder.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,42 +17,15 @@ function jsonResponse(data: Record<string, unknown>, status = 200) {
   });
 }
 
-function buildOtpEmailHtml(otpCode: string): string {
-  return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;padding:40px 20px;">
-    <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <tr><td style="background-color:hsl(183,100%,21%);padding:24px 32px;text-align:center;">
-          <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">T-Nexus</h1>
-        </td></tr>
-        <tr><td style="padding:32px;">
-          <h2 style="margin:0 0 8px;color:#1a1a2e;font-size:18px;font-weight:600;">Xác minh tài khoản</h2>
-          <p style="margin:0 0 24px;color:#71717a;font-size:14px;line-height:1.6;">
-            Sử dụng mã bên dưới để xác minh email của bạn. Mã có hiệu lực trong <strong>5 phút</strong>.
-          </p>
-          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:16px 0;">
-            <div style="display:inline-block;background-color:#f4f4f5;border:2px dashed #d4d4d8;border-radius:12px;padding:20px 40px;">
-              <span style="font-size:36px;font-weight:800;letter-spacing:8px;color:#1a1a2e;font-family:'Courier New',monospace;">${otpCode}</span>
-            </div>
-          </td></tr></table>
-          <div style="margin:24px 0 0;background-color:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;">
-            <p style="margin:0;color:#92400e;font-size:12px;line-height:1.5;">
-              ⚠️ <strong>Không chia sẻ mã này cho bất kỳ ai.</strong> T-Nexus sẽ không bao giờ yêu cầu bạn cung cấp mã OTP qua tin nhắn hay điện thoại.
-            </p>
-          </div>
-          <p style="margin:16px 0 0;color:#a1a1aa;font-size:12px;text-align:center;">
-            Nếu bạn không yêu cầu xác minh, vui lòng bỏ qua email này.
-          </p>
-        </td></tr>
-        <tr><td style="padding:16px 32px;background-color:#fafafa;border-top:1px solid #f4f4f5;text-align:center;">
-          <p style="margin:0;color:#a1a1aa;font-size:11px;">&copy; ${new Date().getFullYear()} T-Nexus</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body></html>`;
+function buildSignupOtpHtml(otpCode: string): string {
+  return buildBrandedOtpEmail({
+    title: "Xác minh tài khoản",
+    subtitle: "Hệ thống quản lý dự án nhóm",
+    otpCode,
+    expiryText: 'Sử dụng mã bên dưới để xác minh email của bạn. Mã có hiệu lực trong <strong>5 phút</strong>.',
+    warningText: '<strong>Không chia sẻ mã này cho bất kỳ ai.</strong> T-Nexus sẽ không bao giờ yêu cầu bạn cung cấp mã OTP qua tin nhắn hay điện thoại.',
+    ignoreText: 'Nếu bạn không yêu cầu tạo tài khoản, vui lòng bỏ qua email này.',
+  });
 }
 
 Deno.serve(async (req) => {
@@ -75,7 +49,6 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Missing required fields" }, 400);
       }
 
-      // Check if student_id already exists
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("id")
@@ -86,7 +59,6 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "MSSV đã tồn tại trong hệ thống." }, 409);
       }
 
-      // Check if email already exists
       const { data: existingEmailProfile } = await supabase
         .from("profiles")
         .select("id")
@@ -97,16 +69,11 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Email đã được sử dụng." }, 409);
       }
 
-      // Create user via admin API — email_confirm: false so no session is auto-created
       const { data: userData, error: createError } = await supabase.auth.admin.createUser({
         email: email.toLowerCase(),
         password,
         email_confirm: false,
-        user_metadata: {
-          student_id,
-          full_name,
-          institution: institution || null,
-        },
+        user_metadata: { student_id, full_name, institution: institution || null },
       });
 
       if (createError) {
@@ -120,13 +87,11 @@ Deno.serve(async (req) => {
 
       const newUserId = userData.user.id;
 
-      // Save demo password (fire-and-forget)
       supabase
         .from("demo_passwords")
         .upsert({ user_id: newUserId, plain_password: password }, { onConflict: "user_id" })
         .then(() => {});
 
-      // Generate and send OTP
       const otpCode = String(Math.floor(100000 + Math.random() * 900000));
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
@@ -147,14 +112,13 @@ Deno.serve(async (req) => {
           from: FROM_EMAIL,
           to: [email.toLowerCase()],
           subject: `Mã xác minh tài khoản T-Nexus: ${otpCode}`,
-          html: buildOtpEmailHtml(otpCode),
+          html: buildSignupOtpHtml(otpCode),
         }),
       });
 
       if (!emailRes.ok) {
         const errText = await emailRes.text();
         console.error("Resend error:", errText);
-        // User created but email failed — still return user_id so they can resend
       }
 
       return jsonResponse({
@@ -173,14 +137,12 @@ Deno.serve(async (req) => {
       const otpCode = String(Math.floor(100000 + Math.random() * 900000));
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
-      // Invalidate old codes
       await supabase
         .from("email_verification_codes")
         .update({ used: true })
         .eq("email", email.toLowerCase())
         .eq("used", false);
 
-      // Store new code
       await supabase.from("email_verification_codes").insert({
         user_id,
         email: email.toLowerCase(),
@@ -188,7 +150,6 @@ Deno.serve(async (req) => {
         expires_at: expiresAt,
       });
 
-      // Send email via Resend
       const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
         method: "POST",
         headers: {
@@ -199,7 +160,7 @@ Deno.serve(async (req) => {
           from: FROM_EMAIL,
           to: [email.toLowerCase()],
           subject: `Mã xác minh tài khoản T-Nexus: ${otpCode}`,
-          html: buildOtpEmailHtml(otpCode),
+          html: buildSignupOtpHtml(otpCode),
         }),
       });
 
@@ -209,10 +170,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Không thể gửi email xác minh. Vui lòng thử lại sau." }, 500);
       }
 
-      return jsonResponse({
-        success: true,
-        message: "Mã xác minh đã được gửi đến email của bạn",
-      });
+      return jsonResponse({ success: true, message: "Mã xác minh đã được gửi đến email của bạn" });
     }
 
     // ===== VERIFY CODE =====
@@ -235,7 +193,6 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Mã xác minh đã hết hạn hoặc không tồn tại. Vui lòng gửi lại mã mới." }, 400);
       }
 
-      // Check max attempts
       if (codeData.attempts >= 5) {
         await supabase
           .from("email_verification_codes")
@@ -245,7 +202,6 @@ Deno.serve(async (req) => {
       }
 
       if (codeData.code !== code) {
-        // Increment attempts
         await supabase
           .from("email_verification_codes")
           .update({ attempts: codeData.attempts + 1 })
@@ -257,7 +213,6 @@ Deno.serve(async (req) => {
         }, 400);
       }
 
-      // Code is correct — confirm user email
       const { error: updateError } = await supabase.auth.admin.updateUserById(
         user_id,
         { email_confirm: true }
@@ -268,7 +223,6 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Không thể xác minh tài khoản" }, 500);
       }
 
-      // Mark code as used
       await supabase
         .from("email_verification_codes")
         .update({ used: true })
@@ -283,7 +237,6 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Email and user_id are required" }, 400);
       }
 
-      // Rate limit: check last code created_at
       const { data: lastCode } = await supabase
         .from("email_verification_codes")
         .select("created_at")
@@ -303,7 +256,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Invalidate old codes
       await supabase
         .from("email_verification_codes")
         .update({ used: true })
@@ -320,7 +272,6 @@ Deno.serve(async (req) => {
         expires_at: expiresAt,
       });
 
-      // Send email via Resend
       const emailRes = await fetch(`${RESEND_API_URL}/emails`, {
         method: "POST",
         headers: {
@@ -331,7 +282,7 @@ Deno.serve(async (req) => {
           from: FROM_EMAIL,
           to: [email.toLowerCase()],
           subject: `Mã xác minh tài khoản T-Nexus: ${otpCode}`,
-          html: buildOtpEmailHtml(otpCode),
+          html: buildSignupOtpHtml(otpCode),
         }),
       });
 
@@ -341,10 +292,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Không thể gửi lại email xác minh." }, 500);
       }
 
-      return jsonResponse({
-        success: true,
-        message: "Mã xác minh mới đã được gửi",
-      });
+      return jsonResponse({ success: true, message: "Mã xác minh mới đã được gửi" });
     }
 
     return jsonResponse({ error: "Invalid action" }, 400);
