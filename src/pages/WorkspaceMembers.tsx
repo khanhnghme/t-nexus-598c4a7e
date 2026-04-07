@@ -55,8 +55,8 @@ export default function WorkspaceMembers() {
   const [guests, setGuests] = useState<GuestInfo[]>([]);
   const [guestsLoading, setGuestsLoading] = useState(false);
 
-  const isOwner = workspaceRole === 'workspace_owner' as WorkspaceRole;
-  const canManage = isOwner || workspaceRole === 'workspace_admin' as WorkspaceRole;
+  const isOwner = workspaceRole === 'workspace_owner';
+  const canManage = isOwner || workspaceRole === 'workspace_admin';
 
   const fetchGuests = useCallback(async () => {
     if (!activeWorkspace) return;
@@ -236,13 +236,13 @@ export default function WorkspaceMembers() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="member">
+                      <SelectItem value="workspace_member">
                         <div className="flex items-center gap-2">
                           <User className="w-3.5 h-3.5" />
                           <span>Member</span>
                         </div>
                       </SelectItem>
-                      <SelectItem value="admin">
+                      <SelectItem value="workspace_admin">
                         <div className="flex items-center gap-2">
                           <Shield className="w-3.5 h-3.5" />
                           <span>Admin</span>

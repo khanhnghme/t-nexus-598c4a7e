@@ -55,7 +55,7 @@ interface ProfileViewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   profile: Profile | null;
-  role?: 'project_owner' | 'project_admin' | 'project_member';
+  role?: ProjectRole;
   isGroupCreator?: boolean;
   groupId?: string;
 }

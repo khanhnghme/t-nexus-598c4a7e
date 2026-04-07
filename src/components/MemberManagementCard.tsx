@@ -71,7 +71,7 @@ import UserAvatar from '@/components/UserAvatar';
 import ProfileViewDialog from '@/components/ProfileViewDialog';
 import { useUserPresence } from '@/hooks/useUserPresence';
 import ExcelMemberImport, { type ParsedRow, type ExcelImportAction, type ImportValidation } from '@/components/ExcelMemberImport';
-import type { GroupMember, Profile } from '@/types/database';
+import type { GroupMember, Profile, ProjectRole } from '@/types/database';
 
 interface MemberManagementCardProps {
   members: GroupMember[];
