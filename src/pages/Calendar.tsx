@@ -55,11 +55,13 @@ export default function CalendarPage() {
       const groupIds = memberships.map((m) => m.group_id);
       const { data: assignments } = await supabase.from('task_assignments').select('task_id').eq('user_id', user.id);
       const assignedTaskIds = assignments?.map((a) => a.task_id) || [];
-      const { data: tasks } = await supabase
+      let tasksQuery = supabase
         .from('tasks')
-        .select('id, title, deadline, status, group_id, slug, groups!inner(name, slug)')
+        .select('id, title, deadline, status, group_id, slug, groups!inner(name, slug, workspace_id)')
         .in('group_id', groupIds)
         .not('deadline', 'is', null);
+
+      const { data: tasks } = await tasksQuery;
       if (!tasks?.length) return [];
       const events: CalendarEvent[] = [];
       tasks.forEach((task: any) => {
