@@ -20,7 +20,7 @@ import {
   Pencil,
   ImageIcon,
 } from 'lucide-react';
-import type { Task, GroupMember, Stage, Profile } from '@/types/database';
+import type { Task, GroupMember, Stage, Profile, ProjectRole } from '@/types/database';
 import { formatDeadlineShortVN, isDeadlineOverdue, parseLocalDateTime } from '@/lib/datetime';
 import { fixStorageUrl } from '@/lib/urlUtils';
 import { getProjectRoleLabel } from '@/lib/roleLabels';

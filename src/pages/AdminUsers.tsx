@@ -36,7 +36,7 @@ import {
   MoreVertical,
   KeyRound,
 } from 'lucide-react';
-import type { Profile } from '@/types/database';
+import type { Profile, ProjectRole } from '@/types/database';
 
 interface MemberRow {
   id: string;

@@ -231,7 +231,7 @@ export default function WorkspaceMembers() {
                 </div>
                 <div className="space-y-2">
                   <Label>Vai trò</Label>
-                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'admin' | 'project_member')}>
+                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'workspace_admin' | 'workspace_member')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

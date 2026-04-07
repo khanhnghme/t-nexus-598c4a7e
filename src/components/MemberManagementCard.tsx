@@ -505,7 +505,7 @@ export default function MemberManagementCard({
         status: 'pending',
       }));
 
-      const { error } = await supabase.from('project_invitations').insert(invitations);
+      const { error } = await supabase.from('project_invitations').insert(invitations as any);
 
       if (error) {
         if (error.code === '23505') throw new Error('Một số thành viên đã có lời mời đang chờ');

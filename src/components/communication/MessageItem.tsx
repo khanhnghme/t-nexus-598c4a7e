@@ -25,7 +25,7 @@ import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Profile, Task } from '@/types/database';
+import type { Profile, Task, ProjectRole } from '@/types/database';
 import { 
   ExternalLink, 
   MoreHorizontal, 

@@ -1718,7 +1718,7 @@ export default function AdminBackupRestore() {
             await supabase.from('group_members').insert({
               group_id: newGroupId,
               user_id: existingProfile.id,
-              role: member.role as ProjectRole
+              role: member.role as any
             }).then(() => {});
           }
         }
