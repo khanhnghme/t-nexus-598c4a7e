@@ -61,10 +61,14 @@ export default function CalendarPage() {
         .in('group_id', groupIds)
         .not('deadline', 'is', null);
 
-      const { data: tasks } = await tasksQuery;
-      if (!tasks?.length) return [];
+      let filteredTasks = tasks || [];
+      // Filter by active workspace
+      if (wsAvailable && activeWorkspace?.id) {
+        filteredTasks = filteredTasks.filter((t: any) => t.groups?.workspace_id === activeWorkspace.id);
+      }
+      if (!filteredTasks.length) return [];
       const events: CalendarEvent[] = [];
-      tasks.forEach((task: any) => {
+      filteredTasks.forEach((task: any) => {
         const isAssigned = assignedTaskIds.includes(task.id);
         if (assignedTaskIds.length > 0 && !isAssigned) return;
         const deadline = parseLocalDateTime(task.deadline);
