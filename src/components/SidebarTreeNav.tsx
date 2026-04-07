@@ -302,6 +302,17 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
         </>
       )}
 
+      {/* Create workspace item */}
+      {isAvailable && (
+        <Link
+          to="/workspace/new"
+          className="sidebar-nav-item opacity-60 hover:opacity-100 border border-dashed border-border/50 mt-1"
+        >
+          <Plus className="nav-icon" strokeWidth={1.8} />
+          <span className="nav-label text-muted-foreground">Tạo Workspace</span>
+        </Link>
+      )}
+
       {/* ── Personal section ── */}
       {personalItems.length > 0 && (
         <>
