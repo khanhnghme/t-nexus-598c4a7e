@@ -109,7 +109,7 @@ interface PendingWorkspaceInvite {
 
 export default function Dashboard() {
   const { user, profile, mustChangePassword, refreshProfile, isLeader, isAdmin } = useAuth();
-  const { activeWorkspace, isAvailable: wsAvailable } = useWorkspace();
+  const { activeWorkspace, isAvailable: wsAvailable, refreshWorkspaces } = useWorkspace();
   const streak = useLoginStreak(user?.id);
 
   const [groups, setGroups] = useState<Group[]>([]);
@@ -363,6 +363,7 @@ export default function Dashboard() {
       toast.success(accept ? 'Đã chấp nhận lời mời workspace' : 'Đã từ chối lời mời workspace');
       setPendingWsInvites(prev => prev.filter(p => p.id !== invite.id));
       if (accept) {
+        await refreshWorkspaces();
         fetchDashboardData();
       }
     } catch (error: any) {
