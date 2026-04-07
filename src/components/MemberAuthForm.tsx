@@ -522,15 +522,15 @@ export function MemberAuthForm() {
     const isApproved = registerSuccess === 'approved';
     const isVerifyEmail = registerSuccess === 'verify_email';
     return (
-      <div className={`w-full ${isVerifyEmail ? 'max-w-4xl' : 'max-w-md'}`}>
-        <div className="mb-6 flex flex-col items-center gap-2">
-          <TNexusLogo variant="text" width={120} />
-          <span className="font-heading font-semibold text-primary flex items-center gap-1">
-            <Users className="w-4 h-4" /> T-Nexus
+      <div className={`w-full ${isVerifyEmail ? 'max-w-sm' : 'max-w-sm'} mx-auto`}>
+        <div className="mb-4 flex flex-col items-center gap-1">
+          <TNexusLogo variant="text" width={100} />
+          <span className="font-heading text-sm font-semibold text-primary flex items-center gap-1">
+            <Users className="w-3.5 h-3.5" /> T-Nexus
           </span>
         </div>
         <Card className={`w-full shadow-card-lg ${isVerifyEmail ? 'border-blue-300 dark:border-blue-700/50' : isApproved ? 'border-emerald-300 dark:border-emerald-700/50' : 'border-amber-300 dark:border-amber-700/50'}`}>
-          <CardContent className={`${isVerifyEmail ? 'p-0' : 'pt-6 text-center space-y-4'}`}>
+          <CardContent className={`${isVerifyEmail ? 'p-0' : 'py-5 px-4 text-center space-y-3'}`}>
             {isVerifyEmail ? (
               <OtpVerifyScreen
                 email={regEmail}
