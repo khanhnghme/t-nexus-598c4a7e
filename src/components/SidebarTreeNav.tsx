@@ -17,7 +17,7 @@ import {
   CalendarDays,
   MessageSquare,
   UserCircle,
-  BookOpen,
+  Settings,
   Lightbulb,
   FolderArchive,
   Shield,
@@ -106,13 +106,19 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   };
 
   // Navigation items
+  const accountExpanded = expanded.has('account');
+
   const personalItems = [
     { name: t?.calendar || 'Calendar', href: '/calendar', icon: CalendarDays },
     { name: t?.communication || 'Communication', href: '/communication', icon: MessageSquare },
-    { name: t?.account || 'Account', href: '/personal-info', icon: UserCircle },
     { name: t?.tips || 'Tips', href: '/tips', icon: BookOpen },
     { name: t?.feedback || 'Feedback', href: '/feedback', icon: Lightbulb },
   ].filter(i => !hiddenNav.includes(i.href));
+
+  const accountChildren = [
+    { name: t?.personalInfo || 'Personal Info', href: '/personal-info' },
+    { name: t?.settings || 'Settings', href: '/account-settings' },
+  ];
 
   const adminItems = [
     { name: t?.systemMembers || 'Members', href: '/members', icon: Users },
