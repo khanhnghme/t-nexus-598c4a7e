@@ -10,7 +10,7 @@ import { NavigationProvider } from "@/contexts/NavigationContext";
 import { FilePreviewProvider } from "@/contexts/FilePreviewContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AnimationProvider } from "@/contexts/AnimationContext";
-import { MusicProvider } from "@/contexts/MusicContext";
+
 import { ForceLightMode } from "@/components/ForceLightMode";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
@@ -189,7 +189,6 @@ const App = () => {
             <BrowserRouter>
               <AuthProvider>
                 <WorkspaceProvider>
-                  <MusicProvider>
                     <AnimationProvider>
                       <NavigationProvider>
                         <FilePreviewProvider>
@@ -197,7 +196,6 @@ const App = () => {
                         </FilePreviewProvider>
                       </NavigationProvider>
                     </AnimationProvider>
-                  </MusicProvider>
                 </WorkspaceProvider>
               </AuthProvider>
             </BrowserRouter>
