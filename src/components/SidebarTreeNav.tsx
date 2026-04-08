@@ -230,11 +230,11 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
               <div className="ws-avatar">
                 {activeWorkspace.name.charAt(0).toUpperCase()}
               </div>
-              <div className="ws-switcher-info">
+              <div className="ws-switcher-info flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="ws-switcher-name">{activeWorkspace.name}</span>
+                  <span className="ws-switcher-name truncate">{activeWorkspace.name}</span>
                   {ownerPlan && (
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold leading-none ${
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold leading-none shrink-0 ${
                       ownerPlan !== 'plan_free' 
                         ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' 
                         : 'bg-muted text-muted-foreground'
@@ -264,18 +264,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                   {ws.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="truncate text-sm font-medium">{ws.name}</span>
-                    {(ws as any).plan && (
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold leading-none ${
-                        (ws as any).plan !== 'free' 
-                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' 
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {((ws as any).plan as string).charAt(0).toUpperCase() + ((ws as any).plan as string).slice(1)}
-                      </span>
-                    )}
-                  </div>
+                  <span className="truncate text-sm font-medium">{ws.name}</span>
                   <span className="text-[10px] text-muted-foreground">{getRoleBadge(ws.my_role)} {getRoleLabel(ws.my_role)}</span>
                 </div>
                 {ws.id === activeWorkspace.id && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}

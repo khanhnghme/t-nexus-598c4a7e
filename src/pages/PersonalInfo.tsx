@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import ServicePlanSection from '@/components/personal/ServicePlanSection';
+
 import { r2Storage } from '@/lib/r2Storage';
 import { 
   User, Mail, GraduationCap, BookOpen, Phone, Sparkles, FileText,
@@ -413,8 +413,6 @@ export default function PersonalInfo() {
           </CardContent>
         </Card>
 
-        {/* Service Plan Section */}
-        <ServicePlanSection />
       </div>
     </>
   );
