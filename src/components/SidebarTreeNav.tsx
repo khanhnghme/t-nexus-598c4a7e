@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useWorkspaceProjects } from '@/hooks/useWorkspaceProjects';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWorkspaceBilling, formatPlanName } from '@/hooks/useWorkspaceBilling';
 import { cn } from '@/lib/utils';
 import {
   Home,
@@ -55,6 +56,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   const { activeWorkspace, workspaces, switchWorkspace, isAvailable, workspaceRole } = useWorkspace();
   const { projects, isGuest } = useWorkspaceProjects();
   const { translations } = useLanguage();
+  const { ownerPlan } = useWorkspaceBilling();
   const t = translations.app?.sidebar;
 
   const hiddenNav = Array.isArray(profile?.nav_hidden_pages)
@@ -231,13 +233,13 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
               <div className="ws-switcher-info">
                 <div className="flex items-center gap-1.5">
                   <span className="ws-switcher-name">{activeWorkspace.name}</span>
-                  {activeWorkspace.plan && (
-                    <span className={`text-[9px] px-1.5 py-0 rounded-full font-medium leading-relaxed ${
-                      activeWorkspace.plan !== 'free' 
+                  {ownerPlan && (
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold leading-none ${
+                      ownerPlan !== 'plan_free' 
                         ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' 
                         : 'bg-muted text-muted-foreground'
                     }`}>
-                      {activeWorkspace.plan.charAt(0).toUpperCase() + activeWorkspace.plan.slice(1)}
+                      {formatPlanName(ownerPlan)}
                     </span>
                   )}
                 </div>
@@ -265,7 +267,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                   <div className="flex items-center gap-1.5">
                     <span className="truncate text-sm font-medium">{ws.name}</span>
                     {(ws as any).plan && (
-                      <span className={`text-[8px] px-1 py-0 rounded-full font-medium ${
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold leading-none ${
                         (ws as any).plan !== 'free' 
                           ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' 
                           : 'bg-muted text-muted-foreground'
