@@ -2567,6 +2567,7 @@ export type Database = {
           member_count: number
         }[]
       }
+      get_workspace_plan: { Args: { _workspace_id: string }; Returns: string }
       get_workspace_role: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: string
@@ -2613,6 +2614,10 @@ export type Database = {
       }
       is_workspace_participant: {
         Args: { _user_id: string; _workspace_id: string }
+        Returns: boolean
+      }
+      is_workspace_premium: {
+        Args: { _workspace_id: string }
         Returns: boolean
       }
       move_to_dlq: {
