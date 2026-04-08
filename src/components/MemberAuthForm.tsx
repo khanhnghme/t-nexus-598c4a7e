@@ -261,6 +261,7 @@ export function MemberAuthForm() {
     const isEmail = input.includes('@');
 
     try {
+      pendingActionRef.current = null;
       // Verify CAPTCHA first
       const { data: captchaResult, error: captchaError } = await supabase.functions.invoke('verify-turnstile', {
         body: { token: turnstileToken },
