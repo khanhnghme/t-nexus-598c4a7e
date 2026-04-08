@@ -1,21 +1,36 @@
 
 
-## Hiện loading ngay khi bấm Login/Đăng ký (trước CAPTCHA)
+## Chuyển Cloudflare Turnstile sang Managed + interaction-only
 
-### Vấn đề
-Hiện tại khi `turnstileToken` chưa có, cả `handleLogin` và `handleRegister` đều `return` sớm để chờ CAPTCHA xác thực — nhưng **không bật `isLoading`**. Kết quả: người dùng bấm nút → không thấy phản hồi gì → spam bấm.
+### Tổng quan
+Thay đổi widget từ `invisible` sang `managed` với appearance `interaction-only`. Widget sẽ tự động render khi form load, chỉ hiển thị challenge khi Cloudflare nghi ngờ. Không cần `execute()` thủ công nữa — widget tự xử lý và gọi callback khi có token.
 
-### Giải pháp
-Đơn giản: bật `setIsLoading(true)` **trước** khi gọi `turnstileRef.current?.execute()`, và tắt loading nếu CAPTCHA lỗi.
+### Thay đổi
 
-### Chi tiết thay đổi
+**File 1: `src/components/TurnstileWidget.tsx`**
+- Bỏ `size: 'invisible'` và `execution: 'execute'`
+- Đổi sang `size: 'compact'`, `appearance: 'interaction-only'`
+- Bỏ `useImperativeHandle` (không cần `execute()` nữa)
+- Bỏ `forwardRef` — component đơn giản hơn
+- Container div: bỏ `display: none`, thêm styling nhỏ gọn (chỉ hiện khi cần challenge)
 
-**File: `src/components/MemberAuthForm.tsx`**
+**File 2: `src/components/MemberAuthForm.tsx`**
+- Bỏ `turnstileRef`, `pendingActionRef`, và logic `execute()` thủ công
+- Đơn giản hóa `handleLogin`/`handleRegister`: chỉ cần check `turnstileToken` có chưa → nếu chưa thì báo lỗi "Vui lòng chờ xác minh"
+- Widget sẽ tự động cấp token khi render xong (người dùng bình thường) hoặc sau khi hoàn thành challenge
+- Giữ nguyên verify token phía backend
+- Giữ nguyên loading states và error handling
 
-1. **handleLogin** (dòng ~242-247): Thêm `setIsLoading(true)` trước khi execute CAPTCHA
-2. **handleRegister** (dòng ~439-443): Tương tự, thêm `setIsLoading(true)` trước execute
-3. **onError callback của TurnstileWidget**: Thêm `setIsLoading(false)` để tắt loading nếu CAPTCHA thất bại
-4. Đảm bảo `onVerify` callback không bật lại loading trùng (vì đã bật sẵn)
+### Flow mới
+1. Form load → Turnstile render (ẩn hoàn toàn nếu user bình thường)
+2. Cloudflare nghi ngờ → hiện challenge nhỏ (compact)
+3. Token tự động cấp qua `onVerify` callback
+4. User bấm Login/Register → check token → tiếp tục flow bình thường
+5. Nếu chưa có token → hiện thông báo "Đang xác minh bảo mật, vui lòng thử lại"
 
-Kết quả: Người dùng bấm → loading spinner hiện ngay → CAPTCHA chạy ngầm → xác thực xong → tiếp tục đăng nhập/đăng ký.
+### Kết quả
+- Không còn box lớn chiếm diện tích
+- 95%+ user sẽ không thấy Turnstile
+- Chỉ hiện compact challenge khi cần
+- Code đơn giản hơn (bỏ execute pattern)
 
