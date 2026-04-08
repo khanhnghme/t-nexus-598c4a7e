@@ -25,7 +25,7 @@ export default function ServicePlanSection() {
   const [maxProjects, setMaxProjects] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const plan = profile?.user_plan || profile?.plan || 'plan_free';
+  const plan = profile?.user_plan || 'plan_free';
   const planName = formatPlanName(plan);
   const isPremium = plan !== 'plan_free';
 
