@@ -28,6 +28,7 @@ import {
   ChevronsUpDown,
   Check,
   FolderOpen,
+  Bell,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -187,6 +188,9 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
         {/* Dashboard */}
         <TreeItemCollapsed icon={Home} label={t?.home || 'Home'} href="/dashboard" active={isPathActive('/dashboard')} />
 
+        {/* Notifications */}
+        <TreeItemCollapsed icon={Bell} label={t?.notifications || 'Notifications'} href="/notifications" active={isPathActive('/notifications')} />
+
         {/* All Projects */}
         <TreeItemCollapsed icon={FolderKanban} label={t?.projects || 'Projects'} href="/groups" active={isPathActive('/groups')} />
 
@@ -276,6 +280,12 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
           <Link to="/dashboard" className={cn('sidebar-nav-item', isPathActive('/dashboard') && 'active')}>
             <Home className="nav-icon" strokeWidth={1.8} />
             <span className="nav-label">{t?.home || 'Home'}</span>
+          </Link>
+
+          {/* Notifications */}
+          <Link to="/notifications" className={cn('sidebar-nav-item', isPathActive('/notifications') && 'active')}>
+            <Bell className="nav-icon" strokeWidth={1.8} />
+            <span className="nav-label">{t?.notifications || 'Notifications'}</span>
           </Link>
 
           {/* Workspace management - only for non-guest */}
