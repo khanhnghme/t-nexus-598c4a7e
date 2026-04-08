@@ -2389,36 +2389,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_streaks: {
-        Row: {
-          current_streak: number
-          id: string
-          last_login_date: string | null
-          longest_streak: number
-          recovery_count: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          current_streak?: number
-          id?: string
-          last_login_date?: string | null
-          longest_streak?: number
-          recovery_count?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          current_streak?: number
-          id?: string
-          last_login_date?: string | null
-          longest_streak?: number
-          recovery_count?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       workspace_invites: {
         Row: {
           created_at: string
