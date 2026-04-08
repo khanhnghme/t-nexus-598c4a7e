@@ -457,6 +457,17 @@ export function MemberAuthForm() {
     setIsLoading(true);
 
     try {
+      // Verify CAPTCHA first
+      const { data: captchaResult, error: captchaError } = await supabase.functions.invoke('verify-turnstile', {
+        body: { token: turnstileToken },
+      });
+      if (captchaError || !captchaResult?.success) {
+        setIsLoading(false);
+        setTurnstileToken(null);
+        toast({ title: ta.captchaFailed, variant: 'destructive' });
+        return;
+      }
+
       const { data: existingEmail } = await supabase
         .rpc('get_email_by_student_id', { _student_id: regStudentId.trim() });
 
