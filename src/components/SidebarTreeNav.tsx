@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useWorkspaceProjects } from '@/hooks/useWorkspaceProjects';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWorkspaceBilling, formatPlanName } from '@/hooks/useWorkspaceBilling';
 import { cn } from '@/lib/utils';
 import {
   Home,
@@ -55,6 +56,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   const { activeWorkspace, workspaces, switchWorkspace, isAvailable, workspaceRole } = useWorkspace();
   const { projects, isGuest } = useWorkspaceProjects();
   const { translations } = useLanguage();
+  const { ownerPlan } = useWorkspaceBilling();
   const t = translations.app?.sidebar;
 
   const hiddenNav = Array.isArray(profile?.nav_hidden_pages)
