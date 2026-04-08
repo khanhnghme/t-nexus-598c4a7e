@@ -334,7 +334,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       )}
 
       {/* ── Personal section ── */}
-      {personalItems.length > 0 && (
+      {(personalItems.length > 0 || true) && (
         <>
           <div className="sidebar-nav-separator" />
           <div className="sidebar-section-label">{t?.personal || 'PERSONAL'}</div>
@@ -344,6 +344,33 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
               <span className="nav-label">{item.name}</span>
             </Link>
           ))}
+
+          {/* Account tree node */}
+          <button
+            onClick={() => toggle('account')}
+            className={cn(
+              'sidebar-nav-item w-full text-left group',
+              (isPathActive('/personal-info') || isPathActive('/account-settings')) && !accountExpanded && 'semi-active'
+            )}
+          >
+            <ChevronRight className={cn('nav-chevron', accountExpanded && 'expanded')} />
+            <UserCircle className="nav-icon" strokeWidth={1.8} />
+            <span className="nav-label">{t?.account || 'Account'}</span>
+          </button>
+
+          {accountExpanded && (
+            <div className="tree-children tree-level-1">
+              {accountChildren.map(child => (
+                <Link
+                  key={child.href}
+                  to={child.href}
+                  className={cn('sidebar-nav-item', isPathActive(child.href) && 'active')}
+                >
+                  <span className="nav-label">{child.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
         </>
       )}
 
