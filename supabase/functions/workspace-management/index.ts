@@ -19,7 +19,8 @@ type Action =
   | "leave_workspace"
   | "list_my_workspaces"
   | "get_workspace_members"
-  | "transfer_ownership";
+  | "transfer_ownership"
+  | "check_workspace_premium";
 
 interface RequestBody {
   action: Action;
