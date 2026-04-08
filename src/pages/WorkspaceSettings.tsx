@@ -163,7 +163,7 @@ export default function WorkspaceSettings() {
         <StatCard icon={Users} label={tw.members} value={memberCount} sub={tw.maxMembers.replace('{n}', String(activeWorkspace.max_members))} color="blue" />
         <StatCard icon={FolderKanban} label={tw.projects} value={projectCount} sub={tw.maxProjects.replace('{n}', String(activeWorkspace.max_projects))} color="green" />
         <StatCard icon={HardDrive} label={tw.storage} value={storageLabel} sub={tw.usedStorage.replace('{n}', String(storageUsed))} color="amber" />
-        <StatCard icon={Crown} label={tw.plan} value={activeWorkspace.plan.charAt(0).toUpperCase() + activeWorkspace.plan.slice(1)} color="primary" />
+        <StatCard icon={Crown} label={tw.plan} value={activeWorkspace?.plan ? activeWorkspace.plan.charAt(0).toUpperCase() + activeWorkspace.plan.slice(1) : 'Free'} color="primary" />
       </div>
 
       {/* Tabs: Info & Settings */}
