@@ -18,6 +18,7 @@ import {
   MessageSquare,
   UserCircle,
   Settings,
+  BookOpen,
   Lightbulb,
   FolderArchive,
   Shield,
