@@ -55,11 +55,7 @@ import UserChangePasswordDialog from '@/components/UserChangePasswordDialog';
 import NotificationBell from '@/components/NotificationBell';
 import AvatarUpload from '@/components/AvatarUpload';
 import AIAssistantButton from '@/components/ai/AIAssistantButton';
-import MusicPlayer from '@/components/MusicPlayer';
-import NetworkDiagnostic from '@/components/NetworkDiagnostic';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
-import { useLoginStreak } from '@/hooks/useLoginStreak';
-// WorkspaceSwitcher and SidebarProjects replaced by SidebarTreeNav
 
 /* ------------------------------------------------------------------ */
 /*  Theme toggle (sidebar-friendly)                                    */
@@ -132,9 +128,8 @@ export default function DashboardLayout({
     ? (profile.nav_hidden_pages as string[])
     : [];
 
-  // Activity tracking & streak
+  // Activity tracking
   useActivityTracker(user?.id);
-  const streak = useLoginStreak(user?.id);
 
   useEffect(() => {
     const handler = () => refreshProfile();
@@ -227,8 +222,6 @@ export default function DashboardLayout({
             </Link>
 
             <div className={`ml-auto flex items-center gap-1 transition-opacity ${sidebarCollapsed ? 'hidden' : 'opacity-100'}`}>
-              <NetworkDiagnostic />
-              <MusicPlayer showDisc />
               <SidebarThemeToggle />
               <NotificationBell />
             </div>

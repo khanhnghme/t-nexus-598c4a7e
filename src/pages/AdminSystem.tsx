@@ -17,7 +17,7 @@ import { Shield, Wrench, AlertTriangle, FileText, Clock, Save, Edit, CheckCircle
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AdminDataMigration from '@/components/AdminDataMigration';
-import AdminMusicManager from '@/components/AdminMusicManager';
+
 import AdminUserAnalytics from '@/components/AdminUserAnalytics';
 import { cn } from '@/lib/utils';
 import {
@@ -939,8 +939,6 @@ export default function AdminSystem() {
                 </CardContent>
               </Card>
 
-              {/* Background Music Manager */}
-              <AdminMusicManager />
             </div>
         )}
         {/* ═══ TAB: Phân tích ═══ */}
