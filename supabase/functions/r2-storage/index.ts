@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const ALLOWED_BUCKETS = [
   'avatars', 'task-submissions', 'appeal-attachments', 'task-note-attachments',
-  'group-images', 'project-resources', 'system-assets', 'profile-achievements', 'background-music',
+  'group-images', 'project-resources', 'system-assets', 'profile-achievements',
 ]
 
 const BUCKET_URL_KEYS: Record<string, string> = {
@@ -20,7 +20,6 @@ const BUCKET_URL_KEYS: Record<string, string> = {
   'project-resources': 'R2_URL_PROJECT_RESOURCES',
   'system-assets': 'R2_URL_SYSTEM_ASSETS',
   'profile-achievements': 'R2_URL_PROFILE_ACHIEVEMENTS',
-  'background-music': 'R2_URL_BACKGROUND_MUSIC',
 }
 
 function getR2Config() {
