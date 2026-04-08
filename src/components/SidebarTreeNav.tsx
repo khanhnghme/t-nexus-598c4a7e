@@ -80,6 +80,9 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       if (path.startsWith('/p/')) {
         next.add('projects');
       }
+      if (path === '/personal-info' || path === '/account-settings') {
+        next.add('account');
+      }
       return next;
     });
   }, [location.pathname]);
