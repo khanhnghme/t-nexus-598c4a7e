@@ -327,13 +327,7 @@ Hệ thống tự động gửi thông báo khi:
 - Trưởng nhóm có thể **bật/tắt** ghi log hoạt động cho từng project.
 - Leader và Admin có quyền xem, Admin có quyền xóa nhật ký.
 
-### 12.2. Login Streak (Chuỗi đăng nhập)
-- Hệ thống theo dõi **chuỗi đăng nhập liên tục** hàng ngày cho mỗi người dùng.
-- Bỏ lỡ 1 ngày: chuỗi vẫn tiếp tục (cho phép gap 2 ngày).
-- Bỏ lỡ 2+ ngày: chuỗi bị đứt, được chọn **khôi phục** (tối đa 3 lần).
-- Hệ thống ghi nhận chuỗi dài nhất (\`longest_streak\`) cho mỗi tài khoản.
-
-### 12.3. User Presence
+### 12.2. User Presence
 - Hệ thống theo dõi trạng thái online/offline của người dùng.
 
 ---
@@ -670,9 +664,6 @@ System automates alerts upon:
 
 ### 12.1. Activity Journals
 - Commits a ledger entry for project actions (task updates, reviews, settings) viewable to leaders for auditing.
-
-### 12.2. Login Streaks
-- The system gamifies consistent access with streak counts permitting limited gaps.
 
 ---
 
