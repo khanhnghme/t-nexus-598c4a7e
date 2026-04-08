@@ -204,6 +204,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
         {personalItems.map(item => (
           <TreeItemCollapsed key={item.href} icon={item.icon} label={item.name} href={item.href} active={isPathActive(item.href)} />
         ))}
+        <TreeItemCollapsed icon={UserCircle} label={t?.account || 'Account'} href="/personal-info" active={isPathActive('/personal-info') || isPathActive('/account-settings')} />
 
         {/* Admin */}
         {isAdmin && adminItems.map(item => (
