@@ -94,13 +94,7 @@ export const TurnstileWidget = ({ onVerify, onExpire, onError }: TurnstileWidget
     return () => { removeWidget(); };
   }, [removeWidget]);
 
-  return (
-    <div 
-      ref={containerRef} 
-      className="flex justify-center [&:empty]:hidden [&>iframe]:!max-w-full [&>div]:!max-w-full"
-      style={{ minHeight: 0, overflow: 'hidden' }}
-    />
-  );
+  return <div ref={containerRef} className="flex justify-center [&:empty]:hidden" />;
 };
 
 TurnstileWidget.displayName = 'TurnstileWidget';

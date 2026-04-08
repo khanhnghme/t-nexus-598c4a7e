@@ -208,37 +208,19 @@ export default function Upgrade() {
           <h2 className="text-lg font-bold text-foreground mb-1">{tp.addOnTitle}</h2>
           <p className="text-sm text-muted-foreground mb-4">{tp.addOnDescription}</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
-            {ADDONS.map(addon => {
-              const basePrice = parseFloat(addon.price.replace('$', ''));
-              const proPrice = (basePrice * 0.9).toFixed(2);
-              const bizPrice = (basePrice * 0.8).toFixed(2);
-              return (
-                <div key={addon.name} className="p-4 border border-border rounded-lg hover:border-muted-foreground/30 transition-colors">
-                  <div className="text-sm font-semibold text-foreground mb-1">
-                    {addon.emoji} {addon.name}
-                  </div>
-                  <div className="flex items-baseline gap-1.5 mb-1">
-                    <span className="text-xl font-bold text-foreground">{addon.price}</span>
-                    <span className="text-xs text-muted-foreground">{addon.unit}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2 mb-1">
-                    <span className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium">
-                      Pro: ${proPrice} <span className="opacity-70">(-10%)</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium">
-                      Business: ${bizPrice} <span className="opacity-70">(-20%)</span>
-                    </span>
-                  </div>
-                  {addon.note && <p className="text-xs text-muted-foreground leading-relaxed mt-1">{addon.note}</p>}
+            {ADDONS.map(addon => (
+              <div key={addon.name} className="p-4 border border-border rounded-lg hover:border-muted-foreground/30 transition-colors">
+                <div className="text-sm font-semibold text-foreground mb-1">
+                  {addon.emoji} {addon.name}
                 </div>
-              );
-            })}
+                <div className="flex items-baseline gap-1.5 mb-1">
+                  <span className="text-xl font-bold text-foreground">{addon.price}</span>
+                  <span className="text-xs text-muted-foreground">{addon.unit}</span>
+                </div>
+                {addon.note && <p className="text-xs text-muted-foreground leading-relaxed">{addon.note}</p>}
+              </div>
+            ))}
           </div>
-          {tp.addOnNote && (
-            <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
-              <p className="text-xs font-medium text-primary m-0">{tp.addOnNote}</p>
-            </div>
-          )}
         </div>
 
         {/* Comparison table */}
