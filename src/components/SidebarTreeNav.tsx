@@ -228,7 +228,18 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                 {activeWorkspace.name.charAt(0).toUpperCase()}
               </div>
               <div className="ws-switcher-info">
-                <span className="ws-switcher-name">{activeWorkspace.name}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="ws-switcher-name">{activeWorkspace.name}</span>
+                  {activeWorkspace.plan && (
+                    <span className={`text-[9px] px-1.5 py-0 rounded-full font-medium leading-relaxed ${
+                      activeWorkspace.plan !== 'free' 
+                        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {activeWorkspace.plan.charAt(0).toUpperCase() + activeWorkspace.plan.slice(1)}
+                    </span>
+                  )}
+                </div>
                 <span className="ws-switcher-role">
                   {getRoleBadge(workspaceRole)} {getRoleLabel(workspaceRole)}
                 </span>
