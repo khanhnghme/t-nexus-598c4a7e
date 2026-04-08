@@ -438,6 +438,7 @@ export const vi: Translations = {
     forgotPasswordLink: 'Quên mật khẩu?',
     rememberLogin: 'Nhớ đăng nhập',
     loginBtn: 'Đăng nhập',
+    loggingIn: 'Đang đăng nhập...',
     noAccount: 'Chưa có tài khoản?',
     registerNow: 'Đăng ký ngay',
     studentIdLabel: 'MSSV',

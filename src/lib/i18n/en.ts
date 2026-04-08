@@ -438,6 +438,7 @@ export const en = {
     forgotPasswordLink: 'Forgot password?',
     rememberLogin: 'Remember login',
     loginBtn: 'Log in',
+    loggingIn: 'Logging in...',
     noAccount: "Don't have an account?",
     registerNow: 'Register now',
     // Register
