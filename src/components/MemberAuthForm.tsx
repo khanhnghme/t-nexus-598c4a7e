@@ -240,7 +240,7 @@ export function MemberAuthForm() {
     }
 
     if (!turnstileToken) {
-      // Trigger invisible captcha, will call back onVerify then we re-submit
+      setIsLoading(true);
       pendingActionRef.current = 'login';
       turnstileRef.current?.execute();
       return;
@@ -437,6 +437,7 @@ export function MemberAuthForm() {
     }
 
     if (!turnstileToken) {
+      setIsLoading(true);
       pendingActionRef.current = 'register';
       turnstileRef.current?.execute();
       return;
@@ -754,6 +755,7 @@ export function MemberAuthForm() {
                   onError={() => {
                     setTurnstileToken(null);
                     pendingActionRef.current = null;
+                    setIsLoading(false);
                     toast({ title: ta.captchaFailed, variant: 'destructive' });
                   }}
                 />
@@ -1186,6 +1188,7 @@ export function MemberAuthForm() {
                   onError={() => {
                     setTurnstileToken(null);
                     pendingActionRef.current = null;
+                    setIsLoading(false);
                     toast({ title: ta.captchaFailed, variant: 'destructive' });
                   }}
                 />
