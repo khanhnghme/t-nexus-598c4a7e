@@ -759,8 +759,17 @@ export function MemberAuthForm() {
                 />
 
                 <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  {ta.loginBtn}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {ta.loggingIn || 'Đang đăng nhập...'}
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4 mr-2" />
+                      {ta.loginBtn}
+                    </>
+                  )}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
                   {ta.noAccount}{' '}
@@ -1182,8 +1191,17 @@ export function MemberAuthForm() {
                 />
 
                 <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  {ta.registerBtn}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {ta.registering || 'Đang tạo tài khoản...'}
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      {ta.registerBtn}
+                    </>
+                  )}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
                   {ta.adminApprovalNote}

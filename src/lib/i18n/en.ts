@@ -438,6 +438,7 @@ export const en = {
     forgotPasswordLink: 'Forgot password?',
     rememberLogin: 'Remember login',
     loginBtn: 'Log in',
+    loggingIn: 'Logging in...',
     noAccount: "Don't have an account?",
     registerNow: 'Register now',
     // Register
@@ -454,6 +455,7 @@ export const en = {
     confirmPasswordLabel: 'Confirm password',
     confirmPasswordPlaceholder: 'Re-enter password',
     registerBtn: 'Create account',
+    registering: 'Creating account...',
     haveAccount: 'Already have an account?',
     loginNow: 'Log in now',
     // Policy
