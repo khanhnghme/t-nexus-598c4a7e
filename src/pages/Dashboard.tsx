@@ -4,9 +4,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import StreakBadge from '@/components/StreakBadge';
-import StreakFullScreenCelebration from '@/components/StreakFullScreenCelebration';
-import { useLoginStreak } from '@/hooks/useLoginStreak';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -113,7 +110,7 @@ export default function Dashboard() {
   const { activeWorkspace, isAvailable: wsAvailable, refreshWorkspaces } = useWorkspace();
   const { translations, locale } = useLanguage();
   const t = translations.app?.dashboard;
-  const streak = useLoginStreak(user?.id);
+  
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -130,7 +127,7 @@ export default function Dashboard() {
   const [joinedProjectCount, setJoinedProjectCount] = useState(0);
   const [hiddenProjectIds, setHiddenProjectIds] = useState<Set<string>>(new Set());
   const [pendingApprovalGroups, setPendingApprovalGroups] = useState<Group[]>([]);
-  const [showFullScreenFire, setShowFullScreenFire] = useState(false);
+  
   const [filter, setFilter] = useState<DashboardFilter>(() => {
     if (typeof window !== 'undefined' && user?.id) {
       return (localStorage.getItem(`dashboard_filter_${user.id}`) as DashboardFilter) || 'active';
@@ -203,12 +200,6 @@ export default function Dashboard() {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  // Full-screen fire celebration — 5s after load, only when streak increased
-  useEffect(() => {
-    if (!streak.streakIncreased) return;
-    const timer = setTimeout(() => setShowFullScreenFire(true), 5000);
-    return () => clearTimeout(timer);
-  }, [streak.streakIncreased]);
 
   const fetchPendingApprovals = async () => {
     if (!user) return;
@@ -506,11 +497,6 @@ export default function Dashboard() {
 
   return (
     <>
-      <StreakFullScreenCelebration
-        currentStreak={streak.currentStreak}
-        visible={showFullScreenFire}
-        onComplete={() => setShowFullScreenFire(false)}
-      />
 
       {videoEnabled && videoUrl && (
         <>
@@ -600,20 +586,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Streak Widget - next to user info */}
-              <div className="hidden lg:block">
-                <StreakBadge
-                  currentStreak={streak.currentStreak}
-                  longestStreak={streak.longestStreak}
-                  isActiveToday={streak.isActiveToday}
-                  isWarning={streak.isWarning}
-                  variant="full"
-                  showCelebration={streak.streakIncreased}
-                  recoveryCount={streak.recoveryCount}
-                  canRecover={streak.canRecover}
-                  onRecover={streak.recoverStreak}
-                />
-              </div>
 
               {/* Stats */}
               <div className="hidden lg:flex items-center gap-4 ml-auto pl-5 border-l border-border">
