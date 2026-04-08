@@ -632,7 +632,7 @@ export const vi: Translations = {
       calendar: 'Lịch',
       communication: 'Trao đổi',
       account: 'Tài khoản',
-      personalInfo: 'Thông tin cá nhân',
+      personalInfo: 'Thông tin',
       settings: 'Cài đặt',
       tips: 'Mẹo',
       feedback: 'Góp ý',

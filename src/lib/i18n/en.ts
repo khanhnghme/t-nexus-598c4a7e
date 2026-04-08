@@ -644,7 +644,7 @@ export const en = {
       calendar: 'Calendar',
       communication: 'Communication',
       account: 'Account',
-      personalInfo: 'Personal Info',
+      personalInfo: 'Information',
       settings: 'Settings',
       tips: 'Tips',
       feedback: 'Feedback',
