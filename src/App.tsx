@@ -48,6 +48,7 @@ import Terms from "./pages/Terms";
 import WorkspaceSettings from "./pages/WorkspaceSettings";
 import WorkspaceMembers from "./pages/WorkspaceMembers";
 import CreateWorkspace from "./pages/CreateWorkspace";
+import Notifications from "./pages/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -147,6 +148,7 @@ function AppRoutes() {
         {/* ═══ Protected routes with persistent DashboardLayout ═══ */}
         <Route element={<ProtectedLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/groups" element={<Groups />} />
           <Route path="/p/:projectSlug" element={<GroupDetail />} />
           <Route path="/p/:projectSlug/t/:taskSlug" element={<GroupDetail />} />

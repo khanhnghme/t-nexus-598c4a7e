@@ -52,10 +52,10 @@ import { cn } from '@/lib/utils';
 import tNexusLogo from '@/assets/t-nexus-logo.png';
 import tNexusTextWhite from '@/assets/t-nexus-text-white.png';
 import UserChangePasswordDialog from '@/components/UserChangePasswordDialog';
-import NotificationBell from '@/components/NotificationBell';
 import AvatarUpload from '@/components/AvatarUpload';
 import AIAssistantButton from '@/components/ai/AIAssistantButton';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /* ------------------------------------------------------------------ */
 /*  Theme toggle (sidebar-friendly)                                    */
@@ -117,6 +117,9 @@ export default function DashboardLayout({
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile, isAdmin, isLeader, signOut, refreshProfile } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const { locale, translations } = useLanguage();
+  const isDark = theme === 'dark';
   const { sidebarCollapsed, toggleSidebar } = useDashboardLayoutContext();
 
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -191,9 +194,7 @@ export default function DashboardLayout({
           <img src={tNexusLogo} alt="T-Nexus" className="h-7 w-7" />
           <img src={tNexusTextWhite} alt="T-Nexus" className="h-4 w-auto mobile-logo-text" />
         </Link>
-        <div className="flex items-center gap-1">
-          <NotificationBell />
-        </div>
+        <div className="flex items-center gap-1" />
       </div>
 
       {/* -------- Sidebar -------- */}
@@ -221,10 +222,7 @@ export default function DashboardLayout({
               </span>
             </Link>
 
-            <div className={`ml-auto flex items-center gap-1 transition-opacity ${sidebarCollapsed ? 'hidden' : 'opacity-100'}`}>
-              <SidebarThemeToggle />
-              <NotificationBell />
-            </div>
+            <div className={`ml-auto flex items-center gap-1 transition-opacity ${sidebarCollapsed ? 'hidden' : 'opacity-100'}`} />
 
             {/* Desktop toggle */}
             <button
@@ -303,13 +301,20 @@ export default function DashboardLayout({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
                   <UserCircle className="w-4 h-4 mr-2" />
-                  Cập nhật ảnh đại diện
+                  {locale === 'vi' ? 'Cập nhật ảnh đại diện' : 'Update avatar'}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setIsChangePasswordOpen(true)}
                 >
                   <Key className="w-4 h-4 mr-2" />
-                  Đổi mật khẩu
+                  {locale === 'vi' ? 'Đổi mật khẩu' : 'Change password'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setTheme(isDark ? 'light' : 'dark')}>
+                  {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                  {isDark
+                    ? (locale === 'vi' ? 'Chế độ sáng' : 'Light mode')
+                    : (locale === 'vi' ? 'Chế độ tối' : 'Dark mode')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -317,7 +322,7 @@ export default function DashboardLayout({
                   className="text-destructive"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Đăng xuất
+                  {locale === 'vi' ? 'Đăng xuất' : 'Sign out'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
