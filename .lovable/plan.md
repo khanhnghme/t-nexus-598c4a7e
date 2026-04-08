@@ -1,36 +1,96 @@
 
 
-## Chuyển Cloudflare Turnstile sang Managed + interaction-only
+## ĐÃ RÕ KIẾN TRÚC T-NEXUS
 
-### Tổng quan
-Thay đổi widget từ `invisible` sang `managed` với appearance `interaction-only`. Widget sẽ tự động render khi form load, chỉ hiển thị challenge khi Cloudflare nghi ngờ. Không cần `execute()` thủ công nữa — widget tự xử lý và gọi callback khi có token.
+---
 
-### Thay đổi
+## Kế hoạch Rà soát & Refactor theo System Instructions
 
-**File 1: `src/components/TurnstileWidget.tsx`**
-- Bỏ `size: 'invisible'` và `execution: 'execute'`
-- Đổi sang `size: 'compact'`, `appearance: 'interaction-only'`
-- Bỏ `useImperativeHandle` (không cần `execute()` nữa)
-- Bỏ `forwardRef` — component đơn giản hơn
-- Container div: bỏ `display: none`, thêm styling nhỏ gọn (chỉ hiện khi cần challenge)
+### Tổng quan các vi phạm phát hiện
 
-**File 2: `src/components/MemberAuthForm.tsx`**
-- Bỏ `turnstileRef`, `pendingActionRef`, và logic `execute()` thủ công
-- Đơn giản hóa `handleLogin`/`handleRegister`: chỉ cần check `turnstileToken` có chưa → nếu chưa thì báo lỗi "Vui lòng chờ xác minh"
-- Widget sẽ tự động cấp token khi render xong (người dùng bình thường) hoặc sau khi hoàn thành challenge
-- Giữ nguyên verify token phía backend
-- Giữ nguyên loading states và error handling
+**Vi phạm 1 — Hard-code giới hạn project (NGHIÊM TRỌNG)**
+- `src/pages/Groups.tsx` dòng 269: `profile.project_limit ?? 2` → hard-code fallback = 2
+- `src/pages/Dashboard.tsx` dòng 66: `DEFAULT_PROJECT_LIMIT = 2`
+- `src/pages/PersonalInfo.tsx` dòng 26: `DEFAULT_PROJECT_LIMIT = 2`
 
-### Flow mới
-1. Form load → Turnstile render (ẩn hoàn toàn nếu user bình thường)
-2. Cloudflare nghi ngờ → hiện challenge nhỏ (compact)
-3. Token tự động cấp qua `onVerify` callback
-4. User bấm Login/Register → check token → tiếp tục flow bình thường
-5. Nếu chưa có token → hiện thông báo "Đang xác minh bảo mật, vui lòng thử lại"
+**Vi phạm 2 — Logic quyền tạo Project sai**
+- `canCreateProject = isAdmin || isLeader` (dùng system role thay vì workspace role)
+- Theo kiến trúc: chỉ `workspace_owner` và `workspace_admin` được tạo project; `workspace_member` bị cấm
+- Hiện tại `isLeader = isSystemAdmin` → bất kỳ system admin nào đều được tạo (đúng), nhưng workspace_owner/admin không phải system admin thì KHÔNG tạo được (sai)
 
-### Kết quả
-- Không còn box lớn chiếm diện tích
-- 95%+ user sẽ không thấy Turnstile
-- Chỉ hiện compact challenge khi cần
-- Code đơn giản hơn (bỏ execute pattern)
+**Vi phạm 3 — Nhãn UI "Group"/"Nhóm" còn sót**
+- `src/pages/Groups.tsx`: "Chưa có nhóm nào", "tạo nhóm nào", "Quản lý các nhóm"
+- `src/components/scores/`: "Chấm theo nhóm", "TB nhóm"
+- `src/pages/Tips.tsx`: nhiều chỗ dùng "nhóm" thay vì "dự án"
+- `src/lib/roleLabels.ts`: "Trưởng nhóm", "Phó nhóm" (đây là label project role — cần giữ hay đổi?)
+- Nhiều file khác (~23 file có "nhóm")
+
+**Vi phạm 4 — `workspace_guest` vẫn tồn tại trong type definitions**
+- `src/types/database.ts`: `WorkspaceRole` type vẫn có `workspace_guest`
+- `src/lib/roleLabels.ts`, `src/components/SidebarTreeNav.tsx`, `src/pages/WorkspaceMembers.tsx` vẫn xử lý `workspace_guest`
+- Theo kiến trúc: guest KHÔNG tồn tại trong `workspace_members`, chỉ ở `group_members` với `is_guest = true`
+
+---
+
+### Chi tiết thay đổi
+
+#### Phase 1: Sửa logic quyền tạo Project (quan trọng nhất)
+
+**File: `src/pages/Groups.tsx`**
+- Thay `isLeader` bằng logic workspace role: cho phép tạo nếu `workspaceRole` là `workspace_owner` hoặc `workspace_admin`, HOẶC user là `isSystemAdmin`
+- Xóa hard-code `profile.project_limit ?? 2` → query `plan_limits` table dựa trên workspace owner's plan. Nếu null → UNLIMITED
+- Cập nhật UI disable/enable nút tạo project theo workspace role mới
+
+**File: `src/pages/Dashboard.tsx`**
+- Xóa `DEFAULT_PROJECT_LIMIT = 2`
+- Sửa `canCreateProject` dùng workspace role thay vì `isAdmin || isLeader`
+- Query `plan_limits` cho `max_projects_per_workspace`, fallback UNLIMITED nếu null
+
+**File: `src/pages/PersonalInfo.tsx`**
+- Xóa `DEFAULT_PROJECT_LIMIT = 2`
+- Sửa `canCreateProject` tương tự Dashboard
+
+#### Phase 2: Xóa `workspace_guest` khỏi hệ thống
+
+**File: `src/types/database.ts`**
+- Xóa `'workspace_guest'` khỏi `WorkspaceRole` type
+
+**File: `src/lib/roleLabels.ts`**
+- Xóa case `workspace_guest`
+
+**File: `src/components/SidebarTreeNav.tsx`**
+- Xóa case `workspace_guest`, default fallback về `workspace_member`
+
+**File: `src/pages/WorkspaceMembers.tsx`**
+- Xóa case `workspace_guest`
+
+#### Phase 3: Đổi nhãn UI "Group"/"Nhóm" → "Project"/"Dự án"
+
+Rà soát ~23 file, đổi các chuỗi hiển thị:
+- "nhóm" → "dự án" (trong context project)
+- Giữ "nhóm" khi nó thực sự chỉ nhóm người (VD: "Chấm theo nhóm" = chấm cả nhóm cùng lúc → giữ nguyên)
+- "Trưởng nhóm" / "Phó nhóm" trong roleLabels → đổi thành "Trưởng dự án" / "Phó dự án" (hoặc giữ nếu bạn thích)
+
+Các file chính cần sửa nhãn:
+- `src/pages/Groups.tsx` — "Chưa có nhóm nào" → "Chưa có dự án nào", etc.
+- `src/pages/Tips.tsx` — nhiều chỗ "trưởng nhóm", "nhóm"
+- `src/components/scores/` — "TB nhóm"
+- `src/lib/roleLabels.ts` — "Trưởng nhóm" → "Trưởng dự án"
+
+**Lưu ý**: API/Database queries giữ nguyên `groups`, `group_members` — chỉ đổi UI labels.
+
+#### Phase 4: Tạo helper đọc `plan_limits` động
+
+Tạo hook `usePlanLimits` hoặc utility function:
+- Query `plan_limits` table theo plan của workspace owner
+- Cache kết quả
+- Trả về limits với fallback UNLIMITED (null = unlimited)
+- Dùng ở Groups.tsx, Dashboard.tsx thay cho hard-code
+
+---
+
+### Không thay đổi
+- Database schema (bảng `groups`, `group_members` giữ nguyên tên)
+- Edge Functions (không vi phạm nào phát hiện)
+- RLS policies (đã đúng logic)
 
