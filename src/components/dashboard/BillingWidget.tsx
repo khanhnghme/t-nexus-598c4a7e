@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Crown, Zap, FolderKanban, Infinity } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function BillingWidget() {
   const { user } = useAuth();
@@ -53,9 +54,11 @@ export default function BillingWidget() {
 
       {/* Upgrade button — only for workspace owner */}
       {isOwner && !isPremium && (
-        <Button size="sm" variant="outline" className="shrink-0 text-xs gap-1 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400 ml-auto">
-          <Zap className="w-3 h-3" />
-          {locale === 'vi' ? 'Nâng cấp' : 'Upgrade'}
+        <Button size="sm" variant="outline" className="shrink-0 text-xs gap-1 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400 ml-auto" asChild>
+          <Link to="/upgrade">
+            <Zap className="w-3 h-3" />
+            {locale === 'vi' ? 'Nâng cấp' : 'Upgrade'}
+          </Link>
         </Button>
       )}
     </div>

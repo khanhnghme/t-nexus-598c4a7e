@@ -7,8 +7,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
   Building2, Save, Trash2, AlertTriangle, Crown, Copy, Check,
-  Users, FolderKanban, HardDrive, Activity, LayoutGrid, Settings2
+  Users, FolderKanban, HardDrive, Activity, LayoutGrid, Settings2, Zap
 } from 'lucide-react';
+import BillingWidget from '@/components/dashboard/BillingWidget';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -158,6 +159,9 @@ export default function WorkspaceSettings() {
         </p>
       </div>
 
+      {/* Billing Widget */}
+      <BillingWidget />
+
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Users} label={tw.members} value={memberCount} sub={tw.maxMembers.replace('{n}', String(activeWorkspace.max_members))} color="blue" />
@@ -225,7 +229,10 @@ export default function WorkspaceSettings() {
                     {tw.planDetails.replace('{projects}', String(activeWorkspace.max_projects)).replace('{members}', String(activeWorkspace.max_members)).replace('{storage}', storageLabel)}
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>{tc.upgrade}</Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/upgrade')}>
+                  <Zap className="w-3 h-3 mr-1" />
+                  {tc.upgrade}
+                </Button>
               </div>
             </CardContent>
           </Card>

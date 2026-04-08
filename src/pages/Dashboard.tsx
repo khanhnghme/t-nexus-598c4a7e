@@ -24,7 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUserPresence } from '@/hooks/useUserPresence';
 import UserPresenceIndicator from '@/components/UserPresenceIndicator';
 import FirstTimeOnboarding from '@/components/FirstTimeOnboarding';
-import BillingWidget from '@/components/dashboard/BillingWidget';
+
 
 import { getSystemRoleLabel } from '@/lib/roleLabels';
 import JoinByCodeDialog from '@/components/JoinByCodeDialog';
@@ -534,9 +534,6 @@ export default function Dashboard() {
 
       <MandatoryNotification mode="post_login" userId={user?.id} />
       <div className="relative space-y-8" style={{ zIndex: 2 }}>
-        {/* Billing Widget */}
-        {wsAvailable && <BillingWidget />}
-
         {/* Welcome Section — Frosted Glass style (Light & Dark mode compatible) */}
         <div className="relative overflow-hidden rounded-2xl border border-white/60 dark:border-primary/20 bg-gradient-to-br from-white/80 via-white/60 to-primary/10 dark:from-background/80 dark:via-background/60 dark:to-primary/20 backdrop-blur-xl shadow-md">
           <div className="relative px-6 py-5">
