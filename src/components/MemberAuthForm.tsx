@@ -431,6 +431,11 @@ export function MemberAuthForm() {
       return;
     }
 
+    if (!turnstileToken) {
+      toast({ title: ta.captchaRequired, variant: 'destructive' });
+      return;
+    }
+
     const result = registerSchema(ta).safeParse({
       studentId: regStudentId,
       fullName: regFullName,
