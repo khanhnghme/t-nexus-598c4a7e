@@ -63,7 +63,7 @@ import invitationIllustration from '@/assets/invitation-illustration.png';
 
 import type { Group } from '@/types/database';
 
-const DEFAULT_PROJECT_LIMIT = 2;
+// Removed hard-coded DEFAULT_PROJECT_LIMIT — limits come from plan_limits table
 
 type DashboardFilter = 'all' | 'active' | 'hidden' | 'pending';
 
@@ -106,7 +106,7 @@ interface PendingWorkspaceInvite {
 }
 
 export default function Dashboard() {
-  const { user, profile, mustChangePassword, refreshProfile, isLeader, isAdmin } = useAuth();
+  const { user, profile, mustChangePassword, refreshProfile, isLeader, isAdmin, isSystemAdmin } = useAuth();
   const { activeWorkspace, isAvailable: wsAvailable, refreshWorkspaces } = useWorkspace();
   const { translations, locale } = useLanguage();
   const t = translations.app?.dashboard;
@@ -405,8 +405,10 @@ export default function Dashboard() {
     }
   };
 
-  const canCreateProject = isAdmin || isLeader;
-  const projectLimit = profile?.project_limit ?? (isLeader ? DEFAULT_PROJECT_LIMIT : 0);
+  // Permission: workspace_owner, workspace_admin, or system_admin can create projects
+  const wsRole = (activeWorkspace as any)?.my_role;
+  const canCreateProject = isSystemAdmin || wsRole === 'workspace_owner' || wsRole === 'workspace_admin';
+  // projectLimit removed — use plan_limits table dynamically instead
 
   const filteredGroups = useMemo(() => {
     if (filter === 'pending') return []; // pending uses separate list

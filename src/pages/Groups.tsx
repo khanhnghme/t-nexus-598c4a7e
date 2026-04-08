@@ -69,7 +69,7 @@ interface MemberToAdd {
 }
 
 export default function Groups() {
-  const { user, isLeader, isAdmin, profile } = useAuth();
+  const { user, isSystemAdmin, profile } = useAuth();
   const { activeWorkspace, isAvailable: wsAvailable, workspaceRole } = useWorkspace();
   const { toast } = useToast();
   const [groups, setGroups] = useState<GroupWithMembers[]>([]);
@@ -264,22 +264,8 @@ export default function Groups() {
       return;
     }
 
-    // Check project limit for non-admin users
-    if (!isAdmin && profile) {
-      const limit = profile.project_limit ?? 2;
-      const { count } = await supabase
-        .from('groups')
-        .select('id', { count: 'exact', head: true })
-        .eq('created_by', user!.id);
-      if (count !== null && count >= limit) {
-        toast({
-          title: 'Đã đạt giới hạn',
-          description: `Bạn chỉ được tạo tối đa ${limit} dự án. Liên hệ Admin để tăng giới hạn.`,
-          variant: 'destructive',
-        });
-        return;
-      }
-    }
+    // Project limit check removed — limits are enforced dynamically via plan_limits table
+    // If plan_limits returns null → UNLIMITED
 
     setIsCreating(true);
 
@@ -400,44 +386,44 @@ export default function Groups() {
         {/* Header */}
         <div className="space-y-4">
           <div>
-            <h1 className="text-3xl font-bold">Nhóm của tôi</h1>
+            <h1 className="text-3xl font-bold">Dự án của tôi</h1>
             <p className="text-muted-foreground mt-1">
-              Quản lý các nhóm và dự án bạn tham gia
+              Quản lý các dự án bạn tham gia
             </p>
           </div>
 
           {/* Create project CTA - always visible */}
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            if (!isLeader) return;
+            if (!canCreateProject) return;
             setIsDialogOpen(open);
             if (!open) resetForm();
           }}>
-            <DialogTrigger asChild disabled={!isLeader}>
+            <DialogTrigger asChild disabled={!canCreateProject}>
               <div className={`relative overflow-hidden rounded-xl border-2 border-dashed p-5 transition-all duration-300 ${
-                isLeader
+                canCreateProject
                   ? 'border-primary/40 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 hover:border-primary hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.005] cursor-pointer group'
                   : 'border-muted-foreground/20 bg-muted/30 cursor-default'
               }`}>
-                {isLeader && (
+                {canCreateProject && (
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 )}
                 <div className="relative flex items-center gap-4">
                   <div className={`p-3.5 rounded-xl ${
-                    isLeader ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                    canCreateProject ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                   }`}>
                     <Plus className="w-7 h-7" />
                   </div>
                   <div className="flex-1">
-                    <p className={`font-bold text-lg ${isLeader ? 'text-foreground' : 'text-muted-foreground'}`}>
-                      {isLeader ? 'Tạo dự án mới' : 'Tạo dự án mới — Bạn không có quyền tạo'}
+                    <p className={`font-bold text-lg ${canCreateProject ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {canCreateProject ? 'Tạo dự án mới' : 'Tạo dự án mới — Bạn không có quyền tạo'}
                     </p>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                      {isLeader
+                      {canCreateProject
                         ? 'Thiết lập project, thêm thành viên và bắt đầu quản lý công việc'
-                        : 'Liên hệ Admin để được nâng cấp quyền Thành viên Nâng cao'}
+                        : 'Chỉ Workspace Owner hoặc Admin mới được tạo dự án'}
                     </p>
                   </div>
-                  {isLeader && (
+                  {canCreateProject && (
                     <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                   )}
                 </div>
@@ -821,12 +807,12 @@ export default function Groups() {
                         ) : user?.id === group.created_by ? (
                           <Badge className="bg-accent text-accent-foreground shadow-lg font-semibold">
                             <Crown className="w-3 h-3 mr-1" />
-                            Trưởng nhóm
+                            Trưởng dự án
                           </Badge>
                         ) : group.myRole === 'project_admin' ? (
                           <Badge className="bg-warning text-warning-foreground shadow-lg font-semibold">
                             <Crown className="w-3 h-3 mr-1" />
-                            Phó nhóm
+                            Phó dự án
                           </Badge>
                         ) : (
                           <Badge className="bg-foreground text-background shadow-lg font-medium">

@@ -288,7 +288,6 @@ export default function WorkspaceMembers() {
       case 'workspace_owner': return tw.owner;
       case 'workspace_admin': return tw.admin;
       case 'workspace_member': return tw.member;
-      case 'workspace_guest': return tw.guest;
       default: return role;
     }
   };

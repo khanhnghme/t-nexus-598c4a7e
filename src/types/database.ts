@@ -6,7 +6,7 @@ export type SystemRole = 'system_owner' | 'system_admin';
 // ═══════════════════════════════════════════════════════
 // Workspace-level Roles
 // ═══════════════════════════════════════════════════════
-export type WorkspaceRole = 'workspace_owner' | 'workspace_admin' | 'workspace_member' | 'workspace_guest';
+export type WorkspaceRole = 'workspace_owner' | 'workspace_admin' | 'workspace_member';
 
 // ═══════════════════════════════════════════════════════
 // Project-level Roles (group_members table)

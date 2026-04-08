@@ -23,7 +23,6 @@ export function getWorkspaceRoleLabel(role: string): string {
     case 'workspace_owner': return 'Owner';
     case 'workspace_admin': return 'Admin';
     case 'workspace_member': return 'Thành viên';
-    case 'workspace_guest': return 'Khách';
     // Legacy
     case 'owner': return 'Owner';
     case 'admin': return 'Admin';
@@ -38,16 +37,16 @@ export function getWorkspaceRoleLabel(role: string): string {
  * @param isCreator - Whether this member is the project creator (created_by)
  */
 export function getProjectRoleLabel(role: string, isCreator: boolean = false): string {
-  if (isCreator) return 'Trưởng nhóm';
+  if (isCreator) return 'Trưởng dự án';
   switch (role) {
-    case 'project_owner': return 'Trưởng nhóm';
-    case 'project_admin': return 'Phó nhóm';
+    case 'project_owner': return 'Trưởng dự án';
+    case 'project_admin': return 'Phó dự án';
     case 'project_member': return 'Thành viên';
     case 'project_guest': return 'Khách';
     // Legacy
     case 'system_owner':
     case 'owner_system': return 'System Owner';
-    case 'leader': return 'Phó nhóm';
+    case 'leader': return 'Phó dự án';
     case 'member': return 'Thành viên';
     default: return role;
   }
