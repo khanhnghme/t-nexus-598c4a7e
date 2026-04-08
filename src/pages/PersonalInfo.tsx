@@ -290,9 +290,6 @@ export default function PersonalInfo() {
         </Card>
 
         {/* Personal Info Card */}
-        <div className="max-w-3xl">
-
-          {/* Right: Personal Info Card */}
           <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -414,7 +411,6 @@ export default function PersonalInfo() {
             )}
           </CardContent>
         </Card>
-        </div>
       </div>
     </>
   );
