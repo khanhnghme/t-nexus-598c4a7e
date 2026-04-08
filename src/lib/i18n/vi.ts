@@ -454,6 +454,7 @@ export const vi: Translations = {
     confirmPasswordLabel: 'Xác nhận mật khẩu',
     confirmPasswordPlaceholder: 'Nhập lại mật khẩu',
     registerBtn: 'Tạo tài khoản',
+    registering: 'Đang tạo tài khoản...',
     haveAccount: 'Đã có tài khoản?',
     loginNow: 'Đăng nhập ngay',
     policyAgree: 'Tôi đồng ý với',

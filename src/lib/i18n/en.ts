@@ -455,6 +455,7 @@ export const en = {
     confirmPasswordLabel: 'Confirm password',
     confirmPasswordPlaceholder: 'Re-enter password',
     registerBtn: 'Create account',
+    registering: 'Creating account...',
     haveAccount: 'Already have an account?',
     loginNow: 'Log in now',
     // Policy
