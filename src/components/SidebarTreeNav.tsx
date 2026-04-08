@@ -228,7 +228,18 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                 {activeWorkspace.name.charAt(0).toUpperCase()}
               </div>
               <div className="ws-switcher-info">
-                <span className="ws-switcher-name">{activeWorkspace.name}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="ws-switcher-name">{activeWorkspace.name}</span>
+                  {activeWorkspace.plan && (
+                    <span className={`text-[9px] px-1.5 py-0 rounded-full font-medium leading-relaxed ${
+                      activeWorkspace.plan !== 'free' 
+                        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {activeWorkspace.plan.charAt(0).toUpperCase() + activeWorkspace.plan.slice(1)}
+                    </span>
+                  )}
+                </div>
                 <span className="ws-switcher-role">
                   {getRoleBadge(workspaceRole)} {getRoleLabel(workspaceRole)}
                 </span>
@@ -250,7 +261,18 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                   {ws.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
-                  <span className="truncate text-sm font-medium">{ws.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate text-sm font-medium">{ws.name}</span>
+                    {(ws as any).plan && (
+                      <span className={`text-[8px] px-1 py-0 rounded-full font-medium ${
+                        (ws as any).plan !== 'free' 
+                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' 
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {((ws as any).plan as string).charAt(0).toUpperCase() + ((ws as any).plan as string).slice(1)}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-muted-foreground">{getRoleBadge(ws.my_role)} {getRoleLabel(ws.my_role)}</span>
                 </div>
                 {ws.id === activeWorkspace.id && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
