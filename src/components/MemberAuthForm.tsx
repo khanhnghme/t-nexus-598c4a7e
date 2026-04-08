@@ -23,7 +23,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { INSTITUTIONS, REGIONS, searchInstitutions } from '@/lib/institutions';
 import { cn } from '@/lib/utils';
-import { TurnstileWidget } from '@/components/TurnstileWidget';
+import { TurnstileWidget, type TurnstileWidgetRef } from '@/components/TurnstileWidget';
 
 import { format, type Locale } from 'date-fns';
 import { vi as viLocale, enUS } from 'date-fns/locale';
@@ -125,6 +125,8 @@ export function MemberAuthForm() {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetRef>(null);
+  const pendingActionRef = useRef<'login' | 'register' | null>(null);
   // Login fields
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -238,7 +240,9 @@ export function MemberAuthForm() {
     }
 
     if (!turnstileToken) {
-      toast({ title: ta.captchaRequired, variant: 'destructive' });
+      // Trigger invisible captcha, will call back onVerify then we re-submit
+      pendingActionRef.current = 'login';
+      turnstileRef.current?.execute();
       return;
     }
 
@@ -257,6 +261,7 @@ export function MemberAuthForm() {
     const isEmail = input.includes('@');
 
     try {
+      pendingActionRef.current = null;
       // Verify CAPTCHA first
       const { data: captchaResult, error: captchaError } = await supabase.functions.invoke('verify-turnstile', {
         body: { token: turnstileToken },
@@ -432,7 +437,8 @@ export function MemberAuthForm() {
     }
 
     if (!turnstileToken) {
-      toast({ title: ta.captchaRequired, variant: 'destructive' });
+      pendingActionRef.current = 'register';
+      turnstileRef.current?.execute();
       return;
     }
 
@@ -457,6 +463,7 @@ export function MemberAuthForm() {
     setIsLoading(true);
 
     try {
+      pendingActionRef.current = null;
       // Verify CAPTCHA first
       const { data: captchaResult, error: captchaError } = await supabase.functions.invoke('verify-turnstile', {
         body: { token: turnstileToken },
@@ -663,7 +670,7 @@ export function MemberAuthForm() {
           </CardHeader>
           <CardContent>
             {activeTab === 'login' ? (
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} data-auth-form="login" className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-identifier">{ta.identifierLabel}</Label>
                   <div className="relative">
@@ -732,12 +739,26 @@ export function MemberAuthForm() {
                 />
 
                 <TurnstileWidget
-                  onVerify={(token) => setTurnstileToken(token)}
+                  ref={turnstileRef}
+                  onVerify={(token) => {
+                    setTurnstileToken(token);
+                    if (pendingActionRef.current) {
+                      // Re-trigger submit after token received
+                      setTimeout(() => {
+                        const form = document.querySelector('form[data-auth-form="login"]') as HTMLFormElement;
+                        form?.requestSubmit();
+                      }, 0);
+                    }
+                  }}
                   onExpire={() => setTurnstileToken(null)}
-                  onError={() => setTurnstileToken(null)}
+                  onError={() => {
+                    setTurnstileToken(null);
+                    pendingActionRef.current = null;
+                    toast({ title: ta.captchaFailed, variant: 'destructive' });
+                  }}
                 />
 
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading || !turnstileToken}>
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
                   {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {ta.loginBtn}
                 </Button>
@@ -973,7 +994,7 @@ export function MemberAuthForm() {
                 )}
               </div>
             ) : (
-              <form onSubmit={handleRegister} className="space-y-3">
+              <form onSubmit={handleRegister} data-auth-form="register" className="space-y-3">
                 <div className="space-y-2">
                   <Label htmlFor="reg-full-name">{ta.fullNameLabel} <span className="text-destructive">*</span></Label>
                   <div className="relative">
@@ -1142,12 +1163,25 @@ export function MemberAuthForm() {
 
 
                 <TurnstileWidget
-                  onVerify={(token) => setTurnstileToken(token)}
+                  ref={turnstileRef}
+                  onVerify={(token) => {
+                    setTurnstileToken(token);
+                    if (pendingActionRef.current) {
+                      setTimeout(() => {
+                        const form = document.querySelector('form[data-auth-form="register"]') as HTMLFormElement;
+                        form?.requestSubmit();
+                      }, 0);
+                    }
+                  }}
                   onExpire={() => setTurnstileToken(null)}
-                  onError={() => setTurnstileToken(null)}
+                  onError={() => {
+                    setTurnstileToken(null);
+                    pendingActionRef.current = null;
+                    toast({ title: ta.captchaFailed, variant: 'destructive' });
+                  }}
                 />
 
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading || !turnstileToken}>
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
                   {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {ta.registerBtn}
                 </Button>
