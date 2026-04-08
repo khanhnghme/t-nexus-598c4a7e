@@ -124,7 +124,7 @@ export function MemberAuthForm() {
   const [otpCode, setOtpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
-
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   // Login fields
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -237,6 +237,11 @@ export function MemberAuthForm() {
       return;
     }
 
+    if (!turnstileToken) {
+      toast({ title: ta.captchaRequired, variant: 'destructive' });
+      return;
+    }
+
     const result = loginSchema(ta).safeParse({ identifier, password });
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -252,6 +257,17 @@ export function MemberAuthForm() {
     const isEmail = input.includes('@');
 
     try {
+      // Verify CAPTCHA first
+      const { data: captchaResult, error: captchaError } = await supabase.functions.invoke('verify-turnstile', {
+        body: { token: turnstileToken },
+      });
+      if (captchaError || !captchaResult?.success) {
+        setIsLoading(false);
+        setTurnstileToken(null);
+        toast({ title: ta.captchaFailed, variant: 'destructive' });
+        return;
+      }
+
       let loginEmail = input;
       let profileQuery: 'email' | 'student_id' = isEmail ? 'email' : 'student_id';
 
