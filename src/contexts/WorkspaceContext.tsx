@@ -54,11 +54,37 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         .select('role, workspaces(*)')
         .eq('user_id', user.id);
 
+      // Fetch owner plans for cascading billing
+      const ownerIds = [...new Set([
+        ...(ownedWs || []).map((w: any) => w.owner_id),
+        ...(memberWs || []).map((m: any) => m.workspaces?.owner_id),
+      ].filter(Boolean))];
+
+      let ownerPlanMap: Record<string, string> = {};
+      if (ownerIds.length > 0) {
+        const { data: ownerProfiles } = await (supabase as any)
+          .from('profiles')
+          .select('id, user_plan')
+          .in('id', ownerIds);
+        ownerPlanMap = Object.fromEntries(
+          (ownerProfiles || []).map((p: any) => [p.id, p.user_plan])
+        );
+      }
+
+      const premiumPlans = ['plan_plus', 'plan_pro', 'plan_business', 'plan_custom'];
+
       const allWorkspaces: Workspace[] = [
-        ...(ownedWs || []).map((w: any) => ({ ...w, my_role: 'workspace_owner' as WorkspaceRole })),
+        ...(ownedWs || []).map((w: any) => ({
+          ...w,
+          my_role: 'workspace_owner' as WorkspaceRole,
+          owner_plan: ownerPlanMap[w.owner_id] || 'plan_free',
+          is_premium: premiumPlans.includes(ownerPlanMap[w.owner_id] || 'plan_free'),
+        })),
         ...(memberWs || []).map((m: any) => ({
           ...m.workspaces,
           my_role: m.role as WorkspaceRole,
+          owner_plan: ownerPlanMap[m.workspaces?.owner_id] || 'plan_free',
+          is_premium: premiumPlans.includes(ownerPlanMap[m.workspaces?.owner_id] || 'plan_free'),
         })),
       ];
 
