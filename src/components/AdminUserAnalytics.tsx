@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogIn, Clock, Search, TrendingUp, Users, Flame } from 'lucide-react';
+import { LogIn, Clock, Search, TrendingUp, Users } from 'lucide-react';
 
 interface UserAnalyticsRow {
   user_id: string;
@@ -16,8 +16,6 @@ interface UserAnalyticsRow {
   avatar_url: string | null;
   login_count: number;
   total_seconds: number;
-  current_streak: number;
-  longest_streak: number;
 }
 
 function formatDuration(seconds: number): string {
@@ -64,17 +62,15 @@ export default function AdminUserAnalytics() {
       const dateFilter = getDateFilter();
 
       // Fetch all data in parallel
-      const [profilesRes, loginsRes, sessionsRes, streaksRes] = await Promise.all([
+      const [profilesRes, loginsRes, sessionsRes] = await Promise.all([
         supabase.from('profiles').select('id, full_name, student_id, email, avatar_url').eq('is_approved', true),
         supabase.from('user_login_logs').select('user_id, logged_in_at').gte('logged_in_at', dateFilter),
         supabase.from('user_activity_sessions').select('user_id, started_at, last_seen_at').gte('started_at', dateFilter),
-        supabase.from('user_streaks').select('user_id, current_streak, longest_streak'),
       ]);
 
       const profiles = profilesRes.data || [];
       const logins = loginsRes.data || [];
       const sessions = sessionsRes.data || [];
-      const streaks = streaksRes.data || [];
 
       // Aggregate login counts
       const loginMap = new Map<string, number>();
@@ -87,10 +83,6 @@ export default function AdminUserAnalytics() {
         durationMap.set(s.user_id, (durationMap.get(s.user_id) || 0) + Math.max(0, duration));
       });
 
-      // Streak map
-      const streakMap = new Map<string, { current: number; longest: number }>();
-      streaks.forEach(s => streakMap.set(s.user_id, { current: s.current_streak, longest: s.longest_streak }));
-
       const rows: UserAnalyticsRow[] = profiles.map(p => ({
         user_id: p.id,
         full_name: p.full_name,
@@ -99,8 +91,6 @@ export default function AdminUserAnalytics() {
         avatar_url: p.avatar_url,
         login_count: loginMap.get(p.id) || 0,
         total_seconds: durationMap.get(p.id) || 0,
-        current_streak: streakMap.get(p.id)?.current || 0,
-        longest_streak: streakMap.get(p.id)?.longest || 0,
       }));
 
       // Sort by login count desc
@@ -207,13 +197,12 @@ export default function AdminUserAnalytics() {
                     <TableHead>Người dùng</TableHead>
                     <TableHead className="text-center">Đăng nhập</TableHead>
                     <TableHead className="text-center">Thời gian HĐ</TableHead>
-                    <TableHead className="text-center">Streak</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                         Không có dữ liệu
                       </TableCell>
                     </TableRow>
@@ -234,16 +223,6 @@ export default function AdminUserAnalytics() {
                         </TableCell>
                         <TableCell className="text-center text-sm">
                           {row.total_seconds > 0 ? formatDuration(row.total_seconds) : '—'}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {row.current_streak > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-sm">
-                              <Flame className="w-4 h-4 text-orange-400" fill="currentColor" />
-                              <span className="font-bold text-orange-400">{row.current_streak}</span>
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">—</span>
-                          )}
                         </TableCell>
                       </TableRow>
                     ))
