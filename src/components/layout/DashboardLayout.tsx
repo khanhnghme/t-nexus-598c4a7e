@@ -260,6 +260,8 @@ export default function DashboardLayout({
 
           {/* Bottom section */}
           <div className="sidebar-bottom">
+            {/* Upgrade box — only for workspace_owner */}
+            <UpgradeBox collapsed={sidebarCollapsed} />
             {/* User profile */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

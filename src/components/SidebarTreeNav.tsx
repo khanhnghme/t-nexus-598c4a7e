@@ -409,28 +409,6 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
         </>
       )}
 
-      {/* ── Upgrade button — only for workspace_owner ── */}
-      {isAvailable && activeWorkspace && workspaceRole === 'workspace_owner' && (
-        <>
-          <div className="sidebar-nav-separator" />
-          <Link
-            to="/upgrade"
-            className={cn(
-              'sidebar-nav-item upgrade-btn',
-              isPathActive('/upgrade') && 'active'
-            )}
-            style={{
-              background: 'hsl(var(--primary) / 0.08)',
-              borderRadius: 8,
-              margin: '0 8px',
-              fontWeight: 500,
-            }}
-          >
-            <Zap className="nav-icon text-primary" strokeWidth={2} />
-            <span className="nav-label text-primary">{t?.upgrade || 'Upgrade'}</span>
-          </Link>
-        </>
-      )}
 
       {/* ── Admin section ── */}
       {isAdmin && adminItems.length > 0 && (
