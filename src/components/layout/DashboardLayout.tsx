@@ -52,10 +52,10 @@ import { cn } from '@/lib/utils';
 import tNexusLogo from '@/assets/t-nexus-logo.png';
 import tNexusTextWhite from '@/assets/t-nexus-text-white.png';
 import UserChangePasswordDialog from '@/components/UserChangePasswordDialog';
-import NotificationBell from '@/components/NotificationBell';
 import AvatarUpload from '@/components/AvatarUpload';
 import AIAssistantButton from '@/components/ai/AIAssistantButton';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /* ------------------------------------------------------------------ */
 /*  Theme toggle (sidebar-friendly)                                    */
