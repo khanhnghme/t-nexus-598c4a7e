@@ -731,7 +731,13 @@ export function MemberAuthForm() {
                   localizedPolicyPath={localizedPolicyPath}
                 />
 
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
+                <TurnstileWidget
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken(null)}
+                  onError={() => setTurnstileToken(null)}
+                />
+
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading || !turnstileToken}>
                   {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {ta.loginBtn}
                 </Button>
@@ -1134,7 +1140,14 @@ export function MemberAuthForm() {
                   localizedPolicyPath={localizedPolicyPath}
                 />
 
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
+
+                <TurnstileWidget
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken(null)}
+                  onError={() => setTurnstileToken(null)}
+                />
+
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading || !turnstileToken}>
                   {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {ta.registerBtn}
                 </Button>
