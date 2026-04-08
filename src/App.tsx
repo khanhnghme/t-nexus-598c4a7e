@@ -49,6 +49,7 @@ import WorkspaceSettings from "./pages/WorkspaceSettings";
 import WorkspaceMembers from "./pages/WorkspaceMembers";
 import CreateWorkspace from "./pages/CreateWorkspace";
 import Notifications from "./pages/Notifications";
+import Upgrade from "./pages/Upgrade";
 
 const queryClient = new QueryClient();
 
@@ -170,6 +171,7 @@ function AppRoutes() {
           <Route path="/workspace/new" element={<CreateWorkspace />} />
           <Route path="/workspace/settings" element={<WorkspaceSettings />} />
           <Route path="/workspace/members" element={<WorkspaceMembers />} />
+          <Route path="/upgrade" element={<Upgrade />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
