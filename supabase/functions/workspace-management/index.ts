@@ -19,7 +19,8 @@ type Action =
   | "leave_workspace"
   | "list_my_workspaces"
   | "get_workspace_members"
-  | "transfer_ownership";
+  | "transfer_ownership"
+  | "check_workspace_premium";
 
 interface RequestBody {
   action: Action;
@@ -90,7 +91,6 @@ serve(async (req: Request) => {
           description: body.description || null,
           logo_url: body.logo_url || null,
           owner_id: callerId,
-          plan: "free",
           max_projects: 2,
           max_members: 5,
           max_storage_mb: 250,
@@ -613,6 +613,38 @@ serve(async (req: Request) => {
         });
 
       return json({ success: true });
+    }
+
+    // ═══════════════════════════════════════════════
+    // CHECK WORKSPACE PREMIUM (Cascading Billing)
+    // ═══════════════════════════════════════════════
+    if (body.action === "check_workspace_premium") {
+      if (!callerId) return err("Authentication required", 401);
+      if (!body.workspace_id) return err("workspace_id required");
+
+      // Get workspace owner's plan from profiles
+      const { data: ws } = await supabaseAdmin
+        .from("workspaces")
+        .select("owner_id")
+        .eq("id", body.workspace_id)
+        .single();
+
+      if (!ws) return err("Workspace not found", 404);
+
+      const { data: ownerProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("user_plan")
+        .eq("id", ws.owner_id)
+        .single();
+
+      const ownerPlan = ownerProfile?.user_plan || "plan_free";
+      const isPremium = ["plan_plus", "plan_pro", "plan_business", "plan_custom"].includes(ownerPlan);
+
+      return json({
+        success: true,
+        owner_plan: ownerPlan,
+        is_premium: isPremium,
+      });
     }
 
     return err("Invalid action");
