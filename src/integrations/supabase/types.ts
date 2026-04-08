@@ -1273,6 +1273,7 @@ export type Database = {
           nav_hidden_pages: Json
           onboarding_completed: boolean
           phone: string | null
+          plan: string
           preferred_locale: string
           project_limit: number | null
           skills: string | null
@@ -1305,6 +1306,7 @@ export type Database = {
           nav_hidden_pages?: Json
           onboarding_completed?: boolean
           phone?: string | null
+          plan?: string
           preferred_locale?: string
           project_limit?: number | null
           skills?: string | null
@@ -1337,6 +1339,7 @@ export type Database = {
           nav_hidden_pages?: Json
           onboarding_completed?: boolean
           phone?: string | null
+          plan?: string
           preferred_locale?: string
           project_limit?: number | null
           skills?: string | null
@@ -2492,7 +2495,6 @@ export type Database = {
           max_storage_mb: number
           name: string
           owner_id: string
-          plan: string
           slug: string
           updated_at: string
         }
@@ -2506,7 +2508,6 @@ export type Database = {
           max_storage_mb?: number
           name: string
           owner_id: string
-          plan?: string
           slug: string
           updated_at?: string
         }
@@ -2520,7 +2521,6 @@ export type Database = {
           max_storage_mb?: number
           name?: string
           owner_id?: string
-          plan?: string
           slug?: string
           updated_at?: string
         }
