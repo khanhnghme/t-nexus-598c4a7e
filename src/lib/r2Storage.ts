@@ -194,7 +194,7 @@ export function getR2FilePublicUrl(bucket: string, path: string): string {
  */
 const ALL_BUCKETS = [
   'avatars', 'task-submissions', 'appeal-attachments', 'task-note-attachments',
-  'group-images', 'project-resources', 'system-assets', 'profile-achievements', 'background-music',
+  'group-images', 'project-resources', 'system-assets', 'profile-achievements',
 ];
 
 /**
