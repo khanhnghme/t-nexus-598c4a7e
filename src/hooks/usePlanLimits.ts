@@ -47,7 +47,7 @@ export function usePlanLimits(): PlanLimits {
         const { data: planData } = await supabase
           .from('plan_limits')
           .select('*')
-          .eq('plan', planText)
+          .eq('plan', planText as any)
           .maybeSingle();
 
         // If no plan_limits row found → UNLIMITED (all null)
