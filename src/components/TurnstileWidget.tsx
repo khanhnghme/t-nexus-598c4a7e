@@ -44,8 +44,9 @@ export const TurnstileWidget = ({ onVerify, onExpire, onError }: TurnstileWidget
 
     widgetIdRef.current = window.turnstile.render(containerRef.current, {
       sitekey: TURNSTILE_SITE_KEY,
-      size: 'compact',
+      size: 'normal',
       appearance: 'interaction-only',
+      theme: 'auto',
       callback: (token: string) => callbacksRef.current.onVerify(token),
       'expired-callback': () => callbacksRef.current.onExpire?.(),
       'error-callback': () => callbacksRef.current.onError?.(),
@@ -94,7 +95,7 @@ export const TurnstileWidget = ({ onVerify, onExpire, onError }: TurnstileWidget
     return () => { removeWidget(); };
   }, [removeWidget]);
 
-  return <div ref={containerRef} className="flex justify-center [&:empty]:hidden" />;
+  return <div ref={containerRef} className="flex justify-center [&:empty]:hidden overflow-hidden rounded-lg" />;
 };
 
 TurnstileWidget.displayName = 'TurnstileWidget';

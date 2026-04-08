@@ -221,6 +221,13 @@ export default function Upgrade() {
               </div>
             ))}
           </div>
+          {(tp.addOnNote as string) && (
+            <div style={{ marginTop: 16, padding: '12px 16px', borderRadius: 8 }} className="bg-primary/5 border border-primary/10">
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 500 }} className="text-primary">
+                {tp.addOnNote}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Comparison table */}
