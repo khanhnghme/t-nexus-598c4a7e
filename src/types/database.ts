@@ -72,6 +72,7 @@ export interface Workspace {
   description: string | null;
   logo_url: string | null;
   owner_id: string;
+  plan: 'free' | 'plus' | 'pro' | 'business' | 'enterprise';
   max_projects: number;
   max_members: number;
   max_storage_mb: number;
@@ -79,9 +80,6 @@ export interface Workspace {
   updated_at: string;
   my_role?: WorkspaceRole;
   member_count?: number;
-  /** Cascading billing: resolved from owner's profile.user_plan */
-  owner_plan?: UserPlan;
-  is_premium?: boolean;
 }
 
 export interface WorkspaceMember {

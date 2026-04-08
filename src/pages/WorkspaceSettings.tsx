@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { getUserPlanLabel } from '@/lib/roleLabels';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
@@ -164,7 +163,7 @@ export default function WorkspaceSettings() {
         <StatCard icon={Users} label={tw.members} value={memberCount} sub={tw.maxMembers.replace('{n}', String(activeWorkspace.max_members))} color="blue" />
         <StatCard icon={FolderKanban} label={tw.projects} value={projectCount} sub={tw.maxProjects.replace('{n}', String(activeWorkspace.max_projects))} color="green" />
         <StatCard icon={HardDrive} label={tw.storage} value={storageLabel} sub={tw.usedStorage.replace('{n}', String(storageUsed))} color="amber" />
-        <StatCard icon={Crown} label={tw.plan} value={getUserPlanLabel(activeWorkspace.owner_plan || 'plan_free')} color="primary" />
+        <StatCard icon={Crown} label={tw.plan} value={activeWorkspace.plan.charAt(0).toUpperCase() + activeWorkspace.plan.slice(1)} color="primary" />
       </div>
 
       {/* Tabs: Info & Settings */}
@@ -221,7 +220,7 @@ export default function WorkspaceSettings() {
                   <Crown className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold">{getUserPlanLabel(activeWorkspace.owner_plan || 'plan_free')} Plan</div>
+                  <div className="font-semibold capitalize">{activeWorkspace.plan} Plan</div>
                   <div className="text-sm text-muted-foreground">
                     {tw.planDetails.replace('{projects}', String(activeWorkspace.max_projects)).replace('{members}', String(activeWorkspace.max_members)).replace('{storage}', storageLabel)}
                   </div>
