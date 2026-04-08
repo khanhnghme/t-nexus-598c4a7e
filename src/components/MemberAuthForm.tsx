@@ -125,6 +125,8 @@ export function MemberAuthForm() {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetRef>(null);
+  const pendingActionRef = useRef<'login' | 'register' | null>(null);
   // Login fields
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -238,7 +240,9 @@ export function MemberAuthForm() {
     }
 
     if (!turnstileToken) {
-      toast({ title: ta.captchaRequired, variant: 'destructive' });
+      // Trigger invisible captcha, will call back onVerify then we re-submit
+      pendingActionRef.current = 'login';
+      turnstileRef.current?.execute();
       return;
     }
 
@@ -432,7 +436,8 @@ export function MemberAuthForm() {
     }
 
     if (!turnstileToken) {
-      toast({ title: ta.captchaRequired, variant: 'destructive' });
+      pendingActionRef.current = 'register';
+      turnstileRef.current?.execute();
       return;
     }
 
@@ -732,12 +737,26 @@ export function MemberAuthForm() {
                 />
 
                 <TurnstileWidget
-                  onVerify={(token) => setTurnstileToken(token)}
+                  ref={turnstileRef}
+                  onVerify={(token) => {
+                    setTurnstileToken(token);
+                    if (pendingActionRef.current) {
+                      // Re-trigger submit after token received
+                      setTimeout(() => {
+                        const form = document.querySelector('form[data-auth-form="login"]') as HTMLFormElement;
+                        form?.requestSubmit();
+                      }, 0);
+                    }
+                  }}
                   onExpire={() => setTurnstileToken(null)}
-                  onError={() => setTurnstileToken(null)}
+                  onError={() => {
+                    setTurnstileToken(null);
+                    pendingActionRef.current = null;
+                    toast({ title: ta.captchaFailed, variant: 'destructive' });
+                  }}
                 />
 
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading || !turnstileToken}>
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
                   {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {ta.loginBtn}
                 </Button>
@@ -1142,12 +1161,25 @@ export function MemberAuthForm() {
 
 
                 <TurnstileWidget
-                  onVerify={(token) => setTurnstileToken(token)}
+                  ref={turnstileRef}
+                  onVerify={(token) => {
+                    setTurnstileToken(token);
+                    if (pendingActionRef.current) {
+                      setTimeout(() => {
+                        const form = document.querySelector('form[data-auth-form="register"]') as HTMLFormElement;
+                        form?.requestSubmit();
+                      }, 0);
+                    }
+                  }}
                   onExpire={() => setTurnstileToken(null)}
-                  onError={() => setTurnstileToken(null)}
+                  onError={() => {
+                    setTurnstileToken(null);
+                    pendingActionRef.current = null;
+                    toast({ title: ta.captchaFailed, variant: 'destructive' });
+                  }}
                 />
 
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading || !turnstileToken}>
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
                   {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {ta.registerBtn}
                 </Button>
