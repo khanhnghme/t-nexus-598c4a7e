@@ -50,6 +50,7 @@ import WorkspaceMembers from "./pages/WorkspaceMembers";
 import CreateWorkspace from "./pages/CreateWorkspace";
 import Notifications from "./pages/Notifications";
 import Upgrade from "./pages/Upgrade";
+import ServicePlan from "./pages/ServicePlan";
 
 const queryClient = new QueryClient();
 
