@@ -86,6 +86,9 @@ export default function Upgrade() {
   const essentialsLines = (tp.essentialsLabel as string).split('\n');
   const teamLines = (tp.teamLabel as string).split('\n');
 
+  // Derive current plan key from ownerPlan string (e.g. 'plan_pro' → 'pro')
+  const currentPlanKey: string = ownerPlan ? ownerPlan.replace(/^plan_/, '') : 'free';
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       {/* Back button */}
@@ -152,59 +155,52 @@ export default function Upgrade() {
           <span className="text-xs text-muted-foreground">{tp.priceInUsd}</span>
         </div>
 
-        {/* Section labels */}
-        <div className="pricing-section-labels" style={{ display: 'flex', gap: 0, marginBottom: 12 }}>
-          <div style={{ flex: '3 1 480px' }}>
-            <p className="text-lg font-bold text-foreground">
-              {essentialsLines.map((line, i) => (
-                <span key={i}>{line}{i < essentialsLines.length - 1 && <br />}</span>
-              ))}
-            </p>
-          </div>
-          <div style={{ flex: '2 1 380px' }}>
-            <p className="text-lg font-bold text-foreground">
-              {teamLines.map((line, i) => (
-                <span key={i}>{line}{i < teamLines.length - 1 && <br />}</span>
-              ))}
-            </p>
-          </div>
+        {/* Section label - Essentials */}
+        <p className="text-lg font-bold text-foreground mb-3">
+          {essentialsLines.map((line, i) => (
+            <span key={i}>{line}{i < essentialsLines.length - 1 && <br />}</span>
+          ))}
+        </p>
+
+        {/* Plan Cards - Row 1: Free / Plus / Pro */}
+        <div className="pricing-left" style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+          border: '1px solid hsl(var(--border))',
+          borderRadius: 10,
+          marginBottom: 24,
+        }}>
+          {LEFT_PLANS.map((plan, idx) => (
+            <div key={plan.name} style={{
+              padding: '24px 22px 28px',
+              borderRight: idx < LEFT_PLANS.length - 1 ? '1px solid hsl(var(--border))' : 'none',
+            }}>
+              <PlanColumn plan={plan} yearly={yearly} tp={tp} disabled={!isOwner} onSelect={handleSelectPlan} />
+            </div>
+          ))}
         </div>
 
-        {/* Plan Cards */}
-        <div className="pricing-grid" style={{ display: 'flex', gap: 0 }}>
-          <div className="pricing-left" style={{
-            flex: '3 1 480px',
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-            border: '1px solid hsl(var(--border))',
-            borderRadius: '10px 0 0 10px',
-            borderRight: 'none',
-          }}>
-            {LEFT_PLANS.map((plan, idx) => (
-              <div key={plan.name} style={{
-                padding: '24px 22px 28px',
-                borderRight: idx < LEFT_PLANS.length - 1 ? '1px solid hsl(var(--border))' : 'none',
-              }}>
-                <PlanColumn plan={plan} yearly={yearly} tp={tp} disabled={!isOwner} onSelect={handleSelectPlan} />
-              </div>
-            ))}
-          </div>
+        {/* Section label - Team */}
+        <p className="text-lg font-bold text-foreground mb-3">
+          {teamLines.map((line, i) => (
+            <span key={i}>{line}{i < teamLines.length - 1 && <br />}</span>
+          ))}
+        </p>
 
-          <div className="pricing-right" style={{
-            flex: '2 1 380px',
-            display: 'grid', gridTemplateColumns: '1fr 1fr',
-            border: '1.5px solid hsl(var(--primary))',
-            borderRadius: '0 10px 10px 0',
-            background: 'hsl(var(--primary) / 0.03)',
-          }}>
-            {RIGHT_PLANS.map((plan, idx) => (
-              <div key={plan.name} style={{
-                padding: '24px 22px 28px',
-                borderRight: idx < RIGHT_PLANS.length - 1 ? '1px solid hsl(var(--border))' : 'none',
-              }}>
-                <PlanColumn plan={plan} yearly={yearly} tp={tp} disabled={!isOwner} onSelect={handleSelectPlan} />
-              </div>
-            ))}
-          </div>
+        {/* Plan Cards - Row 2: Business / Enterprise */}
+        <div className="pricing-right" style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr',
+          border: '1.5px solid hsl(var(--primary))',
+          borderRadius: 10,
+          background: 'hsl(var(--primary) / 0.03)',
+        }}>
+          {RIGHT_PLANS.map((plan, idx) => (
+            <div key={plan.name} style={{
+              padding: '24px 22px 28px',
+              borderRight: idx < RIGHT_PLANS.length - 1 ? '1px solid hsl(var(--border))' : 'none',
+            }}>
+              <PlanColumn plan={plan} yearly={yearly} tp={tp} disabled={!isOwner} onSelect={handleSelectPlan} />
+            </div>
+          ))}
         </div>
 
         {/* Add-ons */}
@@ -237,30 +233,22 @@ export default function Upgrade() {
       {/* Responsive */}
       <style>{`
         @media (max-width: 900px) {
-          .pricing-grid { flex-direction: column !important; }
-          .pricing-left {
-            border-radius: 10px 10px 0 0 !important;
-            border-right: 1px solid hsl(var(--border)) !important;
-            border-bottom: none !important;
-          }
-          .pricing-right {
-            border-radius: 0 0 10px 10px !important;
-          }
-          .pricing-right, .pricing-left {
+          .pricing-left, .pricing-right {
             grid-template-columns: 1fr !important;
           }
-          .pricing-right > div,
-          .pricing-left > div {
+          .pricing-left > div,
+          .pricing-right > div {
             border-right: none !important;
             border-bottom: 1px solid hsl(var(--border));
           }
-          .pricing-right > div:last-child,
-          .pricing-left > div:last-child {
+          .pricing-left > div:last-child,
+          .pricing-right > div:last-child {
             border-bottom: none;
           }
-          .pricing-section-labels {
-            flex-direction: column !important;
-            gap: 16px !important;
+        }
+        @media (max-width: 640px) {
+          .pricing-right {
+            grid-template-columns: 1fr !important;
           }
         }
       `}</style>
@@ -274,9 +262,8 @@ function ToggleBtn({ active, onClick, label }: { active: boolean; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 text-sm rounded-md border-none cursor-pointer transition-all ${
-        active ? 'font-semibold bg-muted text-foreground' : 'font-normal bg-transparent text-muted-foreground'
-      }`}
+      className={`px-3 py-1 text-sm rounded-md border-none cursor-pointer transition-all ${active ? 'font-semibold bg-muted text-foreground' : 'font-normal bg-transparent text-muted-foreground'
+        }`}
     >
       {label}
     </button>
@@ -320,11 +307,10 @@ function PlanColumn({ plan, yearly, tp, disabled, onSelect }: { plan: Plan; year
         <button
           onClick={onSelect}
           disabled={disabled}
-          className={`w-full py-1.5 px-3.5 text-sm font-medium rounded-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-            plan.ctaStyle === 'primary'
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-none'
-              : 'bg-background text-foreground border border-border hover:bg-accent'
-          }`}
+          className={`w-full py-1.5 px-3.5 text-sm font-medium rounded-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed ${plan.ctaStyle === 'primary'
+            ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-none'
+            : 'bg-background text-foreground border border-border hover:bg-accent'
+            }`}
         >
           {plan.cta}
         </button>
@@ -378,11 +364,10 @@ function UpgradePlansAndFeatures({ yearly, planCols, comparison, tp, disabled, o
                   <button
                     onClick={onSelect}
                     disabled={disabled}
-                    className={`w-full py-1 px-2.5 text-xs font-medium rounded-md cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${
-                      col.primary
-                        ? 'bg-primary text-primary-foreground border-none hover:bg-primary/90'
-                        : 'bg-background text-foreground border border-border hover:bg-accent'
-                    }`}
+                    className={`w-full py-1 px-2.5 text-xs font-medium rounded-md cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${col.primary
+                      ? 'bg-primary text-primary-foreground border-none hover:bg-primary/90'
+                      : 'bg-background text-foreground border border-border hover:bg-accent'
+                      }`}
                   >
                     {col.cta}
                   </button>

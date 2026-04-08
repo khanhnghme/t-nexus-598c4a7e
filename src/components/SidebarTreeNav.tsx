@@ -31,6 +31,7 @@ import {
   FolderOpen,
   Bell,
   Zap,
+  CreditCard,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -63,35 +64,25 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
     ? (profile.nav_hidden_pages as string[])
     : [];
 
-  // Expanded state
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  // Expanded state — accordion: only one submenu open at a time
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const toggle = useCallback((key: string) => {
-    setExpanded(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    setExpanded(prev => (prev === key ? null : key));
   }, []);
 
-  // Auto-expand projects when on project page
+  // Auto-expand based on current route
   useEffect(() => {
     const path = location.pathname;
     if (path === '/workspace/new') return;
-    setExpanded(prev => {
-      const next = new Set(prev);
-      if (path.startsWith('/p/')) {
-        next.add('projects');
-      }
-      if (path === '/personal-info' || path === '/account-settings') {
-        next.add('account');
-      }
-      return next;
-    });
+    if (path.startsWith('/p/')) {
+      setExpanded('projects');
+    } else if (path === '/personal-info' || path === '/account-settings') {
+      setExpanded('account');
+    }
   }, [location.pathname]);
 
-  const isProjectsExpanded = expanded.has('projects');
+  const isProjectsExpanded = expanded === 'projects';
 
   const getRoleBadge = (role?: string | null) => {
     switch (role) {
@@ -112,7 +103,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   };
 
   // Navigation items
-  const accountExpanded = expanded.has('account');
+  const accountExpanded = expanded === 'account';
 
   const personalItems = [
     { name: t?.calendar || 'Calendar', href: '/calendar', icon: CalendarDays },
@@ -124,7 +115,6 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   const accountChildren = [
     { name: t?.personalInfo || 'Personal Info', href: '/personal-info' },
     { name: t?.settings || 'Settings', href: '/account-settings' },
-    { name: t?.servicePlan || 'Service Plan', href: '/service-plan' },
   ];
 
   const adminItems = [
@@ -211,6 +201,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
           <TreeItemCollapsed key={item.href} icon={item.icon} label={item.name} href={item.href} active={isPathActive(item.href)} />
         ))}
         <TreeItemCollapsed icon={UserCircle} label={t?.account || 'Account'} href="/personal-info" active={isPathActive('/personal-info') || isPathActive('/account-settings')} />
+        <TreeItemCollapsed icon={CreditCard} label={t?.servicePlan || 'Gói dịch vụ'} href="/service-plan" active={isPathActive('/service-plan')} />
 
         {/* Admin */}
         {isAdmin && adminItems.map(item => (
@@ -232,10 +223,10 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                 {activeWorkspace.name.charAt(0).toUpperCase()}
               </div>
               <div className="ws-switcher-info flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="ws-switcher-name truncate">{activeWorkspace.name}</span>
+                <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                  <span className="ws-switcher-name truncate flex-1 min-w-0">{activeWorkspace.name}</span>
                   {ownerPlan && (
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold leading-none shrink-0 ${
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold leading-none shrink-0 whitespace-nowrap ${
                       ownerPlan !== 'plan_free' 
                         ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' 
                         : 'bg-muted text-muted-foreground'
@@ -244,11 +235,11 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
                     </span>
                   )}
                 </div>
-                <span className="ws-switcher-role">
+                <span className="ws-switcher-role truncate">
                   {getRoleBadge(workspaceRole)} {getRoleLabel(workspaceRole)}
                 </span>
               </div>
-              <ChevronsUpDown className="w-3.5 h-3.5 ml-auto shrink-0 opacity-40" />
+              <ChevronsUpDown className="w-3.5 h-3.5 shrink-0 opacity-40" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-[--radix-dropdown-menu-trigger-width] min-w-56">
@@ -398,6 +389,15 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
               ))}
             </div>
           )}
+
+          {/* Service Plan — standalone item */}
+          <Link
+            to="/service-plan"
+            className={cn('sidebar-nav-item', isPathActive('/service-plan') && 'active')}
+          >
+            <CreditCard className="nav-icon" strokeWidth={1.8} />
+            <span className="nav-label">{t?.servicePlan || 'Gói dịch vụ'}</span>
+          </Link>
         </>
       )}
 

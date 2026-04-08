@@ -135,68 +135,58 @@ export default function Pricing() {
           <span style={{ fontSize: 14, color: '#a5a29a' }}>{tp.priceInUsd}</span>
         </div>
 
-        {/* ── Section labels ── */}
-        <div className="pricing-section-labels" style={{ display: 'flex', gap: 0, marginBottom: 12 }}>
-          <div style={{ flex: '3 1 480px' }}>
-            <p style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.25, color: '#37352f' }}>
-              {essentialsLines.map((line, i) => (
-                <span key={i}>{line}{i < essentialsLines.length - 1 && <br />}</span>
-              ))}
-            </p>
-          </div>
-          <div style={{ flex: '2 1 380px' }}>
-            <p style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.25, color: '#37352f' }}>
-              {teamLines.map((line, i) => (
-                <span key={i}>{line}{i < teamLines.length - 1 && <br />}</span>
-              ))}
-            </p>
-          </div>
+        {/* ── Section label: Essentials ── */}
+        <p style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.25, color: '#37352f', marginBottom: 12 }}>
+          {essentialsLines.map((line, i) => (
+            <span key={i}>{line}{i < essentialsLines.length - 1 && <br />}</span>
+          ))}
+        </p>
+
+        {/* ── Plan Cards: Free / Plus / Pro ── */}
+        <div
+          className="pricing-left"
+          style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+            border: '1px solid rgba(55,53,47,0.09)',
+            borderRadius: 10,
+            marginBottom: 24,
+          }}
+        >
+          {LEFT_PLANS.map((plan, idx) => (
+            <div key={plan.name} style={{
+              padding: '24px 22px 28px',
+              borderRight: idx < LEFT_PLANS.length - 1 ? '1px solid rgba(55,53,47,0.09)' : 'none',
+            }}>
+              <PlanColumn plan={plan} yearly={yearly} tp={tp} />
+            </div>
+          ))}
         </div>
 
-        {/* ── Plan Cards ── */}
-        <div className="pricing-grid" style={{ display: 'flex', gap: 0 }}>
+        {/* ── Section label: Team ── */}
+        <p style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.25, color: '#37352f', marginBottom: 12 }}>
+          {teamLines.map((line, i) => (
+            <span key={i}>{line}{i < teamLines.length - 1 && <br />}</span>
+          ))}
+        </p>
 
-          {/* Left section — Free, Plus, Pro */}
-          <div
-            className="pricing-left"
-            style={{
-              flex: '3 1 480px',
-              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-              border: '1px solid rgba(55,53,47,0.09)',
-              borderRadius: '10px 0 0 10px',
-              borderRight: 'none',
-            }}
-          >
-            {LEFT_PLANS.map((plan, idx) => (
-              <div key={plan.name} style={{
-                padding: '24px 22px 28px',
-                borderRight: idx < LEFT_PLANS.length - 1 ? '1px solid rgba(55,53,47,0.09)' : 'none',
-              }}>
-                <PlanColumn plan={plan} yearly={yearly} tp={tp} />
-              </div>
-            ))}
-          </div>
-
-          {/* Right section — Business, Enterprise (light blue bg) */}
-          <div
-            className="pricing-right"
-            style={{
-              flex: '2 1 380px',
-              display: 'grid', gridTemplateColumns: '1fr 1fr',
-              border: '1.5px solid #2383e2',
-              borderRadius: '0 10px 10px 0',
-              background: 'rgba(35,131,226,0.025)',
-            }}
-          >
-            {RIGHT_PLANS.map((plan, idx) => (
-              <div key={plan.name} style={{
-                padding: '24px 22px 28px',
-                borderRight: idx < RIGHT_PLANS.length - 1 ? '1px solid rgba(55,53,47,0.09)' : 'none',
-              }}>
-                <PlanColumn plan={plan} yearly={yearly} tp={tp} />
-              </div>
-            ))}
-          </div>
+        {/* ── Plan Cards: Business / Enterprise ── */}
+        <div
+          className="pricing-right"
+          style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr',
+            border: '1.5px solid #2383e2',
+            borderRadius: 10,
+            background: 'rgba(35,131,226,0.025)',
+          }}
+        >
+          {RIGHT_PLANS.map((plan, idx) => (
+            <div key={plan.name} style={{
+              padding: '24px 22px 28px',
+              borderRight: idx < RIGHT_PLANS.length - 1 ? '1px solid rgba(55,53,47,0.09)' : 'none',
+            }}>
+              <PlanColumn plan={plan} yearly={yearly} tp={tp} />
+            </div>
+          ))}
         </div>
 
         {/* ── Add-on Section ── */}
@@ -250,30 +240,22 @@ export default function Pricing() {
       {/* ── Responsive ── */}
       <style>{`
         @media (max-width: 900px) {
-          .pricing-grid { flex-direction: column !important; }
-          .pricing-left {
-            border-radius: 10px 10px 0 0 !important;
-            border-right: 1px solid rgba(55,53,47,0.09) !important;
-            border-bottom: none !important;
-          }
-          .pricing-right {
-            border-radius: 0 0 10px 10px !important;
-          }
-          .pricing-right, .pricing-left {
+          .pricing-left, .pricing-right {
             grid-template-columns: 1fr !important;
           }
-          .pricing-right > div,
-          .pricing-left > div {
+          .pricing-left > div,
+          .pricing-right > div {
             border-right: none !important;
             border-bottom: 1px solid rgba(55,53,47,0.09);
           }
-          .pricing-right > div:last-child,
-          .pricing-left > div:last-child {
+          .pricing-left > div:last-child,
+          .pricing-right > div:last-child {
             border-bottom: none;
           }
-          .pricing-section-labels {
-            flex-direction: column !important;
-            gap: 16px !important;
+        }
+        @media (max-width: 640px) {
+          .pricing-right {
+            grid-template-columns: 1fr !important;
           }
         }
       `}

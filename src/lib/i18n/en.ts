@@ -254,12 +254,16 @@ export const en = {
     yearlySaveHint: 'Save 2 months with yearly',
     priceInUsd: 'Price in USD',
     recommended: 'Recommended',
-    perWorkspace: 'per workspace',
+    perWorkspace: 'per account',
+    cascadingNote: '💡 When you upgrade your account, ALL Workspaces you own and ALL members inside instantly get access to premium features.',
+    perAccount: 'per account / month',
     month: 'month',
     mo: 'mo',
     customPricing: 'pricing',
     contactUs: 'Contact us →',
     includes: 'Includes:',
+    upgradeLabel: 'Upgrade',
+    currentPlanLabel: 'Current Plan',
 
     // Section labels
     essentialsLabel: 'Essentials for\nstaying organized.',
@@ -268,25 +272,27 @@ export const en = {
     // Plans
     plans: {
       free: {
-        name: 'Free',
+        name: 'Plan Free',
         description: 'For individuals to organize personal projects and life.',
         cta: 'Sign up',
         features: [
-          '2 projects',
-          '250 MB storage',
-          '5 total workspace members',
+          '1 Workspace to create',
+          '2 projects / workspace',
+          '250 MB storage (account-wide)',
+          '5 members / workspace',
           'Meetings up to 15 min',
           'Standard Email Support',
         ],
       },
       plus: {
-        name: 'Plus',
+        name: 'Plan Plus',
         description: 'For small teams and professionals to work together.',
         cta: 'Get started',
         features: [
-          '6 projects',
-          '5 GB storage',
-          '12 total workspace members',
+          '3 Workspaces to create',
+          '6 projects / workspace',
+          '5 GB storage (account-wide)',
+          '12 members / workspace',
           'Meetings up to 60 min',
           'Activity logs (30 days)',
           'Full data export',
@@ -295,13 +301,14 @@ export const en = {
         ],
       },
       pro: {
-        name: 'Pro',
+        name: 'Plan Pro',
         description: 'For fast-growing teams to maximize productivity.',
         cta: 'Get started',
         features: [
-          '15 projects',
-          '25 GB storage',
-          '50 total workspace members',
+          '10 Workspaces to create',
+          '15 projects / workspace',
+          '25 GB storage (account-wide)',
+          '50 members / workspace',
           'Unlimited meeting time',
           'Unlimited activity logs',
           'Full data export',
@@ -310,13 +317,14 @@ export const en = {
         ],
       },
       business: {
-        name: 'Business',
+        name: 'Plan Business',
         description: 'For mid-to-large organizations to operate at scale.',
         cta: 'Get started',
         features: [
-          '50 projects',
-          '100 GB storage',
-          '200 total workspace members',
+          '30 Workspaces to create',
+          '50 projects / workspace',
+          '100 GB storage (account-wide)',
+          '200 members / workspace',
           'Unlimited meeting time',
           'Unlimited activity logs',
           'Full data export',
@@ -325,13 +333,14 @@ export const en = {
         ],
       },
       enterprise: {
-        name: 'Enterprise',
+        name: 'Plan Enterprise',
         description: 'For organizations needing scalability, control, and security.',
         cta: 'Contact Sales',
         features: [
-          'Unlimited projects',
+          'Unlimited Workspaces',
+          'Unlimited projects / workspace',
           'Unlimited storage',
-          'Unlimited members',
+          'Unlimited members / workspace',
           'Unlimited meeting time',
           'Enterprise-grade security',
           'Full data export',
@@ -343,23 +352,29 @@ export const en = {
 
     // Add-ons
     addOnTitle: 'Add-on pricing',
-    addOnDescription: 'Available from Plus plan and above. Billed monthly per workspace.',
+    addOnDescription: 'Available from Plus and above. Add-ons expand limits account-wide — applied to ALL workspaces you own.',
     addOnNote: 'Pro: 10% off · Business: 20% off on all add-ons',
     addOns: [
-      { emoji: '📋', name: 'Projects', price: '$1.99', unit: '/ 5 projects / month' },
-      { emoji: '📦', name: 'Storage', price: '$1.99', unit: '/ 5 GB / month' },
-      { emoji: '👥', name: 'Members', price: '$1.99', unit: '/ 5 members / month' },
+      { emoji: '📋', name: 'Projects', price: '$2.49', unit: '/ +5 projects / workspace / month', note: 'Increases project limit across all your workspaces.' },
+      { emoji: '📦', name: 'Storage', price: '$2.49', unit: '/ +5 GB / account / month', note: 'Expands total storage capacity for your entire account.' },
+      { emoji: '👥', name: 'Members', price: '$2.49', unit: '/ +5 members / workspace / month', note: 'Increases member limit across all your workspaces.' },
     ],
 
     // Comparison table
     comparisonTitle: 'Plans and features',
     comparisonCategories: [
       {
-        category: 'Projects & Storage',
+        category: 'Account & Workspaces',
         rows: [
-          { label: 'Projects', free: '2', plus: '6', pro: '15', business: '50', enterprise: 'Unlimited' },
-          { label: 'Storage', free: '250 MB', plus: '5 GB', pro: '25 GB', business: '100 GB', enterprise: 'Unlimited' },
-          { label: 'Total Workspace Members', free: '5', plus: '12', pro: '50', business: '200', enterprise: 'Unlimited' },
+          { label: 'Workspaces you can create', free: '1', plus: '3', pro: '10', business: '30', enterprise: 'Unlimited' },
+          { label: 'Account-wide storage', free: '250 MB', plus: '5 GB', pro: '25 GB', business: '100 GB', enterprise: 'Unlimited' },
+        ],
+      },
+      {
+        category: 'Per-Workspace limits',
+        rows: [
+          { label: 'Projects / workspace', free: '2', plus: '6', pro: '15', business: '50', enterprise: 'Unlimited' },
+          { label: 'Members / workspace', free: '5', plus: '12', pro: '50', business: '200', enterprise: 'Unlimited' },
         ],
       },
       {
@@ -379,7 +394,7 @@ export const en = {
       {
         category: 'Support',
         rows: [
-          { label: 'Support level', free: 'Standard Email Support', plus: 'Standard Email Support', pro: 'Priority Support (within 24h-48h)', business: 'Express Support (same business day)', enterprise: 'Dedicated 24/7' },
+          { label: 'Support level', free: 'Standard Email', plus: 'Standard Email', pro: 'Priority (24h–48h)', business: 'Express (same day)', enterprise: 'Dedicated 24/7' },
         ],
       },
       {
@@ -396,7 +411,7 @@ export const en = {
     faqContact: 'Still have more questions?',
     faqContactLink: 'Contact our support team',
     faqItems: [
-      { q: 'How is pricing calculated for the paid plans?', a: 'Pricing is per workspace, billed monthly or yearly. Each workspace gets its own plan. You can have multiple workspaces under the same account.' },
+      { q: 'How is pricing calculated for the paid plans?', a: 'Pricing is per User Account, not per workspace. When you upgrade your account, ALL Workspaces you own and ALL members inside instantly get access to premium features — no need to upgrade each workspace separately.' },
       { q: 'What payment methods do you accept?', a: 'We accept all major credit and debit cards (Visa, Mastercard, American Express). For Enterprise plans, we also support invoicing and bank transfers.' },
       { q: 'Can I change my plan later?', a: 'Yes! You can upgrade or downgrade your plan at any time from your workspace settings. Upgrades take effect immediately, and downgrades take effect at the end of your current billing period.' },
       { q: 'What happens when I change plans?', a: 'When you upgrade, you will be charged a prorated amount for the remainder of the current billing cycle. When you downgrade, the change takes effect at the end of your billing period.' },

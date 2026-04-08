@@ -256,12 +256,15 @@ export const vi: Translations = {
     yearlySaveHint: 'Tiết kiệm 2 tháng với gói năm',
     priceInUsd: 'Giá tính bằng USD',
     recommended: 'Đề xuất',
-    perWorkspace: 'mỗi workspace',
+    perWorkspace: 'mỗi tài khoản',
+    cascadingNote: '💡 Khi bạn nâng cấp tài khoản, TẤT CẢ Workspace bạn sở hữu và TẤT CẢ thành viên bên trong đều được hưởng tính năng cao cấp.',
     month: 'tháng',
     mo: 'tháng',
     customPricing: 'theo yêu cầu',
     contactUs: 'Liên hệ →',
     includes: 'Bao gồm:',
+    upgradeLabel: 'Nâng cấp',
+    currentPlanLabel: 'Đang sử dụng',
 
     // Section labels
     essentialsLabel: 'Công cụ cần thiết để\ntổ chức công việc.',
@@ -270,25 +273,27 @@ export const vi: Translations = {
     // Plans
     plans: {
       free: {
-        name: 'Free',
+        name: 'Plan Free',
         description: 'Dành cho cá nhân tổ chức dự án và cuộc sống.',
         cta: 'Đăng ký',
         features: [
-          '2 dự án',
-          '250 MB lưu trữ',
-          '5 thành viên toàn workspace',
+          '1 Workspace được tạo',
+          '2 dự án / workspace',
+          '250 MB lưu trữ toàn tài khoản',
+          '5 thành viên / workspace',
           'Họp tối đa 15 phút',
           'Standard Email Support',
         ],
       },
       plus: {
-        name: 'Plus',
+        name: 'Plan Plus',
         description: 'Dành cho nhóm nhỏ và chuyên gia cộng tác.',
         cta: 'Bắt đầu',
         features: [
-          '6 dự án',
-          '5 GB lưu trữ',
-          '12 thành viên toàn workspace',
+          '3 Workspace được tạo',
+          '6 dự án / workspace',
+          '5 GB lưu trữ toàn tài khoản',
+          '12 thành viên / workspace',
           'Họp tối đa 60 phút',
           'Nhật ký hoạt động (30 ngày)',
           'Xuất dữ liệu đầy đủ',
@@ -297,13 +302,14 @@ export const vi: Translations = {
         ],
       },
       pro: {
-        name: 'Pro',
+        name: 'Plan Pro',
         description: 'Dành cho nhóm phát triển nhanh để tối đa năng suất.',
         cta: 'Bắt đầu',
         features: [
-          '15 dự án',
-          '25 GB lưu trữ',
-          '50 thành viên toàn workspace',
+          '10 Workspace được tạo',
+          '15 dự án / workspace',
+          '25 GB lưu trữ toàn tài khoản',
+          '50 thành viên / workspace',
           'Họp không giới hạn',
           'Nhật ký hoạt động không giới hạn',
           'Xuất dữ liệu đầy đủ',
@@ -312,13 +318,14 @@ export const vi: Translations = {
         ],
       },
       business: {
-        name: 'Business',
+        name: 'Plan Business',
         description: 'Dành cho tổ chức vừa đến lớn vận hành ở quy mô.',
         cta: 'Bắt đầu',
         features: [
-          '50 dự án',
-          '100 GB lưu trữ',
-          '200 thành viên toàn workspace',
+          '30 Workspace được tạo',
+          '50 dự án / workspace',
+          '100 GB lưu trữ toàn tài khoản',
+          '200 thành viên / workspace',
           'Họp không giới hạn',
           'Nhật ký hoạt động không giới hạn',
           'Xuất dữ liệu đầy đủ',
@@ -327,13 +334,14 @@ export const vi: Translations = {
         ],
       },
       enterprise: {
-        name: 'Enterprise',
+        name: 'Plan Enterprise',
         description: 'Dành cho tổ chức cần khả năng mở rộng, kiểm soát và bảo mật.',
         cta: 'Liên hệ Sales',
         features: [
-          'Dự án không giới hạn',
+          'Workspace không giới hạn',
+          'Dự án không giới hạn / workspace',
           'Lưu trữ không giới hạn',
-          'Thành viên không giới hạn',
+          'Thành viên không giới hạn / workspace',
           'Họp không giới hạn',
           'Bảo mật cấp doanh nghiệp',
           'Xuất dữ liệu đầy đủ',
@@ -345,23 +353,30 @@ export const vi: Translations = {
 
     // Add-ons
     addOnTitle: 'Bảng giá add-on',
-    addOnDescription: 'Có từ gói Plus trở lên. Thanh toán hàng tháng theo workspace.',
+    addOnDescription: 'Có từ gói Plus trở lên. Add-on mở rộng giới hạn toàn tài khoản — áp dụng cho TẤT CẢ workspace bạn sở hữu.',
     addOnNote: 'Pro: giảm 10% · Business: giảm 20% cho tất cả add-on',
+    perAccount: 'mỗi tài khoản / tháng',
     addOns: [
-      { emoji: '📋', name: 'Dự án', price: '$1.99', unit: '/ 5 dự án / tháng' },
-      { emoji: '📦', name: 'Lưu trữ', price: '$1.99', unit: '/ 5 GB / tháng' },
-      { emoji: '👥', name: 'Thành viên', price: '$1.99', unit: '/ 5 người / tháng' },
+      { emoji: '📋', name: 'Dự án', price: '$2.49', unit: '/ +5 dự án / workspace / tháng', note: 'Tăng giới hạn dự án cho tất cả workspace của bạn.' },
+      { emoji: '📦', name: 'Lưu trữ', price: '$2.49', unit: '/ +5 GB / tài khoản / tháng', note: 'Mở rộng dung lượng lưu trữ toàn tài khoản của bạn.' },
+      { emoji: '👥', name: 'Thành viên', price: '$2.49', unit: '/ +5 người / workspace / tháng', note: 'Tăng giới hạn thành viên cho tất cả workspace của bạn.' },
     ],
 
     // Comparison table
     comparisonTitle: 'Gói dịch vụ và tính năng',
     comparisonCategories: [
       {
-        category: 'Dự án & Lưu trữ',
+        category: 'Tài khoản & Workspace',
         rows: [
-          { label: 'Dự án', free: '2', plus: '6', pro: '15', business: '50', enterprise: 'Không giới hạn' },
-          { label: 'Lưu trữ', free: '250 MB', plus: '5 GB', pro: '25 GB', business: '100 GB', enterprise: 'Không giới hạn' },
-          { label: 'Tổng thành viên Workspace', free: '5', plus: '12', pro: '50', business: '200', enterprise: 'Không giới hạn' },
+          { label: 'Workspace được tạo / tài khoản', free: '1', plus: '3', pro: '10', business: '30', enterprise: 'Không giới hạn' },
+          { label: 'Lưu trữ toàn tài khoản', free: '250 MB', plus: '5 GB', pro: '25 GB', business: '100 GB', enterprise: 'Không giới hạn' },
+        ],
+      },
+      {
+        category: 'Giới hạn mỗi Workspace',
+        rows: [
+          { label: 'Dự án / workspace', free: '2', plus: '6', pro: '15', business: '50', enterprise: 'Không giới hạn' },
+          { label: 'Thành viên / workspace', free: '5', plus: '12', pro: '50', business: '200', enterprise: 'Không giới hạn' },
         ],
       },
       {
@@ -398,7 +413,7 @@ export const vi: Translations = {
     faqContact: 'Vẫn còn câu hỏi?',
     faqContactLink: 'Liên hệ đội ngũ hỗ trợ',
     faqItems: [
-      { q: 'Giá được tính như thế nào cho các gói trả phí?', a: 'Giá tính theo workspace, thanh toán hàng tháng hoặc hàng năm. Mỗi workspace có gói riêng. Bạn có thể có nhiều workspace trong cùng tài khoản.' },
+      { q: 'Giá được tính như thế nào cho các gói trả phí?', a: 'Giá tính theo Tài khoản (User Account), không phải theo workspace. Khi bạn nâng cấp tài khoản, TẤT CẢ Workspace bạn sở hữu và TẤT CẢ thành viên bên trong đều được hưởng tính năng cao cấp ngay lập tức — không cần nâng cấp từng workspace riêng lẻ.' },
       { q: 'Bạn chấp nhận phương thức thanh toán nào?', a: 'Chúng tôi chấp nhận tất cả thẻ tín dụng và ghi nợ chính (Visa, Mastercard, American Express). Với gói Enterprise, chúng tôi cũng hỗ trợ hóa đơn và chuyển khoản ngân hàng.' },
       { q: 'Tôi có thể đổi gói sau không?', a: 'Có! Bạn có thể nâng cấp hoặc hạ cấp gói bất cứ lúc nào từ cài đặt workspace. Nâng cấp có hiệu lực ngay, hạ cấp có hiệu lực khi hết kỳ thanh toán hiện tại.' },
       { q: 'Điều gì xảy ra khi tôi đổi gói?', a: 'Khi nâng cấp, bạn sẽ bị tính phí theo tỷ lệ cho phần còn lại của chu kỳ thanh toán. Khi hạ cấp, thay đổi có hiệu lực vào cuối kỳ thanh toán.' },
