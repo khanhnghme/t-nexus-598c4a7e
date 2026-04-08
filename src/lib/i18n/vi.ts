@@ -644,6 +644,7 @@ export const vi: Translations = {
       system: 'QUẢN TRỊ',
       createWorkspace: 'Tạo Workspace mới',
       guestHint: '👽 Bạn đang truy cập với vai trò khách mời',
+      notifications: 'Thông báo',
       lightMode: 'Chế độ sáng',
       darkMode: 'Chế độ tối',
     },

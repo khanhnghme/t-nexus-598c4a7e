@@ -656,6 +656,7 @@ export const en = {
       system: 'ADMIN',
       createWorkspace: 'Create new Workspace',
       guestHint: '👽 You are accessing as a guest',
+      notifications: 'Notifications',
       lightMode: 'Light mode',
       darkMode: 'Dark mode',
     },
