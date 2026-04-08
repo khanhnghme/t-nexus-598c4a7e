@@ -556,6 +556,8 @@ export const en = {
     // Register form extra
     passwordMinPlaceholder: 'Min. 6 characters',
     adminApprovalNote: 'After creating, the account needs Admin approval before use.',
+    captchaRequired: 'Please complete the CAPTCHA verification',
+    captchaFailed: 'CAPTCHA verification failed. Please try again.',
     forgotEnterDesc: 'Enter the Student ID and email you registered. The system will send a 6-digit OTP to your email.',
     forgotNewPassForAccount: 'Enter a new password for the account',
     forgotNewPassPlaceholder: 'Min. 6 characters',

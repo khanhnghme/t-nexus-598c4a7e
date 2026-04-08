@@ -23,6 +23,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { INSTITUTIONS, REGIONS, searchInstitutions } from '@/lib/institutions';
 import { cn } from '@/lib/utils';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
 
 import { format, type Locale } from 'date-fns';
 import { vi as viLocale, enUS } from 'date-fns/locale';
@@ -123,7 +124,7 @@ export function MemberAuthForm() {
   const [otpCode, setOtpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
-
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   // Login fields
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -236,6 +237,11 @@ export function MemberAuthForm() {
       return;
     }
 
+    if (!turnstileToken) {
+      toast({ title: ta.captchaRequired, variant: 'destructive' });
+      return;
+    }
+
     const result = loginSchema(ta).safeParse({ identifier, password });
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -251,6 +257,17 @@ export function MemberAuthForm() {
     const isEmail = input.includes('@');
 
     try {
+      // Verify CAPTCHA first
+      const { data: captchaResult, error: captchaError } = await supabase.functions.invoke('verify-turnstile', {
+        body: { token: turnstileToken },
+      });
+      if (captchaError || !captchaResult?.success) {
+        setIsLoading(false);
+        setTurnstileToken(null);
+        toast({ title: ta.captchaFailed, variant: 'destructive' });
+        return;
+      }
+
       let loginEmail = input;
       let profileQuery: 'email' | 'student_id' = isEmail ? 'email' : 'student_id';
 
@@ -414,6 +431,11 @@ export function MemberAuthForm() {
       return;
     }
 
+    if (!turnstileToken) {
+      toast({ title: ta.captchaRequired, variant: 'destructive' });
+      return;
+    }
+
     const result = registerSchema(ta).safeParse({
       studentId: regStudentId,
       fullName: regFullName,
@@ -435,6 +457,17 @@ export function MemberAuthForm() {
     setIsLoading(true);
 
     try {
+      // Verify CAPTCHA first
+      const { data: captchaResult, error: captchaError } = await supabase.functions.invoke('verify-turnstile', {
+        body: { token: turnstileToken },
+      });
+      if (captchaError || !captchaResult?.success) {
+        setIsLoading(false);
+        setTurnstileToken(null);
+        toast({ title: ta.captchaFailed, variant: 'destructive' });
+        return;
+      }
+
       const { data: existingEmail } = await supabase
         .rpc('get_email_by_student_id', { _student_id: regStudentId.trim() });
 
@@ -698,7 +731,13 @@ export function MemberAuthForm() {
                   localizedPolicyPath={localizedPolicyPath}
                 />
 
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
+                <TurnstileWidget
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken(null)}
+                  onError={() => setTurnstileToken(null)}
+                />
+
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading || !turnstileToken}>
                   {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {ta.loginBtn}
                 </Button>
@@ -1101,7 +1140,14 @@ export function MemberAuthForm() {
                   localizedPolicyPath={localizedPolicyPath}
                 />
 
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
+
+                <TurnstileWidget
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken(null)}
+                  onError={() => setTurnstileToken(null)}
+                />
+
+                <Button type="submit" className="w-full font-semibold" disabled={isLoading || !turnstileToken}>
                   {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {ta.registerBtn}
                 </Button>
