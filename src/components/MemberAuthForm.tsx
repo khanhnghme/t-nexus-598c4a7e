@@ -668,7 +668,7 @@ export function MemberAuthForm() {
           </CardHeader>
           <CardContent>
             {activeTab === 'login' ? (
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} data-auth-form="login" className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-identifier">{ta.identifierLabel}</Label>
                   <div className="relative">
@@ -992,7 +992,7 @@ export function MemberAuthForm() {
                 )}
               </div>
             ) : (
-              <form onSubmit={handleRegister} className="space-y-3">
+              <form onSubmit={handleRegister} data-auth-form="register" className="space-y-3">
                 <div className="space-y-2">
                   <Label htmlFor="reg-full-name">{ta.fullNameLabel} <span className="text-destructive">*</span></Label>
                   <div className="relative">
