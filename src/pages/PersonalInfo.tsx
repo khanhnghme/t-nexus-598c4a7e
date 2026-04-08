@@ -25,180 +25,11 @@ import { vi } from 'date-fns/locale';
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const DEFAULT_PROJECT_LIMIT = 2;
 
-const TOGGLEABLE_PAGES = [
-  { href: '/calendar', name: 'Lịch', icon: CalendarDays, description: 'Lịch tổng hợp công việc', adminOnly: false },
-  { href: '/communication', name: 'Trao đổi', icon: MessageSquare, description: 'Tin nhắn & thảo luận', adminOnly: false },
-  { href: '/tips', name: 'Mẹo', icon: BookOpen, description: 'Hướng dẫn sử dụng hệ thống', adminOnly: false },
-  { href: '/feedback', name: 'Góp ý', icon: Lightbulb, description: 'Gửi ý kiến phản hồi', adminOnly: false },
-  { href: '/members', name: 'Thành viên', icon: Users, description: 'Quản lý người dùng', adminOnly: true },
-  { href: '/admin/backup', name: 'Sao lưu', icon: FolderArchive, description: 'Backup dữ liệu', adminOnly: true },
-  { href: '/admin/system', name: 'Quản trị', icon: Shield, description: 'Quản trị hệ thống', adminOnly: true },
-  { href: '/utilities', name: 'Tiện ích', icon: Wrench, description: 'Công cụ & tiện ích', adminOnly: true },
-];
-
 export function getHiddenNav(profile: any): string[] {
   if (!profile?.nav_hidden_pages) return [];
   try {
     return Array.isArray(profile.nav_hidden_pages) ? profile.nav_hidden_pages : [];
   } catch { return []; }
-}
-
-function NavCustomizationCard({ userId, isAdmin }: { userId?: string; isAdmin: boolean }) {
-  const { profile, refreshProfile } = useAuth();
-  const [hiddenPages, setHiddenPages] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (profile) setHiddenPages(getHiddenNav(profile));
-  }, [profile]);
-
-  const togglePage = async (href: string) => {
-    if (!userId) return;
-    const updated = hiddenPages.includes(href)
-      ? hiddenPages.filter(h => h !== href)
-      : [...hiddenPages, href];
-    setHiddenPages(updated);
-    setSaving(true);
-    await supabase.from('profiles').update({ nav_hidden_pages: updated as any }).eq('id', userId);
-    await refreshProfile();
-    setSaving(false);
-    window.dispatchEvent(new Event('nav-visibility-changed'));
-  };
-
-  const normalPages = TOGGLEABLE_PAGES.filter(p => !p.adminOnly);
-  const adminPages = TOGGLEABLE_PAGES.filter(p => p.adminOnly);
-
-  const renderPageItem = (page: typeof TOGGLEABLE_PAGES[0]) => {
-    const PageIcon = page.icon;
-    const isVisible = !hiddenPages.includes(page.href);
-    return (
-      <div
-        key={page.href}
-        className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-          isVisible
-            ? 'border-primary/20 bg-primary/5'
-            : 'border-border bg-muted/30 opacity-60'
-        }`}
-      >
-        <div className={`p-2 rounded-lg ${isVisible ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-          <PageIcon className="w-4 h-4" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium">{page.name}</p>
-          <p className="text-xs text-muted-foreground truncate">{page.description}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {isVisible ? <Eye className="w-3.5 h-3.5 text-primary" /> : <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />}
-          <Switch
-            checked={isVisible}
-            onCheckedChange={() => togglePage(page.href)}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Navigation className="w-4 h-4 text-primary" />
-          Tùy chỉnh thanh điều hướng
-        </CardTitle>
-        <CardDescription>Ẩn hoặc hiện các trang trên thanh điều hướng</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {normalPages.map(renderPageItem)}
-        </div>
-
-        {isAdmin && (
-          <div className="mt-3">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="w-full gap-2 text-xs">
-                  <Shield className="w-3.5 h-3.5" />
-                  Nâng cao (Admin)
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-72 p-2 space-y-1.5" side="right" align="start">
-                <p className="text-xs font-medium text-muted-foreground px-2 pb-1">Trang quản trị</p>
-                {adminPages.map(renderPageItem)}
-              </PopoverContent>
-            </Popover>
-          </div>
-        )}
-
-        {hiddenPages.length > 0 && (
-          <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
-            <EyeOff className="w-3 h-3" />
-            Đang ẩn {hiddenPages.length} trang — truy cập bằng URL trực tiếp
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-
-function LanguageCard() {
-  const { locale, setLocale } = useLanguage();
-  const [saving, setSaving] = useState(false);
-  const { toast } = useToast();
-
-  const handleChange = async (newLocale: Locale) => {
-    if (newLocale === locale || saving) return;
-    setSaving(true);
-    try {
-      await setLocale(newLocale);
-      toast({ title: newLocale === 'vi' ? 'Đã chuyển sang Tiếng Việt' : 'Switched to English' });
-    } catch {
-      toast({ title: 'Lỗi', variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const options: { value: Locale; label: string; flag: string }[] = [
-    { value: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
-    { value: 'en', label: 'English', flag: '🇬🇧' },
-  ];
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Globe className="w-4 h-4 text-primary" />
-          {locale === 'vi' ? 'Ngôn ngữ' : 'Language'}
-        </CardTitle>
-        <CardDescription>
-          {locale === 'vi' ? 'Chọn ngôn ngữ hiển thị cho tài khoản' : 'Choose display language for your account'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {options.map((opt) => {
-          const isActive = locale === opt.value;
-          return (
-            <button
-              key={opt.value}
-              onClick={() => handleChange(opt.value)}
-              disabled={saving}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
-                isActive
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                  : 'border-border hover:border-primary/30 hover:bg-muted/50'
-              }`}
-            >
-              <span className="text-2xl">{opt.flag}</span>
-              <span className="flex-1 text-sm font-medium">{opt.label}</span>
-              {isActive && <Check className="w-4 h-4 text-primary" />}
-              {saving && !isActive && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-            </button>
-          );
-        })}
-      </CardContent>
-    </Card>
-  );
 }
 
 export default function PersonalInfo() {
@@ -458,13 +289,8 @@ export default function PersonalInfo() {
           </CardContent>
         </Card>
 
-        {/* Two-column: Nav Customization (left) + Personal Info (right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-          {/* Left: Nav Customization */}
-          <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
-            <NavCustomizationCard userId={user?.id} isAdmin={isAdmin} />
-            <LanguageCard />
-          </div>
+        {/* Personal Info Card */}
+        <div className="max-w-3xl">
 
           {/* Right: Personal Info Card */}
           <Card>
