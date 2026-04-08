@@ -784,7 +784,7 @@ export default function ProcessScores({
           <div className={`flex items-center gap-2.5 p-3 rounded-lg border ${avgTier.bg} ${avgTier.border}`}>
             <ScoreCircle score={avgScore} size="sm" />
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">TB nhóm</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">TB dự án</p>
               <p className={`text-lg font-bold ${avgTier.color} leading-tight`}>{avgScore.toFixed(1)}</p>
             </div>
           </div>

@@ -95,8 +95,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       case 'workspace_owner': return '👑';
       case 'workspace_admin': return '🛡️';
       case 'workspace_member': return '🎫';
-      case 'workspace_guest': return '👽';
-      default: return '👽';
+      default: return '🎫';
     }
   };
 
@@ -105,7 +104,6 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       case 'workspace_owner': return 'Owner';
       case 'workspace_admin': return 'Admin';
       case 'workspace_member': return 'Member';
-      case 'workspace_guest': return 'Guest';
       default: return '';
     }
   };

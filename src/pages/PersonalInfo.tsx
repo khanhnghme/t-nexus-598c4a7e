@@ -23,7 +23,7 @@ import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const DEFAULT_PROJECT_LIMIT = 2;
+// Removed hard-coded DEFAULT_PROJECT_LIMIT — limits come from plan_limits table
 
 export function getHiddenNav(profile: any): string[] {
   if (!profile?.nav_hidden_pages) return [];
@@ -97,7 +97,7 @@ export default function PersonalInfo() {
   };
 
   const canCreateProject = isAdmin || isLeader;
-  const projectLimit = profile?.project_limit ?? (isLeader ? DEFAULT_PROJECT_LIMIT : 0);
+  // projectLimit removed — use plan_limits table dynamically instead
   
 
   const getRoleInfo = () => {
