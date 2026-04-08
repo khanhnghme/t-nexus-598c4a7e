@@ -124,6 +124,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   const accountChildren = [
     { name: t?.personalInfo || 'Personal Info', href: '/personal-info' },
     { name: t?.settings || 'Settings', href: '/account-settings' },
+    { name: t?.servicePlan || 'Service Plan', href: '/service-plan' },
   ];
 
   const adminItems = [

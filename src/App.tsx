@@ -173,6 +173,7 @@ function AppRoutes() {
           <Route path="/workspace/settings" element={<WorkspaceSettings />} />
           <Route path="/workspace/members" element={<WorkspaceMembers />} />
           <Route path="/upgrade" element={<Upgrade />} />
+          <Route path="/service-plan" element={<ServicePlan />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
