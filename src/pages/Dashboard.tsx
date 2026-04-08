@@ -569,15 +569,15 @@ export default function Dashboard() {
                       {t?.verified || 'Verified'}
                     </Badge>
                   )}
-                  {isAdmin ? (
+                  {isSystemAdmin ? (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-accent text-muted-foreground border-border">
                       <Unlock className="w-2.5 h-2.5" strokeWidth={1.5} />
                       {t?.unlimitedProjects || 'Unlimited project creation'}
                     </Badge>
-                  ) : canCreateProject && projectLimit > 0 ? (
+                  ) : canCreateProject ? (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-accent text-muted-foreground border-border">
                       <Unlock className="w-2.5 h-2.5" strokeWidth={1.5} />
-                      {(t?.maxProjects || 'Can create up to {n} projects').replace('{n}', String(projectLimit))}
+                      {t?.canCreateProjects || 'Can create projects'}
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-accent text-muted-foreground/70 border-border">

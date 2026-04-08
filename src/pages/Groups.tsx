@@ -71,6 +71,9 @@ interface MemberToAdd {
 export default function Groups() {
   const { user, isSystemAdmin, profile } = useAuth();
   const { activeWorkspace, isAvailable: wsAvailable, workspaceRole } = useWorkspace();
+
+  // Permission: workspace_owner, workspace_admin, or system_admin can create projects
+  const canCreateProject = isSystemAdmin || workspaceRole === 'workspace_owner' || workspaceRole === 'workspace_admin';
   const { toast } = useToast();
   const [groups, setGroups] = useState<GroupWithMembers[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -729,11 +732,11 @@ export default function Groups() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16">
               <FolderKanban className="w-16 h-16 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Chưa có nhóm nào</h3>
+              <h3 className="text-lg font-medium mb-2">Chưa có dự án nào</h3>
               <p className="text-muted-foreground text-center max-w-md">
-                {isLeader
-                  ? 'Bạn chưa tham gia hoặc tạo nhóm nào. Hãy tạo nhóm mới để bắt đầu!'
-                  : 'Bạn chưa được thêm vào nhóm nào. Hãy chờ Leader thêm bạn vào nhóm.'}
+                {canCreateProject
+                  ? 'Bạn chưa tham gia hoặc tạo dự án nào. Hãy tạo dự án mới để bắt đầu!'
+                  : 'Bạn chưa được thêm vào dự án nào. Hãy chờ được mời tham gia.'}
               </p>
             </CardContent>
           </Card>
