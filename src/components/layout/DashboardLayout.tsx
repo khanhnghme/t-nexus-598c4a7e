@@ -56,7 +56,65 @@ import AvatarUpload from '@/components/AvatarUpload';
 import AIAssistantButton from '@/components/ai/AIAssistantButton';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
+import { useWorkspaceBilling, formatPlanName } from '@/hooks/useWorkspaceBilling';
+import { Zap, Crown } from 'lucide-react';
+import { Tooltip as TooltipUI, TooltipTrigger as TooltipTriggerUI, TooltipContent as TooltipContentUI } from '@/components/ui/tooltip';
 
+/* ------------------------------------------------------------------ */
+/*  Upgrade Box (sidebar bottom)                                       */
+/* ------------------------------------------------------------------ */
+function UpgradeBox({ collapsed }: { collapsed: boolean }) {
+  const { user } = useAuth();
+  const { activeWorkspace, workspaceRole, isAvailable } = useWorkspace();
+  const { ownerPlan, ownerId } = useWorkspaceBilling();
+
+  const isOwner = user?.id === ownerId;
+  if (!isAvailable || !activeWorkspace || workspaceRole !== 'workspace_owner') return null;
+
+  const planLabel = formatPlanName(ownerPlan);
+  const isPremium = ownerPlan && ownerPlan !== 'plan_free';
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to="/upgrade"
+            className="flex items-center justify-center w-9 h-9 mx-auto rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors mb-2"
+          >
+            <Zap className="w-4 h-4 text-amber-500" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={12}>
+          <p className="font-medium">Upgrade · {planLabel}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Link
+      to="/upgrade"
+      className="block mx-2 mb-2 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 transition-colors group no-underline"
+    >
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
+          <Crown className="w-4 h-4 text-amber-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+            {planLabel} Plan
+          </div>
+          <div className="text-[10px] text-amber-600/70 dark:text-amber-400/70">
+            Nâng cấp để mở khóa thêm
+          </div>
+        </div>
+        <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+      </div>
+    </Link>
+  );
+}
 /* ------------------------------------------------------------------ */
 /*  Theme toggle (sidebar-friendly)                                    */
 /* ------------------------------------------------------------------ */
