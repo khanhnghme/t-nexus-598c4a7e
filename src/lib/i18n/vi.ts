@@ -545,6 +545,8 @@ export const vi: Translations = {
     forgotOtpIncorrect: 'Mã OTP không đúng',
     passwordMinPlaceholder: 'Tối thiểu 6 ký tự',
     adminApprovalNote: 'Sau khi tạo, tài khoản cần được Admin duyệt trước khi sử dụng.',
+    captchaRequired: 'Vui lòng hoàn thành xác minh CAPTCHA',
+    captchaFailed: 'Xác minh CAPTCHA thất bại. Vui lòng thử lại.',
     forgotEnterDesc: 'Nhập MSSV và email đã đăng ký. Hệ thống sẽ gửi mã OTP 6 số đến email của bạn.',
     forgotNewPassForAccount: 'Nhập mật khẩu mới cho tài khoản',
     forgotNewPassPlaceholder: 'Tối thiểu 6 ký tự',
