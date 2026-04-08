@@ -17,6 +17,7 @@ import {
   CalendarDays,
   MessageSquare,
   UserCircle,
+  Settings,
   BookOpen,
   Lightbulb,
   FolderArchive,
@@ -79,6 +80,9 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       if (path.startsWith('/p/')) {
         next.add('projects');
       }
+      if (path === '/personal-info' || path === '/account-settings') {
+        next.add('account');
+      }
       return next;
     });
   }, [location.pathname]);
@@ -106,13 +110,19 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
   };
 
   // Navigation items
+  const accountExpanded = expanded.has('account');
+
   const personalItems = [
     { name: t?.calendar || 'Calendar', href: '/calendar', icon: CalendarDays },
     { name: t?.communication || 'Communication', href: '/communication', icon: MessageSquare },
-    { name: t?.account || 'Account', href: '/personal-info', icon: UserCircle },
     { name: t?.tips || 'Tips', href: '/tips', icon: BookOpen },
     { name: t?.feedback || 'Feedback', href: '/feedback', icon: Lightbulb },
   ].filter(i => !hiddenNav.includes(i.href));
+
+  const accountChildren = [
+    { name: t?.personalInfo || 'Personal Info', href: '/personal-info' },
+    { name: t?.settings || 'Settings', href: '/account-settings' },
+  ];
 
   const adminItems = [
     { name: t?.systemMembers || 'Members', href: '/members', icon: Users },
@@ -194,6 +204,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
         {personalItems.map(item => (
           <TreeItemCollapsed key={item.href} icon={item.icon} label={item.name} href={item.href} active={isPathActive(item.href)} />
         ))}
+        <TreeItemCollapsed icon={UserCircle} label={t?.account || 'Account'} href="/personal-info" active={isPathActive('/personal-info') || isPathActive('/account-settings')} />
 
         {/* Admin */}
         {isAdmin && adminItems.map(item => (
@@ -327,7 +338,7 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
       )}
 
       {/* ── Personal section ── */}
-      {personalItems.length > 0 && (
+      {(personalItems.length > 0 || true) && (
         <>
           <div className="sidebar-nav-separator" />
           <div className="sidebar-section-label">{t?.personal || 'PERSONAL'}</div>
@@ -337,6 +348,33 @@ export default function SidebarTreeNav({ collapsed }: SidebarTreeNavProps) {
               <span className="nav-label">{item.name}</span>
             </Link>
           ))}
+
+          {/* Account tree node */}
+          <button
+            onClick={() => toggle('account')}
+            className={cn(
+              'sidebar-nav-item w-full text-left group',
+              (isPathActive('/personal-info') || isPathActive('/account-settings')) && !accountExpanded && 'semi-active'
+            )}
+          >
+            <ChevronRight className={cn('nav-chevron', accountExpanded && 'expanded')} />
+            <UserCircle className="nav-icon" strokeWidth={1.8} />
+            <span className="nav-label">{t?.account || 'Account'}</span>
+          </button>
+
+          {accountExpanded && (
+            <div className="tree-children tree-level-1">
+              {accountChildren.map(child => (
+                <Link
+                  key={child.href}
+                  to={child.href}
+                  className={cn('sidebar-nav-item', isPathActive(child.href) && 'active')}
+                >
+                  <span className="nav-label">{child.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
         </>
       )}
 

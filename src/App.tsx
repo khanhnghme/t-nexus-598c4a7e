@@ -35,6 +35,7 @@ import Communication from "./pages/Communication";
 import PublicProjectView from "./pages/PublicProjectView";
 import FilePreview from "./pages/FilePreview";
 import PersonalInfo from "./pages/PersonalInfo";
+import AccountSettings from "./pages/AccountSettings";
 import ResetPassword from "./pages/ResetPassword";
 import Utilities from "./pages/Utilities";
 import PublicProfile from "./pages/PublicProfile";
@@ -156,6 +157,7 @@ function AppRoutes() {
           <Route path="/communication" element={<Communication />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/personal-info" element={<PersonalInfo />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/tips" element={<Tips />} />
           <Route path="/members" element={<MemberManagement />} />
           <Route path="/admin/activity" element={<AdminActivity />} />
